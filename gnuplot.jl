@@ -99,7 +99,7 @@ function figure(x...)
 end
 
 # add a curve to current figure
-function addcurve(x,y,conf::Curve_conf)
+function addcurve(x,y,ylow,yhigh,conf::Curve_conf)
     global figs
     # copy conf (dereference)
     conf = copy_curve_conf(conf)
@@ -112,14 +112,18 @@ function addcurve(x,y,conf::Curve_conf)
     if isempty(figs[c].curves[1].x)
         # figure() creates a structure with one empty curve; we want to
         # overwrite it with the first actual curve
-        figs[c].curves[1] = Curve_data(x,y,conf)
+        figs[c].curves[1] = Curve_data(x,y,ylow,yhigh,conf)
     else
-        figs[c].curves = [figs[c].curves, Curve_data(x,y,conf)]
+        figs[c].curves = [figs[c].curves, Curve_data(x,y,ylow,yhigh,conf)]
     end
 end
-addcurve(y) = addcurve(1:length(y),y,Curve_conf())
-addcurve(y,c::Curve_conf) = addcurve(1:length(y),y,c)
-addcurve(x,y) = addcurve(x,y,Curve_conf())
+addcurve(y) = addcurve(1:length(y),y,[],[],Curve_conf())
+addcurve(y,c::Curve_conf) = addcurve(1:length(y),y,[],[],c)
+addcurve(x,y) = addcurve(x,y,[],[],Curve_conf())
+addcurve(x,y,c::Curve_conf) = addcurve(x,y,[],[],c)
+addcurve(x,y,ydelta) = addcurve(x,y,ydelta,[],Curve_conf())
+addcurve(x,y,ydelta,c::Curve_conf) = addcurve(x,y,ydelta,[],c)
+addcurve(x,y,yl,yh) = addcurve(x,y,yl,yh,Curve_conf())
 
 # add axes configuration to current figure
 function addconf(conf::Axes_conf)
@@ -182,8 +186,25 @@ function plot()
     # coordinates
     gnuplot_send(linestr(figs[c].curves))
     for i in figs[c].curves
-        for j = 1:length(i.x)
-            gnuplot_send(strcat(string(i.x[j])," ",string(i.y[j])))
+        tmp = i.conf.plotstyle
+        if tmp == "errorbars" || tmp == "errorlines"
+            if isempty(i.yhigh)
+                # ydelta (single error coordinate)
+                for j = 1:length(i.x)
+                    gnuplot_send(strcat(string(i.x[j])," ",string(i.y[j]), " ",
+                    string(i.ylow[j])))
+                end
+            else
+                # ylow, yhigh (double error coordinate)
+                for j = 1:length(i.x)
+                    gnuplot_send(strcat(string(i.x[j])," ",string(i.y[j]), " ",
+                    string(i.ylow[j]), " ", string(i.yhigh[j])))
+                end
+            end
+        else
+            for j = 1:length(i.x)
+                gnuplot_send(strcat(string(i.x[j])," ",string(i.y[j])))
+            end
         end
         gnuplot_send("e")
     end

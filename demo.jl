@@ -64,4 +64,40 @@ function demo()
     addconf(a)
     plot()
 
+    # error bars with ydelta
+    figure(6)
+    c = Curve_conf()
+    c.legend = "Random"
+    c.plotstyle = "errorbars"
+    addcurve(1:40,exp(-(1:.1:4.9)),0.1*rand(40),c)
+    a = Axes_conf()
+    a.title = "Error bars (ydelta)"
+    addconf(a)
+    plot()
+
+    # error bars with ylow, yhigh
+    figure(7)
+    c = Curve_conf()
+    c.legend = "Random"
+    c.plotstyle = "errorbars"
+    y = exp(-(1:.1:4.9))
+    ylow = y - 0.05*rand(40);
+    yhigh = y + 0.05*rand(40);
+    addcurve(1:40,y,ylow,yhigh,c)
+    a = Axes_conf()
+    a.title = "Error bars (ylow, yhigh)"
+    addconf(a)
+    plot()
+
+    # error lines
+    figure(8)
+    c = Curve_conf()
+    c.legend = "Random"
+    c.plotstyle = "errorlines"
+    addcurve(1:40,exp(-(1:.1:4.9)),0.1*rand(40),c)
+    a = Axes_conf()
+    a.title = "Error lines (ydelta)"
+    addconf(a)
+    plot()
+
 end

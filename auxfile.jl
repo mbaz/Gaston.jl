@@ -107,11 +107,11 @@ end
 function linestr(curves::Vector{Curve_data})
     # We have to insert "," between plot commands. One easy way to do this
     # is create the first plot command, then the rest
-    s = "plot '-' using 1:2 "
-    s = strcat(s, linestr_single(curves[1].conf))
+    tmp = curves[1].conf.plotstyle
+    s = strcat("plot '-' ", linestr_single(curves[1].conf))
     if length(curves) > 1
         for i in curves[2:end]
-            s = strcat(s, ", '-' using 1:2 ", linestr_single(i.conf))
+            s = strcat(s, ", '-' ", linestr_single(i.conf))
         end
     end
     return s

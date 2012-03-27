@@ -16,7 +16,8 @@ gnuplot_state = Gnuplot_state(false,0,0)
 # another to configure a set of curves (the 'axes').
 type Curve_conf
     legend::ASCIIString     # legend text
-    plotstyle::ASCIIString  # one of lines, linespoints, points or impulses
+    plotstyle::ASCIIString  # one of lines, linespoints, points, impulses,
+                            # errorbars or errorlines
     color::ASCIIString      # one of gnuplot's builtin colors
                             # run 'show colornames' inside gnuplot
     marker::ASCIIString     # +, x, *, esquare, fsquare, ecircle, fcircle,
@@ -63,9 +64,11 @@ end
 type Curve_data
     x
     y
+    ylow
+    yhigh
     conf::Curve_conf
 end
-Curve_data() = Curve_data([],[],Curve_conf())
+Curve_data() = Curve_data([],[],[],[],Curve_conf())
 
 # curves and configuration for a single figure
 type Figure
