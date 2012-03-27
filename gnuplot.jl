@@ -124,6 +124,22 @@ addcurve(x,y,c::Curve_conf) = addcurve(x,y,[],[],c)
 addcurve(x,y,ydelta) = addcurve(x,y,ydelta,[],Curve_conf())
 addcurve(x,y,ydelta,c::Curve_conf) = addcurve(x,y,ydelta,[],c)
 addcurve(x,y,yl,yh) = addcurve(x,y,yl,yh,Curve_conf())
+# X, Y data in matrix columnx
+function addcurve(X::Matrix,Y::Matrix,conf::Curve_conf)
+    for i = 1:size(X,2)
+        addcurve(X[:,i],Y[:,i],[],[],conf)
+    end
+end
+function addcurve(X::Matrix,conf::Curve_conf)
+    y = 1:size(X,1)
+    Y = zeros(size(X))
+    for i = 1:size(X,2)
+        Y[:,i] = y
+    end
+    addcurve(X,Y,conf)
+end
+addcurve(X::Matrix, Y::Matrix) = addcurve(X,Y,Curve_conf())
+addcurve(X::Matrix) = addcurve(X,Curve_conf())
 
 # add axes configuration to current figure
 function addconf(conf::Axes_conf)

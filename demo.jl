@@ -100,4 +100,14 @@ function demo()
     addconf(a)
     plot()
 
+    # plotting columns of matrices
+    figure(9)
+    Y = hcat(st, ct, et)
+    X = hcat(t, t, t)
+    addcurve(X,Y)
+    a = Axes_conf()
+    a.title = "Plotting matrix columns"
+    addconf(a)
+    plot()
+
 end
