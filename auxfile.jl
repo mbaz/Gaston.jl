@@ -122,3 +122,11 @@ function linestr(curves::Vector{Curve_data})
     return s
 end
 
+# create a Z-coordinate matrix from x, y coordinates and a function
+function meshgrid(x,y,f)
+    Z = zeros(length(x),length(y))
+    for k = 1:length(x)
+        Z[k,:] = [ f(i,j) | i=x[k], j=y ]
+    end
+    return Z
+end
