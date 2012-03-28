@@ -8,12 +8,12 @@ function demo()
     et = exp(abs(t/10))
     # simplest figure
     figure(1)
-    addcurve(st)
+    addcoords(st)
     plot()
 
     # x coordinates
     figure(2)
-    addcurve(t,st)
+    addcoords(t,st)
     plot()
 
     # plot configuration
@@ -25,7 +25,7 @@ function demo()
     c.marker = "fdmd"
     c.pointsize = 2
     c.linewidth = 1.5
-    addcurve(t,st,c)
+    addcoords(t,st,c)
     plot()
 
     # figure configuration
@@ -37,7 +37,7 @@ function demo()
     a.box = "bottom left"
     a.axis = "semilogx"
     c.plotstyle = "linespoints"
-    addcurve(t,st,c)
+    addcoords(t,st,c)
     addconf(a)
     plot()
 
@@ -46,16 +46,16 @@ function demo()
     c = Curve_conf()
     c.legend = "Sin"
     c.color = "black"
-    addcurve(t,st,c)
+    addcoords(t,st,c)
     c.legend = "Cos"
     c.color = "magenta"
     c.plotstyle = "impulses"
     c.linewidth = 0.4
-    addcurve(t,ct,c)
+    addcoords(t,ct,c)
     c.legend = "Exp"
     c.color = "red"
     c.plotstyle = "linespoints"
-    addcurve(t,et,c)
+    addcoords(t,et,c)
     a = Axes_conf()
     a.xlabel = "Time (s)"
     a.ylabel = "Amplitude"
@@ -65,11 +65,13 @@ function demo()
     plot()
 
     # error bars with ydelta
+    y = exp(-(1:.1:4.9))
     figure(6)
     c = Curve_conf()
     c.legend = "Random"
     c.plotstyle = "errorbars"
-    addcurve(1:40,exp(-(1:.1:4.9)),0.1*rand(40),c)
+    addcoords(1:40,y,c)
+    adderror(0.1*rand(40))
     a = Axes_conf()
     a.title = "Error bars (ydelta)"
     addconf(a)
@@ -80,10 +82,12 @@ function demo()
     c = Curve_conf()
     c.legend = "Random"
     c.plotstyle = "errorbars"
-    y = exp(-(1:.1:4.9))
     ylow = y - 0.05*rand(40);
     yhigh = y + 0.05*rand(40);
-    addcurve(1:40,y,ylow,yhigh,c)
+    addcoords(1:40,y,c)
+    ylow = y - 0.05*rand(40);
+    yhigh = y + 0.05*rand(40);
+    adderror(ylow,yhigh)
     a = Axes_conf()
     a.title = "Error bars (ylow, yhigh)"
     addconf(a)
@@ -94,7 +98,8 @@ function demo()
     c = Curve_conf()
     c.legend = "Random"
     c.plotstyle = "errorlines"
-    addcurve(1:40,exp(-(1:.1:4.9)),0.1*rand(40),c)
+    addcoords(1:40,y,c)
+    adderror(0.1*rand(40))
     a = Axes_conf()
     a.title = "Error lines (ydelta)"
     addconf(a)
@@ -104,7 +109,7 @@ function demo()
     figure(9)
     Y = hcat(st, ct, et)
     X = hcat(t, t, t)
-    addcurve(X,Y)
+    addcoords(X,Y)
     a = Axes_conf()
     a.title = "Plotting matrix columns"
     addconf(a)

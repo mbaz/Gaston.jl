@@ -64,11 +64,13 @@ end
 type Curve_data
     x
     y
+    Z          # for 3-D plots. Element i,j is z-value for x[j], y[i]
     ylow
     yhigh
     conf::Curve_conf
 end
-Curve_data() = Curve_data([],[],[],[],Curve_conf())
+Curve_data() = Curve_data([],[],[],[],[],Curve_conf())
+Curve_data(x,y,Z,conf::Curve_conf) = Curve_data(x,y,Z,[],[],conf)
 
 # curves and configuration for a single figure
 type Figure

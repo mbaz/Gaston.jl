@@ -98,8 +98,8 @@ function figure(x...)
     gnuplot_state.current = h
 end
 
-# add a curve to current figure
-function addcurve(x,y,ylow,yhigh,conf::Curve_conf)
+# append x,y,z coordinates and configuration to current figure
+function addcoords(x,y,Z,conf::Curve_conf)
     global figs
     # copy conf (dereference)
     conf = copy_curve_conf(conf)
@@ -107,39 +107,46 @@ function addcurve(x,y,ylow,yhigh,conf::Curve_conf)
     if gnuplot_state.current == 0
         figure(1)
     end
-    # append curve to figure
+    # append data to figure
     c = gnuplot_state.current
     if isempty(figs[c].curves[1].x)
         # figure() creates a structure with one empty curve; we want to
         # overwrite it with the first actual curve
-        figs[c].curves[1] = Curve_data(x,y,ylow,yhigh,conf)
+        figs[c].curves[1] = Curve_data(x,y,Z,conf)
     else
-        figs[c].curves = [figs[c].curves, Curve_data(x,y,ylow,yhigh,conf)]
+        figs[c].curves = [figs[c].curves, Curve_data(x,y,Z,conf)]
     end
 end
-addcurve(y) = addcurve(1:length(y),y,[],[],Curve_conf())
-addcurve(y,c::Curve_conf) = addcurve(1:length(y),y,[],[],c)
-addcurve(x,y) = addcurve(x,y,[],[],Curve_conf())
-addcurve(x,y,c::Curve_conf) = addcurve(x,y,[],[],c)
-addcurve(x,y,ydelta) = addcurve(x,y,ydelta,[],Curve_conf())
-addcurve(x,y,ydelta,c::Curve_conf) = addcurve(x,y,ydelta,[],c)
-addcurve(x,y,yl,yh) = addcurve(x,y,yl,yh,Curve_conf())
-# X, Y data in matrix columnx
-function addcurve(X::Matrix,Y::Matrix,conf::Curve_conf)
+addcoords(y) = addcoords(1:length(y),y,[],Curve_conf())
+addcoords(y,c::Curve_conf) = addcoords(1:length(y),y,[],c)
+addcoords(x,y) = addcoords(x,y,[],Curve_conf())
+addcoords(x,y,c::Curve_conf) = addcoords(x,y,[],c)
+# X, Y data in matrix columns
+function addcoords(X::Matrix,Y::Matrix,conf::Curve_conf)
     for i = 1:size(X,2)
-        addcurve(X[:,i],Y[:,i],[],[],conf)
+        addcoords(X[:,i],Y[:,i],[],conf)
     end
 end
-function addcurve(X::Matrix,conf::Curve_conf)
+function addcoords(X::Matrix,conf::Curve_conf)
     y = 1:size(X,1)
     Y = zeros(size(X))
     for i = 1:size(X,2)
         Y[:,i] = y
     end
-    addcurve(X,Y,conf)
+    addcoords(X,Y,conf)
 end
-addcurve(X::Matrix, Y::Matrix) = addcurve(X,Y,Curve_conf())
-addcurve(X::Matrix) = addcurve(X,Curve_conf())
+addcoords(X::Matrix, Y::Matrix) = addcoords(X,Y,Curve_conf())
+addcoords(X::Matrix) = addcoords(X,Curve_conf())
+
+# append error data to current set of coordinates
+function adderror(yl,yh)
+    global figs
+    # set fields in current curve
+    c = gnuplot_state.current
+    figs[c].curves[end].ylow = yl
+    figs[c].curves[end].yhigh = yh
+end
+adderror(ydelta) = adderror(ydelta,[])
 
 # add axes configuration to current figure
 function addconf(conf::Axes_conf)
