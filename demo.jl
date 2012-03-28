@@ -115,4 +115,26 @@ function demo()
     addconf(a)
     plot()
 
+    # simple 3-D plot with default config
+    figure(10)
+    x=[0,1,2,3]
+    y=[0,1,2]
+    Z=[10 10 10; 10 5 10;10 1 10; 10 0 10]
+    addcoords(x,y,Z)
+    a = Axes_conf()
+    a.title = "Valley of the Gnu from gnuplot manual"
+    addconf(a)
+    plot()
+
+    # same plot with colored surfaces
+    figure(11)
+    c = Curve_conf()
+    c.plotstyle = "pm3d"
+    addcoords(x,y,Z,c)
+    a = Axes_conf()
+    a.title = "Valley of the Gnu with pm3d"
+    addconf(a)
+    plot()
+
+
 end

@@ -120,6 +120,7 @@ end
 addcoords(y) = addcoords(1:length(y),y,[],Curve_conf())
 addcoords(y,c::Curve_conf) = addcoords(1:length(y),y,[],c)
 addcoords(x,y) = addcoords(x,y,[],Curve_conf())
+addcoords(x,y,Z) = addcoords(x,y,Z,Curve_conf())
 addcoords(x,y,c::Curve_conf) = addcoords(x,y,[],c)
 # X, Y data in matrix columns
 function addcoords(X::Matrix,Y::Matrix,conf::Curve_conf)
@@ -169,6 +170,10 @@ function plot()
     end
     # select current plot
     c = gnuplot_state.current
+    if c == 0
+        println("No current figure")
+        return
+    end
     config = figs[c].conf
     gnuplot_send(strcat("set term wxt ",string(c)))
     gnuplot_send("set autoscale")
@@ -192,6 +197,11 @@ function plot()
     if config.ylabel != ""
         gnuplot_send(strcat("set ylabel '",config.ylabel,"' "))
     end
+    # zlabel
+    gnuplot_send("unset zlabel")
+    if config.zlabel != ""
+        gnuplot_send(strcat("set zlabel '",config.zlabel,"' "))
+    end
     # axis log scale
     gnuplot_send("unset logscale")
     if config.axis != "" || config.axis != "normal"
@@ -206,29 +216,51 @@ function plot()
             gnuplot_send("set logscale xy")
         end
     end
-    # coordinates
+    # send initial string to gnuplot
     gnuplot_send(linestr(figs[c].curves))
-    for i in figs[c].curves
-        tmp = i.conf.plotstyle
-        if tmp == "errorbars" || tmp == "errorlines"
-            if isempty(i.yhigh)
-                # ydelta (single error coordinate)
-                for j = 1:length(i.x)
-                    gnuplot_send(strcat(string(i.x[j])," ",string(i.y[j]), " ",
-                    string(i.ylow[j])))
+    # send coordinates, checking each special case
+    # first check whether we are doing 2-d or 3-d plots
+    if isempty(figs[c].curves[1].Z)   # 2-d
+        for i in figs[c].curves
+            tmp = i.conf.plotstyle
+            if tmp == "errorbars" || tmp == "errorlines"
+                if isempty(i.yhigh)
+                    # ydelta (single error coordinate)
+                    for j = 1:length(i.x)
+                        gnuplot_send(strcat(string(i.x[j])," ",string(i.y[j]),
+                        " ", string(i.ylow[j])))
+                    end
+                else
+                    # ylow, yhigh (double error coordinate)
+                    for j = 1:length(i.x)
+                        gnuplot_send(strcat(string(i.x[j])," ",string(i.y[j]),
+                        " ", string(i.ylow[j]), " ", string(i.yhigh[j])))
+                    end
                 end
             else
-                # ylow, yhigh (double error coordinate)
                 for j = 1:length(i.x)
-                    gnuplot_send(strcat(string(i.x[j])," ",string(i.y[j]), " ",
-                    string(i.ylow[j]), " ", string(i.yhigh[j])))
+                    gnuplot_send(strcat(string(i.x[j])," ",string(i.y[j])))
                 end
             end
-        else
-            for j = 1:length(i.x)
-                gnuplot_send(strcat(string(i.x[j])," ",string(i.y[j])))
-            end
+            gnuplot_send("e")
         end
-        gnuplot_send("e")
+    else    # 3-d
+        for i in figs[c].curves
+            # nonuniform matrix -- see gnuplot 4.6 manual, p. 169
+            s = "0"
+            for x = i.x
+                s = strcat(s, " ", string(x))
+            end
+            gnuplot_send(s)
+            for y = 1:length(i.y)
+                s = string(i.y[y])
+                for z = 1:length(i.x)
+                    s = strcat(s, " ", i.Z[z,y])
+                end
+                gnuplot_send(s)
+            end
+            gnuplot_send("e")
+            gnuplot_send("e")
+        end
     end
 end

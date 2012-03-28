@@ -94,7 +94,8 @@ function linestr_single(conf::Curve_conf)
     end
     s = strcat(s, "lw ", string(conf.linewidth), " ")
     # some plotstyles don't allow point specifiers
-    if conf.plotstyle != "lines" && conf.plotstyle != "impulses"
+    cp = conf.plotstyle
+    if cp != "lines" && cp != "impulses" && cp != "pm3d"
         if conf.marker != ""
             s = strcat(s, "pt ", string(pointtype(conf.marker)), " ")
         end
@@ -107,8 +108,12 @@ end
 function linestr(curves::Vector{Curve_data})
     # We have to insert "," between plot commands. One easy way to do this
     # is create the first plot command, then the rest
-    tmp = curves[1].conf.plotstyle
-    s = strcat("plot '-' ", linestr_single(curves[1].conf))
+    if isempty(curves[1].Z)
+        s = strcat("plot '-' ", linestr_single(curves[1].conf))  # 2-d
+    else
+        s = strcat("splot '-' nonuniform matrix ",
+            linestr_single(curves[1].conf))  # 3-d
+    end
     if length(curves) > 1
         for i in curves[2:end]
             s = strcat(s, ", '-' ", linestr_single(i.conf))

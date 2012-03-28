@@ -17,7 +17,7 @@ gnuplot_state = Gnuplot_state(false,0,0)
 type Curve_conf
     legend::ASCIIString     # legend text
     plotstyle::ASCIIString  # one of lines, linespoints, points, impulses,
-                            # errorbars or errorlines
+                            # errorbars, errorlines, pm3d
     color::ASCIIString      # one of gnuplot's builtin colors
                             # run 'show colornames' inside gnuplot
     marker::ASCIIString     # +, x, *, esquare, fsquare, ecircle, fcircle,
@@ -44,10 +44,11 @@ type Axes_conf
     title::ASCIIString      # plot title
     xlabel::ASCIIString     # xlabel
     ylabel::ASCIIString     # ylabel
+    zlabel::ASCIIString     # zlabel for 3-d plots
     box::ASCIIString        # legend box (used with 'set key')
     axis::ASCIIString       # normal, semilog{x,y}, loglog
 end
-Axes_conf() = Axes_conf("Untitled","x","y","inside vertical right top","")
+Axes_conf() = Axes_conf("Untitled","x","y","z","inside vertical right top","")
 
 # dereference Axes_conf
 function copy_axes_conf(conf::Axes_conf)
@@ -55,6 +56,7 @@ function copy_axes_conf(conf::Axes_conf)
     new.title = conf.title
     new.xlabel = conf.xlabel
     new.ylabel = conf.ylabel
+    new.zlabel = conf.zlabel
     new.box = conf.box
     new.axis = conf.axis
     return new
