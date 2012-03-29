@@ -66,6 +66,10 @@ end
 function figure(x...)
     global gnuplot_state
     global figs
+    # see if we need to set up gnuplot
+    if gnuplot_state.running == false
+        gnuplot_init();
+    end
     # create vector of handles
     handles = []
     if gnuplot_state.current != 0
@@ -95,18 +99,19 @@ function figure(x...)
             figs = [figs, Figure(h)]
         end
     end
+    gnuplot_send(strcat("set term wxt ", string(h)))
     gnuplot_state.current = h
 end
 
 # append x,y,z coordinates and configuration to current figure
 function addcoords(x,y,Z,conf::Curve_conf)
     global figs
-    # copy conf (dereference)
-    conf = copy_curve_conf(conf)
     # check that at least one figure has been setup
     if gnuplot_state.current == 0
         figure(1)
     end
+    # copy conf (dereference)
+    conf = copy_curve_conf(conf)
     # append data to figure
     c = gnuplot_state.current
     if isempty(figs[c].curves[1].x)
@@ -142,6 +147,10 @@ addcoords(X::Matrix) = addcoords(X,Curve_conf())
 # append error data to current set of coordinates
 function adderror(yl,yh)
     global figs
+    # check that at least one figure has been setup
+    if gnuplot_state.current == 0
+        figure(1)
+    end
     # set fields in current curve
     c = gnuplot_state.current
     figs[c].curves[end].ylow = yl
@@ -152,11 +161,11 @@ adderror(ydelta) = adderror(ydelta,[])
 # add axes configuration to current figure
 function addconf(conf::Axes_conf)
     global figs
-    conf = copy_axes_conf(conf)
-    # see if we need to set up gnuplot
-    if gnuplot_state.running == false
-        gnuplot_init();
+    # check that at least one figure has been setup
+    if gnuplot_state.current == 0
+        figure(1)
     end
+    conf = copy_axes_conf(conf)
     # select current plot
     c = gnuplot_state.current
     figs[c].conf = conf
@@ -164,10 +173,6 @@ end
 
 # 'plot' is our workhorse plotting function
 function plot()
-    # see if we need to set up gnuplot
-    if gnuplot_state.running == false
-        gnuplot_init();
-    end
     # select current plot
     c = gnuplot_state.current
     if c == 0

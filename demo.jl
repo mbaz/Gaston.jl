@@ -140,8 +140,8 @@ function demo()
     figure(12)
     c = Curve_conf()
     c.plotstyle = "pm3d"
-    x = -15:0.3:15
-    y = -15:0.3:15
+    x = -15:0.33:15
+    y = -15:0.33:15
     Z = meshgrid(x,y,(x,y)->sin(sqrt(x.*x+y.*y))/sqrt(x.*x+y.*y))
     addcoords(x,y,Z,c)
     a = Axes_conf()
