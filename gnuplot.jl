@@ -210,17 +210,17 @@ function plot()
         end
         if config.axis == "semilogy"
             gnuplot_send("set logscale y")
-            println("yo")
         end
         if config.axis == "loglog"
             gnuplot_send("set logscale xy")
         end
     end
-    # send initial string to gnuplot
-    gnuplot_send(linestr(figs[c].curves))
     # send coordinates, checking each special case
-    # first check whether we are doing 2-d or 3-d plots
-    if isempty(figs[c].curves[1].Z)   # 2-d
+    # first check whether we are doing 2-d, 3-d or image plots
+    # 2-d plot: x is not empty, Z is empty
+    if isempty(figs[c].curves[1].Z) && !isempty(figs[c].curves[1].x)
+        # send initial string to gnuplot
+        gnuplot_send(linestr(figs[c].curves, "plot '-' "))
         for i in figs[c].curves
             tmp = i.conf.plotstyle
             if tmp == "errorbars" || tmp == "errorlines"
@@ -244,7 +244,10 @@ function plot()
             end
             gnuplot_send("e")
         end
-    else    # 3-d
+    # 3-d plot: x is not empty, Z is not empty
+    elseif !isempty(figs[c].curves[1].Z) && !isempty(figs[c].curves[1].x)
+        # send initial string to gnuplot
+        gnuplot_send(linestr(figs[c].curves, "splot '-' nonuniform matrix "))
         for i in figs[c].curves
             # nonuniform matrix -- see gnuplot 4.6 manual, p. 169
             s = "0"
@@ -256,6 +259,25 @@ function plot()
                 s = string(i.y[y])
                 for z = 1:length(i.x)
                     s = strcat(s, " ", i.Z[z,y])
+                end
+                gnuplot_send(s)
+            end
+            gnuplot_send("e")
+            gnuplot_send("e")
+        end
+    # image plot: plotstyle is "image" or "rgbimage"
+    elseif figs[c].curves[1].conf.plotstyle == "image" || figs[c].curves[1].conf.plotstyle == "rgbimage"
+        # send initial string to gnuplot
+        gnuplot_send("set yrange [*:*] reverse")  # flip y axis
+        gnuplot_send(linestr(figs[c].curves, "plot '-' matrix "))
+        # assume there is only one image per figure
+        i = figs[c].curves[1]
+        if i.conf.plotstyle == "image"
+            # output matrix row by row
+            for row = 1:size(i.Z,1)
+                s = ""
+                for col = 1:size(i.Z,2)
+                    s = strcat(s," ", string(i.Z[row,col]))
                 end
                 gnuplot_send(s)
             end

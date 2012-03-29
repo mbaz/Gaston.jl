@@ -140,12 +140,23 @@ function demo()
     figure(12)
     c = Curve_conf()
     c.plotstyle = "pm3d"
-    x = -15:0.3:15;
-    y = -15:0.3:15;
+    x = -15:0.3:15
+    y = -15:0.3:15
     Z = meshgrid(x,y,(x,y)->sin(sqrt(x.*x+y.*y))/sqrt(x.*x+y.*y))
     addcoords(x,y,Z,c)
     a = Axes_conf()
     a.title = "Sombrero"
+    addconf(a)
+    plot()
+
+    # simple image
+    figure(13)
+    c = Curve_conf()
+    c.plotstyle = "image"
+    Z = [5 4 3 1 0; 2 2 0 0 1; 0 0 0 1 0; 0 1 2 4 3]
+    addcoords([],[],Z,c)
+    a = Axes_conf()
+    a.title = "Image"
     addconf(a)
     plot()
 
