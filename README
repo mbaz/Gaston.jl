@@ -1,0 +1,3 @@
+gnuplot.jl
+
+A gnuplot interface for the julia language.
