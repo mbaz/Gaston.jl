@@ -225,7 +225,7 @@ function plot()
     # 2-d plot: x is not empty, Z is empty
     if isempty(figs[c].curves[1].Z) && !isempty(figs[c].curves[1].x)
         # send initial string to gnuplot
-        gnuplot_send(linestr(figs[c].curves, "plot '-' "))
+        gnuplot_send(linestr(figs[c].curves, "plot '-' volatile "))
         for i in figs[c].curves
             tmp = i.conf.plotstyle
             if tmp == "errorbars" || tmp == "errorlines"
@@ -252,7 +252,7 @@ function plot()
     # 3-d plot: x is not empty, Z is not empty
     elseif !isempty(figs[c].curves[1].Z) && !isempty(figs[c].curves[1].x)
         # send initial string to gnuplot
-        gnuplot_send(linestr(figs[c].curves, "splot '-' nonuniform matrix "))
+        gnuplot_send(linestr(figs[c].curves, "splot '-' volatile nonuniform matrix "))
         for i in figs[c].curves
             # nonuniform matrix -- see gnuplot 4.6 manual, p. 169
             s = "0"
@@ -274,7 +274,7 @@ function plot()
     elseif figs[c].curves[1].conf.plotstyle == "image" || figs[c].curves[1].conf.plotstyle == "rgbimage"
         # send initial string to gnuplot
         gnuplot_send("set yrange [*:*] reverse")  # flip y axis
-        gnuplot_send(linestr(figs[c].curves, "plot '-' matrix "))
+        gnuplot_send(linestr(figs[c].curves, "plot '-' volatile matrix "))
         # assume there is only one image per figure
         i = figs[c].curves[1]
         if i.conf.plotstyle == "image"
@@ -290,4 +290,5 @@ function plot()
             gnuplot_send("e")
         end
     end
+    gnuplot_send("reset")
 end
