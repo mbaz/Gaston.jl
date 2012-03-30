@@ -98,6 +98,8 @@ function figure(x...)
         # this is the first figure
         h = 1
         figs = [Figure(h)]
+        gnuplot_state.current = h
+        gnuplot_send(strcat("set term wxt ", string(h)))
     else
         if isempty(x)
             # create a new figure, using lowest numbered handle available
@@ -110,13 +112,17 @@ function figure(x...)
         else
             h = x[1];
         end
+        gnuplot_state.current = h
+        gnuplot_send(strcat("set term wxt ", string(h)))
         if !contains(handles,h)
             # this is a new figure
             figs = [figs, Figure(h)]
+        else
+            # figure already exists, replot
+            plot()
         end
     end
-    gnuplot_send(strcat("set term wxt ", string(h)))
-    gnuplot_state.current = h
+    return h
 end
 
 # append x,y,z coordinates and configuration to current figure
@@ -199,32 +205,26 @@ function plot()
     gnuplot_send(strcat("set term wxt ",string(c)))
     gnuplot_send("set autoscale")
     # legend box
-    gnuplot_send("unset key")
     if config.box != ""
         gnuplot_send(strcat("set key ",config.box))
     end
     # plot title
-    gnuplot_send("unset title")
     if config.title != ""
         gnuplot_send(strcat("set title '",config.title,"' "))
     end
     # xlabel
-    gnuplot_send("unset xlabel")
     if config.xlabel != ""
         gnuplot_send(strcat("set xlabel '",config.xlabel,"' "))
     end
     # ylabel
-    gnuplot_send("unset ylabel")
     if config.ylabel != ""
         gnuplot_send(strcat("set ylabel '",config.ylabel,"' "))
     end
     # zlabel
-    gnuplot_send("unset zlabel")
     if config.zlabel != ""
         gnuplot_send(strcat("set zlabel '",config.zlabel,"' "))
     end
     # axis log scale
-    gnuplot_send("unset logscale")
     if config.axis != "" || config.axis != "normal"
         if config.axis == "semilogx"
             gnuplot_send("set logscale x")
@@ -236,75 +236,61 @@ function plot()
             gnuplot_send("set logscale xy")
         end
     end
+    # datafile filename
+    filename = strcat(string(gnuplot_state.tmpdir),"figure",string(c),".dat")
     # send coordinates, checking each special case
     # first check whether we are doing 2-d, 3-d or image plots
     # 2-d plot: x is not empty, Z is empty
     if isempty(figs[c].curves[1].Z) && !isempty(figs[c].curves[1].x)
-        # send initial string to gnuplot
-        gnuplot_send(linestr(figs[c].curves, "plot '-' volatile "))
+        # create data file
+        f = open(filename,"w")
         for i in figs[c].curves
             tmp = i.conf.plotstyle
             if tmp == "errorbars" || tmp == "errorlines"
                 if isempty(i.yhigh)
                     # ydelta (single error coordinate)
-                    for j = 1:length(i.x)
-                        gnuplot_send(strcat(string(i.x[j])," ",string(i.y[j]),
-                        " ", string(i.ylow[j])))
-                    end
+                    dlmwrite(f,[i.x i.y i.ylow],' ')
                 else
                     # ylow, yhigh (double error coordinate)
-                    for j = 1:length(i.x)
-                        gnuplot_send(strcat(string(i.x[j])," ",string(i.y[j]),
-                        " ", string(i.ylow[j]), " ", string(i.yhigh[j])))
-                    end
+                    dlmwrite(f,[i.x i.y i.ylow i.yhigh],' ')
                 end
             else
-                for j = 1:length(i.x)
-                    gnuplot_send(strcat(string(i.x[j])," ",string(i.y[j])))
-                end
+                dlmwrite(f,[i.x i.y],' ')
             end
-            gnuplot_send("e")
+            write(f,"\n\n")
         end
+        close(f)
+        # send command to gnuplot
+        gnuplot_send(linestr(figs[c].curves, "plot", filename,""))
     # 3-d plot: x is not empty, Z is not empty
     elseif !isempty(figs[c].curves[1].Z) && !isempty(figs[c].curves[1].x)
-        # send initial string to gnuplot
-        gnuplot_send(linestr(figs[c].curves, "splot '-' volatile nonuniform matrix "))
+        # create data file
+        f = open(filename,"w")
         for i in figs[c].curves
             # nonuniform matrix -- see gnuplot 4.6 manual, p. 169
-            s = "0"
-            for x = i.x
-                s = strcat(s, " ", string(x))
-            end
-            gnuplot_send(s)
+            write(f,"0 ")
+            dlmwrite(f,[i.x]',' ');
             for y = 1:length(i.y)
-                s = string(i.y[y])
-                for z = 1:length(i.x)
-                    s = strcat(s, " ", i.Z[z,y])
-                end
-                gnuplot_send(s)
+                dlmwrite(f,[i.y[y] i.Z[:,y]'],' ')
             end
-            gnuplot_send("e")
-            gnuplot_send("e")
+            write(f,"\n\n")
         end
+        close(f)
+        # send command to gnuplot
+        gnuplot_send(linestr(figs[c].curves, "splot",filename,"nonuniform matrix"))
     # image plot: plotstyle is "image" or "rgbimage"
     elseif figs[c].curves[1].conf.plotstyle == "image" || figs[c].curves[1].conf.plotstyle == "rgbimage"
-        # send initial string to gnuplot
-        gnuplot_send("set yrange [*:*] reverse")  # flip y axis
-        gnuplot_send(linestr(figs[c].curves, "plot '-' volatile matrix "))
+        # create data file
+        f = open(filename,"w")
         # assume there is only one image per figure
-        i = figs[c].curves[1]
-        if i.conf.plotstyle == "image"
-            # output matrix row by row
-            for row = 1:size(i.Z,1)
-                s = ""
-                for col = 1:size(i.Z,2)
-                    s = strcat(s," ", string(i.Z[row,col]))
-                end
-                gnuplot_send(s)
-            end
-            gnuplot_send("e")
-            gnuplot_send("e")
+        if figs[c].curves[1].conf.plotstyle == "image"
+            # output matrix
+            dlmwrite(f,figs[c].curves[1].Z,' ')
         end
+        close(f)
+        # send command to gnuplot
+        gnuplot_send("set yrange [*:*] reverse")  # flip y axis
+        gnuplot_send(linestr(figs[c].curves,"plot",filename,"matrix"))
     end
     gnuplot_send("reset")
 end

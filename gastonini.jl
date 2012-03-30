@@ -23,9 +23,31 @@ type Gnuplot_state
     running::Bool               # true when gnuplot is already running
     current::Int                # current figure
     fid                         # pipe stream id
+    tmpdir::ASCIIString         # where to store data files
+
+    function Gnuplot_state(running::Bool,current::Int,fid,tmpdir::ASCIIString)
+        # Check to see if tmpdir exists, and create it if not
+        try
+            f = open(tmpdir)
+            close(f)
+        catch
+            system(strcat("mkdir ",tmpdir))
+        end
+        new(running,current,fid,tmpdir)
+    end
 end
 
-gnuplot_state = Gnuplot_state(false,0,0)
+# return a random string (for filenames)
+function randstring(len::Int)
+    const cset = char([0x30:0x39,0x41:0x5a,0x61:0x7a])
+    const strset = convert(ASCIIString,strcat(cset...))
+    index = int(ceil(strlen(strset)*rand(len)))
+    s = strset[index]
+    return s
+end
+
+# global variable that stores gnuplot's state
+gnuplot_state = Gnuplot_state(false,0,0,strcat("/tmp/gaston-",getenv("USER"),"-",randstring(5),"/"))
 
 # Structs to configure a plot
 # Two types of configuration are needed: one to configure a single curve, and
