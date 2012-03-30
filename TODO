@@ -1,0 +1,11 @@
+To do file for Gaston
+
+(In no particular order)
+
+* add support for x11 terminal, as a fallback for people without wxwindows
+* add support for pdfcairo (or pngcairo?) for basic printing support
+* add support for rgbimage (plotstyle is identified but not acted on)
+* add as much error checking as reasonable, to minimise risk of gnuplot
+  barfing on us on misconfigured plots
+* review type annotations to see if they can be improved
+* finish documentation
