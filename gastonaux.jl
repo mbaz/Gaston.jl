@@ -63,7 +63,9 @@ function gnuplot_exit(x...)
         end
     end
     # reset gnuplot_state
-    gnuplot_state = Gnuplot_state(false,0,0)
+    gnuplot_state.running = false
+    gnuplot_state.current = 0
+    gnuplot_state.fid = 0
 end
 # when gnuplot_state goes out of scope, close the pipe
 finalizer(gnuplot_state,gnuplot_exit)
