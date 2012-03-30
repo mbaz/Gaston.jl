@@ -18,8 +18,8 @@
 ## FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 ## DEALINGS IN THE SOFTWARE.
 
-load("inifile.jl")
-load("auxfile.jl")
+load("gastonini.jl")
+load("gastonaux.jl")
 
 # Close a figure, or current figure.
 # Returns the handle of the figure that was closed.
