@@ -1,0 +1,5 @@
+
+version 0.2:
+
+	* Adds support for histograms, via the "boxes" plot style.
+	* Adds an example histogram to the demos.
