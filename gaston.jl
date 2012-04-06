@@ -133,7 +133,7 @@ function addcoords(x,y,Z,conf::Curve_conf)
         figure(1)
     end
     # copy conf (dereference)
-    conf = copy_curve_conf(conf)
+    conf = copy(conf)
     # append data to figure
     c = gnuplot_state.current
     if isempty(figs[c].curves[1].x)
@@ -187,7 +187,7 @@ function addconf(conf::Axes_conf)
     if gnuplot_state.current == 0
         figure(1)
     end
-    conf = copy_axes_conf(conf)
+    conf = copy(conf)
     # select current plot
     c = gnuplot_state.current
     figs[c].conf = conf

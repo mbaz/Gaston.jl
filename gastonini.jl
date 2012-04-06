@@ -66,8 +66,8 @@ type Curve_conf
 end
 Curve_conf() = Curve_conf("","lines","","",1,0.5)
 
-# dereference Curve_conf
-function copy_curve_conf(conf::Curve_conf)
+# dereference Curve_conf, by adding a method to copy()
+function copy(conf::Curve_conf)
     new = Curve_conf()
     new.legend = conf.legend
     new.plotstyle = conf.plotstyle
@@ -89,7 +89,7 @@ end
 Axes_conf() = Axes_conf("Untitled","x","y","z","inside vertical right top","")
 
 # dereference Axes_conf
-function copy_axes_conf(conf::Axes_conf)
+function copy(conf::Axes_conf)
     new = Axes_conf()
     new.title = conf.title
     new.xlabel = conf.xlabel
