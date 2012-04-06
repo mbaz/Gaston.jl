@@ -117,7 +117,7 @@ function linestr_single(conf::Curve_conf)
     s = strcat(s, "lw ", string(conf.linewidth), " ")
     # some plotstyles don't allow point specifiers
     cp = conf.plotstyle
-    if cp != "lines" && cp != "impulses" && cp != "pm3d" && cp != "image" && cp != "rgbimage"
+    if cp != "lines" && cp != "impulses" && cp != "pm3d" && cp != "image" && cp != "rgbimage" && cp != "boxes"
         if conf.marker != ""
             s = strcat(s, "pt ", string(pointtype(conf.marker)), " ")
         end
@@ -149,4 +149,18 @@ function meshgrid(x,y,f)
         Z[k,:] = [ f(i,j) | i=x[k], j=y ]
     end
     return Z
+end
+
+# create x,y coordinates for a histogram, from a sample vector, using a number
+# of bins
+function histdata(s,bins)
+    ms = min(s)
+    Ms = max(s)
+    int = (Ms-ms)/(bins-1)
+    x = (ms-1):int:Ms   # lower limit is made a bit lower
+    y = zeros(numel(x))
+    for i in 1:numel(x)-1
+        y[i] = sum(x[i] < s <= x[i+1])
+    end
+    return x,y
 end

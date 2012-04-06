@@ -55,7 +55,7 @@ gnuplot_state = Gnuplot_state(false,0,0,strcat("/tmp/gaston-",getenv("USER"),"-"
 type Curve_conf
     legend::ASCIIString     # legend text
     plotstyle::ASCIIString  # one of lines, linespoints, points, impulses,
-                            # errorbars, errorlines, pm3d
+                            # errorbars, errorlines, pm3d, boxes
     color::ASCIIString      # one of gnuplot's builtin colors
                             # run 'show colornames' inside gnuplot
     marker::ASCIIString     # +, x, *, esquare, fsquare, ecircle, fcircle,

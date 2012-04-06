@@ -179,4 +179,16 @@ function demo()
     addconf(a)
     plot()
 
+    # histogram
+    figure(14)
+    c = Curve_conf()
+    c.plotstyle = "boxes"
+    c.color = "blue"
+    (x,y) = histdata(randn(1000),25)
+    addcoords(x,y,c)
+    a = Axes_conf()
+    a.title = "Bell curve (histogram)"
+    addconf(a)
+    plot()
+
 end

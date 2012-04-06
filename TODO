@@ -9,3 +9,5 @@ To do file for Gaston
   barfing on us on misconfigured plots
 * review type annotations to see if they can be improved
 * finish documentation
+* add histogram support (done)
+* add histogram fill support
