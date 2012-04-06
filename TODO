@@ -11,3 +11,12 @@ To do file for Gaston
 * finish documentation
 * add histogram support (done)
 * add histogram fill support
+
+Document and code the following rules and constraints:
+
+- in each 2-d curve, x, y must be the same size
+	* if there is error data, it must also be the same size
+- there can be only one image per figure
+- in each 3-d curve, matrix Z must be of size x*y
+- plotstyles accept different configurations
+- what others...
