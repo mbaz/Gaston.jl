@@ -184,10 +184,20 @@ function demo()
     c = Curve_conf()
     c.plotstyle = "boxes"
     c.color = "blue"
+    c.legend = "1000 samples"
     (x,y) = histdata(randn(1000),25)
+    delta = x[2]-x[1]
+    y = y/(delta*sum(y))  # normalization
+    addcoords(x,y,c)
+    x = -5:0.05:5
+    y = 1/sqrt(2pi)*exp((-x.^2)/2)
+    c = Curve_conf()
+    c.plotstyle = "lines"
+    c.color = "black"
+    c.legend = "Theoretical"
     addcoords(x,y,c)
     a = Axes_conf()
-    a.title = "Bell curve (histogram)"
+    a.title = "Gaussian density  and histogram"
     addconf(a)
     plot()
 
