@@ -96,7 +96,7 @@ function figure(x...)
     # determine handle and update
     if gnuplot_state.current == 0
         # this is the first figure
-        h = 1
+        h = x[1]
         figs = [Figure(h)]
         gnuplot_state.current = h
         gnuplot_send(strcat("set term wxt ", string(h)))
@@ -125,6 +125,18 @@ function figure(x...)
     return h
 end
 
+# Return index to figure with handle 'c'. If no such figure exists, returns 0.
+function findfigure(c)
+    i = 0
+    for j = 1:length(figs)
+        if figs[j].handle == c
+            i = j
+            break
+        end
+    end
+    return i
+end
+
 # append x,y,z coordinates and configuration to current figure
 function addcoords(x,y,Z,conf::Curve_conf)
     global figs
@@ -135,7 +147,7 @@ function addcoords(x,y,Z,conf::Curve_conf)
     # copy conf (dereference)
     conf = copy(conf)
     # append data to figure
-    c = gnuplot_state.current
+    c = findfigure(gnuplot_state.current)
     if isempty(figs[c].curves[1].x)
         # figure() creates a structure with one empty curve; we want to
         # overwrite it with the first actual curve
@@ -174,7 +186,7 @@ function adderror(yl,yh)
         figure(1)
     end
     # set fields in current curve
-    c = gnuplot_state.current
+    c = findfigure(gnuplot_state.current)
     figs[c].curves[end].ylow = yl
     figs[c].curves[end].yhigh = yh
 end
@@ -189,14 +201,14 @@ function addconf(conf::Axes_conf)
     end
     conf = copy(conf)
     # select current plot
-    c = gnuplot_state.current
+    c = findfigure(gnuplot_state.current)
     figs[c].conf = conf
 end
 
 # 'plot' is our workhorse plotting function
 function plot()
     # select current plot
-    c = gnuplot_state.current
+    c = findfigure(gnuplot_state.current)
     if c == 0
         println("No current figure")
         return
