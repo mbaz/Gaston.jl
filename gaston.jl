@@ -286,11 +286,27 @@ function plot()
         if figs[c].curves[1].conf.plotstyle == "image"
             # output matrix
             dlmwrite(f,figs[c].curves[1].Z,' ')
+            close(f)
+            # send command to gnuplot
+            gnuplot_send("set yrange [*:*] reverse")  # flip y axis
+            gnuplot_send(linestr(figs[c].curves,"plot",filename,"matrix"))
         end
-        close(f)
-        # send command to gnuplot
-        gnuplot_send("set yrange [*:*] reverse")  # flip y axis
-        gnuplot_send(linestr(figs[c].curves,"plot",filename,"matrix"))
+        if figs[c].curves[1].conf.plotstyle == "rgbimage"
+            # output matrix
+            Z = figs[c].curves[1].Z
+            y = 1.0:size(Z,2)
+            for i = 1:size(Z,1)
+                c1 = i*ones(length(y))
+                r = slicedim(Z,3,1)[i,:]
+                g = slicedim(Z,3,2)[i,:]
+                b = slicedim(Z,3,3)[i,:]
+                dlmwrite(f,hcat(c1,y,r',g',b'),' ')
+            end
+            close(f)
+            # send command to gnuplot
+            gnuplot_send("set yrange [*:*] reverse")  # flip y axis
+            gnuplot_send(linestr(figs[c].curves,"plot",filename,""))
+        end
     end
     gnuplot_send("reset")
 end

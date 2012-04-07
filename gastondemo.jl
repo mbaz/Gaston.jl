@@ -25,12 +25,13 @@ function demo()
     st = sin(10pi*t)
     ct = cos(10pi*t)
     et = exp(abs(t/10))
+
     # simplest figure
     figure(1)
     addcoords(st)
     plot()
 
-    # x coordinates
+    # with x coordinates
     figure(2)
     addcoords(t,st)
     plot()
@@ -50,7 +51,7 @@ function demo()
     # figure configuration
     figure(4)
     a = Axes_conf()
-    a.title = "Julia and Gnuplot demo"
+    a.title = "Example of figure configuration"
     a.xlabel = "Time (s)"
     a.ylabel = "Amplitude"
     a.box = "bottom left"
@@ -78,7 +79,7 @@ function demo()
     a = Axes_conf()
     a.xlabel = "Time (s)"
     a.ylabel = "Amplitude"
-    a.title = "Multiple plots demo"
+    a.title = "Multiple plots in the same figure"
     a.box = "outside top horizontal box"
     addconf(a)
     plot()
@@ -141,7 +142,7 @@ function demo()
     Z=[10 10 10; 10 5 10;10 1 10; 10 0 10]
     addcoords(x,y,Z)
     a = Axes_conf()
-    a.title = "Valley of the Gnu from gnuplot manual"
+    a.title = "3D: Valley of the Gnu from gnuplot manual"
     addconf(a)
     plot()
 
@@ -151,7 +152,7 @@ function demo()
     c.plotstyle = "pm3d"
     addcoords(x,y,Z,c)
     a = Axes_conf()
-    a.title = "Valley of the Gnu with pm3d"
+    a.title = "3D: Valley of the Gnu with pm3d"
     addconf(a)
     plot()
 
@@ -164,7 +165,7 @@ function demo()
     Z = meshgrid(x,y,(x,y)->sin(sqrt(x.*x+y.*y))/sqrt(x.*x+y.*y))
     addcoords(x,y,Z,c)
     a = Axes_conf()
-    a.title = "Sombrero"
+    a.title = "3D: Sombrero"
     addconf(a)
     plot()
 
@@ -179,8 +180,25 @@ function demo()
     addconf(a)
     plot()
 
-    # histogram
+    # rgb image
     figure(14)
+    c = Curve_conf()
+    c.plotstyle = "rgbimage"
+    R = [ x+y | x=0:5:120, y=0:5:120]
+    G = [ x+y | x=0:5:120, y=120:-5:0]
+    B = [ x+y | x=120:-5:0, y=0:5:120]
+    Z = zeros(25,25,3)
+    Z[:,:,1] = R
+    Z[:,:,2] = G
+    Z[:,:,3] = B
+    addcoords([],[],Z,c)
+    a = Axes_conf()
+    a.title = "RGB Image"
+    addconf(a)
+    plot()
+
+    # histogram
+    figure(15)
     c = Curve_conf()
     c.plotstyle = "boxes"
     c.color = "blue"
@@ -197,7 +215,7 @@ function demo()
     c.legend = "Theoretical"
     addcoords(x,y,c)
     a = Axes_conf()
-    a.title = "Gaussian density  and histogram"
+    a.title = "Histogram"
     addconf(a)
     plot()
 
