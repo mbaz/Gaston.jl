@@ -1,22 +1,35 @@
 To do file for Gaston
 
-(In no particular order)
+v 0.3:
 
-* add support for x11 terminal, as a fallback for people without wxwindows
-* add support for pdfcairo (or pngcairo?) for basic printing support
-* add support for rgbimage (plotstyle is identified but not acted on)
-* add as much error checking as reasonable, to minimise risk of gnuplot
+* add as much error checking as possible, to minimise risk of gnuplot
   barfing on us on misconfigured plots
-* review type annotations to see if they can be improved
-* finish documentation
-* add histogram support (done)
+* Document and code the following rules and constraints:
+	- in each 2-d curve, x, y must be the same size
+		* if there is error data, it must also be the same size
+	- in each 3-d curve, matrix Z must be of size y times x
+	- plotstyles accept different configurations
+	- the input to figure() must be a natural number
+	- others?
 * add histogram fill support
+* remove the restriction to have only one image per figure
+* add high-level, 'quick plot' functions, similar to Octave's
+* improve documentation
 
-Document and code the following rules and constraints:
+v 0.4 and later:
 
-- in each 2-d curve, x, y must be the same size
-	* if there is error data, it must also be the same size
-- there can be only one image per figure
-- in each 3-d curve, matrix Z must be of size x*y
-- plotstyles accept different configurations
-- what others...
+* improve high-level, 'quick plot' functions, similar to Octave's
+* improve demo() and unit tests as needed
+* add support for x11 terminal, as a fallback for people without wxwindows
+* add support for pdfcairo (or pngcairo?) for basic print-to-file support
+* review type annotations to see if they can be improved
+* review code organization
+* review which other plot styles may be supported
+* add unit tests that try to break the program
+* improve documentation
+
+
+DONE
+
+* add support for rgbimage
+* add histogram support
