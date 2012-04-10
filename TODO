@@ -26,6 +26,7 @@ v 0.4 and later:
 * review code organization
 * review which other plot styles may be supported
 * add unit tests that try to break the program
+* add suport for setting the colormap
 * improve documentation
 
 
