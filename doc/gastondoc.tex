@@ -1,0 +1,215 @@
+\documentclass[11pt]{article}
+
+\usepackage{fontspec}
+% Libertine
+\setmainfont[Ligatures={Common,TeX}]{Linux Libertine O}
+\setsansfont{Linux Biolinum O}
+\setmonofont{Inconsolata}
+
+\usepackage{minted}
+\newminted{julia}{}
+
+\usepackage{geometry}
+\geometry{
+	xetex,
+	textwidth=410pt
+}
+
+\hyphenpenalty 300
+
+\title{Gaston \\[0.8cm] \large A gnuplot library for Julia \\[0.8cm] v. 0.2}
+\author{M. Bazdresch}
+\date{\today}
+
+\newcommand{\cmd}[1]{\texttt{#1}}
+
+\begin{document}
+\maketitle
+
+\textbf{Please note:} Gaston is currently under development, and all functions
+and definitions are subject to change from one version to the next, as we
+figure out the best way to organize the code. Gaston has been tested on Linux
+(Ubuntu 10.04 and Arch), with gnuplot 4.6 and WxWindows. It only supports the
+wxt terminal.
+
+\section{Introduction}
+
+Gaston provides a way to plot scientific data using the Julia programming
+language. It accomplishes this by harnessing gnuplot, a versatile and
+time-tested plotting utility. Gaston also relies on gnuplot for interacting
+with plots (zooming and rotating a plot with the mouse, for instance).
+
+The primary purpose of Gaston is to provide easy-to-use functions to quickly
+and conveniently plot the most common kinds of scientific and numeric data. It
+is concerned only with screen output (although we plan to support printing to a
+file in a future version), and provides only for the most common
+plot configurations. Tweaking a plot to produce a specific look or producing
+publication-quality graphics are outside its scope.
+
+\section{Installation}
+
+To use Gaston, follow this procedure:
+
+\begin{enumerate}
+
+\item Save the files \cmd{gaston.jl}, \cmd{gastonini.jl}, \cmd{gastonaux.jl}
+and \cmd{gastondemo.jl} somewhere convenient. Then, you may \cmd{cd} to that
+directory and start julia there, or do
+
+\begin{juliacode}
+push(LOAD_PATH, "/path/to/gaston/jl")
+\end{juliacode}
+
+Then, load the program with
+
+\begin{juliacode}
+load("gaston.jl")
+\end{juliacode}
+
+\item To run a demo, do
+
+\begin{juliacode}
+load("gastondemo.jl")
+demo()
+\end{juliacode}
+
+This will create a series of figures that illustrate the current capabilities
+of the program. The same file may also serve as a guide on how to create
+different types of plots.
+\end{enumerate}
+
+\section{Plotting}
+
+In future versions, Gaston will offer plotting functions similar to Octave or
+Matlab's -- what we call ``high-level'' functions. At the moment, it offers a
+``mid-level'' set of functions that require that plots be created step-by-step.
+Before delving into that process, some definitions are in order.
+
+\subsection{Definitions}
+
+A \textbf{figure} is an independent window, which contains a set of axes, on
+which one or more \textbf{curves} are plotted. A figure may contain
+\textbf{labels} (for instance, on each coordinate axis), a \textbf{title}, and a
+\textbf{legend box} which identifies each curve. Gaston supports having any
+number of figures open at the same time; however, gnuplot requires that only
+one figure is able to offer mouse interactivity at a given time. Each figure is
+identified by a unique \textbf{handle}. Handles are natural numbers.
+
+A curve is defined by a set of coordinates. Two-dimensional curves have
+\textbf{x} and \textbf{y} coordinates; in three dimensions, an additional
+\textbf{z} coordinate must be specified. A curve also has a plotting
+configuration (for instance, it may have a \textbf{linestyle}, a
+\textbf{linewidth}, a \textbf{linecolor}, etc), which define how the curve
+is to be plotted.
+
+Please note that there is a single command to plot, which is \cmd{plot()}.
+According to the type of coordinates and plotstyle, it will figure out how to
+plot.
+
+\subsection{2-D plotting}
+
+Plotting proceeds in steps:
+\begin{enumerate}
+	\item Create or select a figure with \cmd{figure(i)}, where \cmd{i} is a
+		positive integer.
+	\item Add a curve (a set of coordinates plus a plot configuration), with
+		\cmd{addcoords(x,y,conf)}. Here, \cmd{x} and \cmd{y} are vectors, and
+		\cmd{conf} configures the plot and line styles, markers, legend, color,
+		etc. Repeat this step for each curve you wish to include
+		in the figure.
+	\item Add a configuration for the entire figure (axis), with
+		\cmd{addconf(conf)}, where \cmd{conf} contains the figure
+		configuration.
+	\item Issue the \cmd{plot()} command.
+\end{enumerate}
+
+A curve configuration is created as follows:
+\begin{enumerate}
+	\item Create a default configuration with \cmd{c = Curve\_conf()}.
+	\item \cmd{c} is a structure, each of whose fields controls one aspect of
+		the curve's configuration. These fields may be set individually.
+		Available fields are: \cmd{legend}, \cmd{plotstyle}, \cmd{color},
+		\cmd{marker}, \cmd{linewidth}, and \cmd{pointsize}. For instance, to
+		change a curve's color, do\footnote{Directly changing a structure's
+		fields, instead of using setter functions, may be seen as non-idiomatic
+		or inelegant. In this case we have decided to do the simplest thing
+		that might possibly work.}
+
+\begin{juliacode}
+c.color = "blue"
+\end{juliacode}
+
+	See gnuplot's documentation to see the range of valid options.
+
+\end{enumerate}
+
+A figure (axis) configuration is created as follows:
+\begin{enumerate}
+	\item Create a default configuration with \cmd{a = Axes\_conf()}
+	\item Just as in the case of a curve configuration, \cmd{a} is a structure
+		whose fields may be modified. Available fields are: \cmd{title},
+		\cmd{xlabel}, \cmd{ylabel}, \cmd{zlabel}, \cmd{box}, \cmd{axis}.
+\end{enumerate}
+
+Several rules apply:
+\begin{itemize}
+	\item You can create as many figures, each with as many curves, as desired.
+	\item Generally, if you don't provide some of the data, it will be
+		inferred. For example, calling \cmd{addcoords} with a single vector
+		\cmd{y}
+		will assume the \cmd{x} coordinate is \cmd{1:length(y)} and set up the
+		default plot configuration.
+	\item If you call \cmd{addcoords} with matrix arguments, each column will
+		be interpreted as a different plot.
+	\item Calling \cmd{addcoords()} will create a new figure if none have been
+		created yet.
+	\item Calling \cmd{plot()} without an axis configuration will just use one
+		by default.
+	\item Gnuplot only provides mouse interaction support for the current
+		figure. To use the mouse in a previously created figure \cmd{i}, just
+		issue command \cmd{figure(i)}. This will also bring the figure to the
+		front.
+\end{itemize}
+
+\subsubsection{2-D plotting styles}
+
+Besides simply plotting a set of \cmd{x} and \cmd{y} coordinates, Gaston
+supports other kinds of plots.
+
+\textbf{Error bars and lines.} To add error bars or lines, just call
+\cmd{addcoords()} with one or two extra coordinates, and configure the
+plotstyle accordingly.
+
+\textbf{Histograms.} To plot the histogram of a data vector \cmd{data} with
+\cmd{b} bins, first use the auxiliary function \cmd{(x,y) = histdata(data,b)}
+to create \cmd{x} and \cmd{y} coordinates that may be plotted with the
+\cmd{boxes} plotstyle.
+
+\subsection{3-D plotting}
+
+The same rules apply, except that \cmd{addcoords()} should be called as
+\cmd{addcoords(x,y,Z)}, where \cmd{Z} is a matrix whose element \cmd{j,k}
+corresponds to some function of \cmd{x[j],y[k]}.
+
+For convenience, a function \cmd{Z = meshgrid(x,y,f)} is provided. Called with
+\cmd{x}, \cmd{y} coordinates and a function \cmd{f}, it will return a matrix
+that may be used to plot \cmd{f}.
+
+\subsection{Image plotting}
+
+Two image plotstyles are supported: \cmd{image} and \cmd{rbgimage}. At the
+moment Gaston requires that a figure contains only one image (and no other
+curves). This restriction will be removed in future versions.
+
+\textbf{Scalar image.} To plot a matrix \cmd{Z} as a figure, use
+\cmd{addcoords([],[],Z)} with empty \cmd{x}, \cmd{y} coordinates and \cmd{Z} as
+third argument, and set the plotstyle to \cmd{image}. Element \cmd{(j,k)} of
+\cmd{Z} corresponds to element \cmd{(j,k)} in the plot, and its value determines
+the color at that point.
+
+\textbf{RGB image.} To plot an RGB image, the matrix \cmd{Z} must be three
+dimensional. The first and second dimensions correspond to the value at each
+point in the image.  The third dimension specifies red, green and blue values
+at each point.  Finally, set the plotstyle to \cmd{rgbimage}.
+
+\end{document}
