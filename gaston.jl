@@ -82,6 +82,15 @@ end
 function figure(x...)
     global gnuplot_state
     global figs
+
+    # check arguments
+    if !isempty(x)
+        x[1]::Int        # assert integer type
+        if !(x[1] > 0)   # assert x is natural
+            error("Error: figure handle must be a natural number.")
+        end
+    end
+
     # see if we need to set up gnuplot
     if gnuplot_state.running == false
         gnuplot_init();
