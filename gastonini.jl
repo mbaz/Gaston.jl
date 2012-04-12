@@ -78,7 +78,7 @@ function copy(conf::CurveConf)
     return new
 end
 
-type Axes_conf
+type AxesConf
     title::ASCIIString      # plot title
     xlabel::ASCIIString     # xlabel
     ylabel::ASCIIString     # ylabel
@@ -86,11 +86,11 @@ type Axes_conf
     box::ASCIIString        # legend box (used with 'set key')
     axis::ASCIIString       # normal, semilog{x,y}, loglog
 end
-Axes_conf() = Axes_conf("Untitled","x","y","z","inside vertical right top","")
+AxesConf() = AxesConf("Untitled","x","y","z","inside vertical right top","")
 
-# dereference Axes_conf
-function copy(conf::Axes_conf)
-    new = Axes_conf()
+# dereference AxesConf
+function copy(conf::AxesConf)
+    new = AxesConf()
     new.title = conf.title
     new.xlabel = conf.xlabel
     new.ylabel = conf.ylabel
@@ -116,9 +116,9 @@ Curve_data(x,y,Z,conf::CurveConf) = Curve_data(x,y,Z,[],[],conf)
 type Figure
     handle::Int                  # each figure has a unique handle
     curves::Vector{Curve_data}   # a vector of curves (x,y,conf)
-    conf::Axes_conf              # figure configuration
+    conf::AxesConf               # figure configuration
 end
-Figure(handle) = Figure(handle,[Curve_data()],Axes_conf())
+Figure(handle) = Figure(handle,[Curve_data()],AxesConf())
 
 # curves and configuration for all figures
 figs = Vector{Figure}

@@ -50,7 +50,7 @@ function demo()
 
     # figure configuration
     figure(4)
-    a = Axes_conf()
+    a = AxesConf()
     a.title = "Example of figure configuration"
     a.xlabel = "Time (s)"
     a.ylabel = "Amplitude"
@@ -76,7 +76,7 @@ function demo()
     c.color = "red"
     c.plotstyle = "linespoints"
     addcoords(t,et,c)
-    a = Axes_conf()
+    a = AxesConf()
     a.xlabel = "Time (s)"
     a.ylabel = "Amplitude"
     a.title = "Multiple plots in the same figure"
@@ -92,7 +92,7 @@ function demo()
     c.plotstyle = "errorbars"
     addcoords(1:40,y,c)
     adderror(0.1*rand(40))
-    a = Axes_conf()
+    a = AxesConf()
     a.title = "Error bars (ydelta)"
     addconf(a)
     plot()
@@ -108,7 +108,7 @@ function demo()
     ylow = y - 0.05*rand(40);
     yhigh = y + 0.05*rand(40);
     adderror(ylow,yhigh)
-    a = Axes_conf()
+    a = AxesConf()
     a.title = "Error bars (ylow, yhigh)"
     addconf(a)
     plot()
@@ -120,7 +120,7 @@ function demo()
     c.plotstyle = "errorlines"
     addcoords(1:40,y,c)
     adderror(0.1*rand(40))
-    a = Axes_conf()
+    a = AxesConf()
     a.title = "Error lines (ydelta)"
     addconf(a)
     plot()
@@ -130,7 +130,7 @@ function demo()
     Y = hcat(st, ct, et)
     X = hcat(t, t, t)
     addcoords(X,Y)
-    a = Axes_conf()
+    a = AxesConf()
     a.title = "Plotting matrix columns"
     addconf(a)
     plot()
@@ -141,7 +141,7 @@ function demo()
     y=[0,1,2]
     Z=[10 10 10; 10 5 10;10 1 10; 10 0 10]
     addcoords(x,y,Z)
-    a = Axes_conf()
+    a = AxesConf()
     a.title = "3D: Valley of the Gnu from gnuplot manual"
     addconf(a)
     plot()
@@ -151,7 +151,7 @@ function demo()
     c = CurveConf()
     c.plotstyle = "pm3d"
     addcoords(x,y,Z,c)
-    a = Axes_conf()
+    a = AxesConf()
     a.title = "3D: Valley of the Gnu with pm3d"
     addconf(a)
     plot()
@@ -164,7 +164,7 @@ function demo()
     y = -15:0.33:15
     Z = meshgrid(x,y,(x,y)->sin(sqrt(x.*x+y.*y))/sqrt(x.*x+y.*y))
     addcoords(x,y,Z,c)
-    a = Axes_conf()
+    a = AxesConf()
     a.title = "3D: Sombrero"
     addconf(a)
     plot()
@@ -175,7 +175,7 @@ function demo()
     c.plotstyle = "image"
     Z = [5 4 3 1 0; 2 2 0 0 1; 0 0 0 1 0; 0 1 2 4 3]
     addcoords([],[],Z,c)
-    a = Axes_conf()
+    a = AxesConf()
     a.title = "Image"
     addconf(a)
     plot()
@@ -192,7 +192,7 @@ function demo()
     Z[:,:,2] = G
     Z[:,:,3] = B
     addcoords([],[],Z,c)
-    a = Axes_conf()
+    a = AxesConf()
     a.title = "RGB Image"
     addconf(a)
     plot()
@@ -214,7 +214,7 @@ function demo()
     c.color = "black"
     c.legend = "Theoretical"
     addcoords(x,y,c)
-    a = Axes_conf()
+    a = AxesConf()
     a.title = "Histogram"
     addconf(a)
     plot()

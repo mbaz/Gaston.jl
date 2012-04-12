@@ -193,7 +193,7 @@ end
 adderror(ydelta) = adderror(ydelta,[])
 
 # add axes configuration to current figure
-function addconf(conf::Axes_conf)
+function addconf(conf::AxesConf)
     global figs
     # check that at least one figure has been setup
     if gnuplot_state.current == 0
