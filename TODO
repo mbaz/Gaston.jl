@@ -14,6 +14,7 @@ v 0.3:
 * add histogram fill support
 * remove the restriction to have only one image per figure
 * add high-level, 'quick plot' functions, similar to Octave's
+* change type names to conform to Julia conventions (no underscores)
 * improve documentation
 
 v 0.4 and later:
@@ -28,9 +29,3 @@ v 0.4 and later:
 * add unit tests that try to break the program
 * add suport for setting the colormap
 * improve documentation
-
-
-DONE
-
-* add support for rgbimage
-* add histogram support
