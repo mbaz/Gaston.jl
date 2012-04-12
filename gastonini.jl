@@ -121,4 +121,4 @@ end
 Figure(handle) = Figure(handle,[CurveData()],AxesConf())
 
 # curves and configuration for all figures
-figs = Vector{Figure}
+figs = []

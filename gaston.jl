@@ -77,7 +77,7 @@ function closeall()
 end
 
 # Select or create a figure. When called with no arguments, create a new
-# figure. Figure handles must be integers.
+# figure. Figure handles must be natural numbers.
 # Returns the current figure handle.
 function figure(x...)
     global gnuplot_state
@@ -86,23 +86,21 @@ function figure(x...)
     if gnuplot_state.running == false
         gnuplot_init();
     end
-    # create vector of handles
+    # create vector of handles, needed later
     handles = []
-    if gnuplot_state.current != 0
-        for i in figs
-            handles = [handles, i.handle]
-        end
+    for i in figs
+        handles = [handles, i.handle]
     end
-    # determine handle and update
+    # determine figure handle
     if gnuplot_state.current == 0
-        # this is the first figure
-        h = x[1]
-        figs = [Figure(h)]
-        gnuplot_state.current = h
-        gnuplot_send(strcat("set term wxt ", string(h)))
+        if isempty(x)
+            h = 1
+        else
+            h = x[1]
+        end
     else
         if isempty(x)
-            # create a new figure, using lowest numbered handle available
+            # use lowest numbered handle available
             for i = 1:max(handles)+1
                 if !contains(handles,i)
                     h = i
@@ -110,17 +108,16 @@ function figure(x...)
                 end
             end
         else
-            h = x[1];
+            h = x[1]
         end
-        gnuplot_state.current = h
-        gnuplot_send(strcat("set term wxt ", string(h)))
-        if !contains(handles,h)
-            # this is a new figure
-            figs = [figs, Figure(h)]
-        else
-            # figure already exists, replot
-            plot()
-        end
+    end
+    # if figure with handle h exists, replot it; otherwise create it
+    gnuplot_state.current = h
+    gnuplot_send(strcat("set term wxt ", string(h)))
+    if !contains(handles,h)
+        figs = [figs, Figure(h)]
+    else
+        plot()
     end
     return h
 end
@@ -274,7 +271,7 @@ function plot()
         close(f)
         # send command to gnuplot
         gnuplot_send(linestr(figs[c].curves, "plot", filename,""))
-    # 3-d plot: x is not empty, Z is not empty
+        # 3-d plot: x is not empty, Z is not empty
     elseif !isempty(figs[c].curves[1].Z) && !isempty(figs[c].curves[1].x)
         # create data file
         f = open(filename,"w")
@@ -290,7 +287,7 @@ function plot()
         close(f)
         # send command to gnuplot
         gnuplot_send(linestr(figs[c].curves, "splot",filename,"nonuniform matrix"))
-    # image plot: plotstyle is "image" or "rgbimage"
+        # image plot: plotstyle is "image" or "rgbimage"
     elseif figs[c].curves[1].conf.plotstyle == "image" || figs[c].curves[1].conf.plotstyle == "rgbimage"
         # create data file
         f = open(filename,"w")
