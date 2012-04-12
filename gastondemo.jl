@@ -38,7 +38,7 @@ function demo()
 
     # plot configuration
     figure(3)
-    c = Curve_conf()
+    c = CurveConf()
     c.legend = "Sinusoidal"
     c. plotstyle = "points"
     c.color = "blue"
@@ -63,7 +63,7 @@ function demo()
 
     # multiple plots
     figure(5)
-    c = Curve_conf()
+    c = CurveConf()
     c.legend = "Sin"
     c.color = "black"
     addcoords(t,st,c)
@@ -87,7 +87,7 @@ function demo()
     # error bars with ydelta
     y = exp(-(1:.1:4.9))
     figure(6)
-    c = Curve_conf()
+    c = CurveConf()
     c.legend = "Random"
     c.plotstyle = "errorbars"
     addcoords(1:40,y,c)
@@ -99,7 +99,7 @@ function demo()
 
     # error bars with ylow, yhigh
     figure(7)
-    c = Curve_conf()
+    c = CurveConf()
     c.legend = "Random"
     c.plotstyle = "errorbars"
     ylow = y - 0.05*rand(40);
@@ -115,7 +115,7 @@ function demo()
 
     # error lines
     figure(8)
-    c = Curve_conf()
+    c = CurveConf()
     c.legend = "Random"
     c.plotstyle = "errorlines"
     addcoords(1:40,y,c)
@@ -148,7 +148,7 @@ function demo()
 
     # same plot with colored surfaces
     figure(11)
-    c = Curve_conf()
+    c = CurveConf()
     c.plotstyle = "pm3d"
     addcoords(x,y,Z,c)
     a = Axes_conf()
@@ -158,7 +158,7 @@ function demo()
 
     # sombrero
     figure(12)
-    c = Curve_conf()
+    c = CurveConf()
     c.plotstyle = "pm3d"
     x = -15:0.33:15
     y = -15:0.33:15
@@ -171,7 +171,7 @@ function demo()
 
     # simple image
     figure(13)
-    c = Curve_conf()
+    c = CurveConf()
     c.plotstyle = "image"
     Z = [5 4 3 1 0; 2 2 0 0 1; 0 0 0 1 0; 0 1 2 4 3]
     addcoords([],[],Z,c)
@@ -182,7 +182,7 @@ function demo()
 
     # rgb image
     figure(14)
-    c = Curve_conf()
+    c = CurveConf()
     c.plotstyle = "rgbimage"
     R = [ x+y | x=0:5:120, y=0:5:120]
     G = [ x+y | x=0:5:120, y=120:-5:0]
@@ -199,7 +199,7 @@ function demo()
 
     # histogram
     figure(15)
-    c = Curve_conf()
+    c = CurveConf()
     c.plotstyle = "boxes"
     c.color = "blue"
     c.legend = "1000 samples"
@@ -209,7 +209,7 @@ function demo()
     addcoords(x,y,c)
     x = -5:0.05:5
     y = 1/sqrt(2pi)*exp((-x.^2)/2)
-    c = Curve_conf()
+    c = CurveConf()
     c.plotstyle = "lines"
     c.color = "black"
     c.legend = "Theoretical"

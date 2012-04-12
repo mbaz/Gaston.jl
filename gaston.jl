@@ -138,7 +138,7 @@ function findfigure(c)
 end
 
 # append x,y,z coordinates and configuration to current figure
-function addcoords(x,y,Z,conf::Curve_conf)
+function addcoords(x,y,Z,conf::CurveConf)
     global figs
     # check that at least one figure has been setup
     if gnuplot_state.current == 0
@@ -156,18 +156,18 @@ function addcoords(x,y,Z,conf::Curve_conf)
         figs[c].curves = [figs[c].curves, Curve_data(x,y,Z,conf)]
     end
 end
-addcoords(y) = addcoords(1:length(y),y,[],Curve_conf())
-addcoords(y,c::Curve_conf) = addcoords(1:length(y),y,[],c)
-addcoords(x,y) = addcoords(x,y,[],Curve_conf())
-addcoords(x,y,Z) = addcoords(x,y,Z,Curve_conf())
-addcoords(x,y,c::Curve_conf) = addcoords(x,y,[],c)
+addcoords(y) = addcoords(1:length(y),y,[],CurveConf())
+addcoords(y,c::CurveConf) = addcoords(1:length(y),y,[],c)
+addcoords(x,y) = addcoords(x,y,[],CurveConf())
+addcoords(x,y,Z) = addcoords(x,y,Z,CurveConf())
+addcoords(x,y,c::CurveConf) = addcoords(x,y,[],c)
 # X, Y data in matrix columns
-function addcoords(X::Matrix,Y::Matrix,conf::Curve_conf)
+function addcoords(X::Matrix,Y::Matrix,conf::CurveConf)
     for i = 1:size(X,2)
         addcoords(X[:,i],Y[:,i],[],conf)
     end
 end
-function addcoords(X::Matrix,conf::Curve_conf)
+function addcoords(X::Matrix,conf::CurveConf)
     y = 1:size(X,1)
     Y = zeros(size(X))
     for i = 1:size(X,2)
@@ -175,8 +175,8 @@ function addcoords(X::Matrix,conf::Curve_conf)
     end
     addcoords(X,Y,conf)
 end
-addcoords(X::Matrix, Y::Matrix) = addcoords(X,Y,Curve_conf())
-addcoords(X::Matrix) = addcoords(X,Curve_conf())
+addcoords(X::Matrix, Y::Matrix) = addcoords(X,Y,CurveConf())
+addcoords(X::Matrix) = addcoords(X,CurveConf())
 
 # append error data to current set of coordinates
 function adderror(yl,yh)

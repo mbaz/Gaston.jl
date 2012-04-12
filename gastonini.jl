@@ -52,7 +52,7 @@ gnuplot_state = GnuplotState(false,0,0,strcat("/tmp/gaston-",getenv("USER"),"-",
 # Structs to configure a plot
 # Two types of configuration are needed: one to configure a single curve, and
 # another to configure a set of curves (the 'axes').
-type Curve_conf
+type CurveConf
     legend::ASCIIString     # legend text
     plotstyle::ASCIIString  # one of lines, linespoints, points, impulses,
                             # errorbars, errorlines, pm3d, boxes
@@ -64,11 +64,11 @@ type Curve_conf
     linewidth               # a number
     pointsize               # a number
 end
-Curve_conf() = Curve_conf("","lines","","",1,0.5)
+CurveConf() = CurveConf("","lines","","",1,0.5)
 
-# dereference Curve_conf, by adding a method to copy()
-function copy(conf::Curve_conf)
-    new = Curve_conf()
+# dereference CurveConf, by adding a method to copy()
+function copy(conf::CurveConf)
+    new = CurveConf()
     new.legend = conf.legend
     new.plotstyle = conf.plotstyle
     new.color = conf.color
@@ -107,10 +107,10 @@ type Curve_data
     Z          # for 3-D plots. Element i,j is z-value for x[j], y[i]
     ylow
     yhigh
-    conf::Curve_conf
+    conf::CurveConf
 end
-Curve_data() = Curve_data([],[],[],[],[],Curve_conf())
-Curve_data(x,y,Z,conf::Curve_conf) = Curve_data(x,y,Z,[],[],conf)
+Curve_data() = Curve_data([],[],[],[],[],CurveConf())
+Curve_data(x,y,Z,conf::CurveConf) = Curve_data(x,y,Z,[],[],conf)
 
 # curves and configuration for a single figure
 type Figure

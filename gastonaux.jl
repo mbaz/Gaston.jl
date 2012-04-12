@@ -103,7 +103,7 @@ function pointtype(x::ASCIIString)
 end
 
 # return configuration string for a single plot
-function linestr_single(conf::Curve_conf)
+function linestr_single(conf::CurveConf)
     s = ""
     if conf.legend != ""
         s = strcat(s, " title '", conf.legend, "' ")
