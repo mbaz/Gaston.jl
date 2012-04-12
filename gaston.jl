@@ -151,9 +151,9 @@ function addcoords(x,y,Z,conf::CurveConf)
     if isempty(figs[c].curves[1].x)
         # figure() creates a structure with one empty curve; we want to
         # overwrite it with the first actual curve
-        figs[c].curves[1] = Curve_data(x,y,Z,conf)
+        figs[c].curves[1] = CurveData(x,y,Z,conf)
     else
-        figs[c].curves = [figs[c].curves, Curve_data(x,y,Z,conf)]
+        figs[c].curves = [figs[c].curves, CurveData(x,y,Z,conf)]
     end
 end
 addcoords(y) = addcoords(1:length(y),y,[],CurveConf())

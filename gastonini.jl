@@ -101,7 +101,7 @@ function copy(conf::AxesConf)
 end
 
 # coordinates and configuration for a single curve
-type Curve_data
+type CurveData
     x
     y
     Z          # for 3-D plots. Element i,j is z-value for x[j], y[i]
@@ -109,16 +109,16 @@ type Curve_data
     yhigh
     conf::CurveConf
 end
-Curve_data() = Curve_data([],[],[],[],[],CurveConf())
-Curve_data(x,y,Z,conf::CurveConf) = Curve_data(x,y,Z,[],[],conf)
+CurveData() = CurveData([],[],[],[],[],CurveConf())
+CurveData(x,y,Z,conf::CurveConf) = CurveData(x,y,Z,[],[],conf)
 
 # curves and configuration for a single figure
 type Figure
     handle::Int                  # each figure has a unique handle
-    curves::Vector{Curve_data}   # a vector of curves (x,y,conf)
+    curves::Vector{CurveData}   # a vector of curves (x,y,conf)
     conf::AxesConf               # figure configuration
 end
-Figure(handle) = Figure(handle,[Curve_data()],AxesConf())
+Figure(handle) = Figure(handle,[CurveData()],AxesConf())
 
 # curves and configuration for all figures
 figs = Vector{Figure}
