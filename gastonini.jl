@@ -19,13 +19,13 @@
 ## DEALINGS IN THE SOFTWARE.
 
 # We need a global variable to keep track of gnuplot's state
-type Gnuplot_state
+type GnuplotState
     running::Bool               # true when gnuplot is already running
     current::Int                # current figure
     fid                         # pipe stream id
     tmpdir::ASCIIString         # where to store data files
 
-    function Gnuplot_state(running::Bool,current::Int,fid,tmpdir::ASCIIString)
+    function GnuplotState(running::Bool,current::Int,fid,tmpdir::ASCIIString)
         # Check to see if tmpdir exists, and create it if not
         try
             f = open(tmpdir)
@@ -47,7 +47,7 @@ function randstring(len::Int)
 end
 
 # global variable that stores gnuplot's state
-gnuplot_state = Gnuplot_state(false,0,0,strcat("/tmp/gaston-",getenv("USER"),"-",randstring(5),"/"))
+gnuplot_state = GnuplotState(false,0,0,strcat("/tmp/gaston-",getenv("USER"),"-",randstring(5),"/"))
 
 # Structs to configure a plot
 # Two types of configuration are needed: one to configure a single curve, and
