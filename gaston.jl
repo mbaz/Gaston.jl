@@ -85,10 +85,8 @@ function figure(x...)
 
     # check arguments
     if !isempty(x)
-        # assert x[1] is integer
-        x[1]::Int
-        # assert x[1] is natural
-        assert(x[1] > 0, "Figure handle must be a natural number.")
+        # assert x[1] is a natural integer
+        assert((x[1] > 0) && (isa(x[1],Int)), "Figure handle must be a natural number.")
         # assert x contains a single value
         assert(length(x) == 1,"figure() argument must be a single number")
     end
