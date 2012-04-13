@@ -85,8 +85,12 @@ function figure(x...)
 
     # check arguments
     if !isempty(x)
-        x[1]::Int        # assert integer type
-        if !(x[1] > 0)   # assert x is natural
+        try
+            x[1]::Int        # assert x[1] is integer
+        catch
+            error("Error: figure handle must be a natural number.")
+        end
+        if !(x[1] > 0)       # assert x[1] is natural
             error("Error: figure handle must be a natural number.")
         end
     end
