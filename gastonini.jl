@@ -102,12 +102,12 @@ end
 
 # coordinates and configuration for a single curve
 type CurveData
-    x
-    y
-    Z          # for 3-D plots. Element i,j is z-value for x[j], y[i]
-    ylow
-    yhigh
-    conf::CurveConf
+    x::Vector          # abscissa
+    y::Vector          # ordinate
+    Z::Matrix          # 3-d plots
+    ylow::Vector       # error data
+    yhigh::Vector      # error data
+    conf::CurveConf    # curve configuration
 end
 CurveData() = CurveData([],[],[],[],[],CurveConf())
 CurveData(x,y,Z,conf::CurveConf) = CurveData(x,y,Z,[],[],conf)
