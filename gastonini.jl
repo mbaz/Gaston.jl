@@ -104,7 +104,7 @@ end
 type CurveData
     x::Vector          # abscissa
     y::Vector          # ordinate
-    Z::Matrix          # 3-d plots
+    Z::Array           # 3-d plots and images
     ylow::Vector       # error data
     yhigh::Vector      # error data
     conf::CurveConf    # curve configuration

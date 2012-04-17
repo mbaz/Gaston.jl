@@ -145,12 +145,70 @@ function findfigure(c)
 end
 
 # append x,y,z coordinates and configuration to current figure
-function addcoords(x,y,Z,conf::CurveConf)
+Coord = Union(Range1,Range,Matrix,Vector)
+function addcoords(x::Coord,y::Coord,Z::Array,conf::CurveConf)
     global figs
     # check that at least one figure has been setup
     if gnuplot_state.current == 0
         figure(1)
     end
+
+    # check arguments
+    nex = !isempty(x); ney = !isempty(y); neZ = !isempty(Z)
+    # check types
+    if nex
+        assert(eltype(x)<:Real,"Invalid coordinates")
+    end
+    if ney
+        assert(eltype(y)<:Real,"Invalid coordinates")
+    end
+    if neZ
+        assert(eltype(Z)<:Real,"Invalid coordinates")
+        assert(1 < ndims(Z) < 4,"Invalid coordinates")
+    end
+    # valid combinations of x,y,Z, where 0 means empty:
+    #  x  y  Z
+    #  1  1  0   # 2-d plot
+    #  1  1  1   # 3-d plot
+    #  0  0  1   # image
+    assert((nex && ney) || (!nex && !ney && neZ), "Invalid coordinates")
+    # if x,y are matrices, convert to vectors
+    if nex
+        if isa(x,Matrix)
+            s = size(x)
+            if s[1] == 1 || s[2] == 1
+                x = squeeze(x)
+            else
+                error("Invalid abscissa coordinates")
+            end
+        elseif isa(x,Range1) || isa(x,Range)
+            x = [x]
+        end
+    end
+    if ney
+        if isa(y,Matrix)
+            s = size(y)
+            if s[1] == 1 || s[2] == 1
+                y = squeeze(y)
+            else
+                error("Invalid abscissa coordinates")
+            end
+        elseif isa(y,Range1) || isa(y,Range)
+            y = [y]
+        end
+    end
+    # check number of elements
+    if nex && neZ
+        assert(size(Z,1) == length(x),
+        "Number of columns in 3-d coordinates must match length of abscissa")
+        assert(size(Z,2) == length(y),
+        "Number of rows in 3-d coordinates must match length of ordinate")
+    end
+    if nex && !neZ
+        assert(length(x) == length(y),
+        "Abscissa and ordinate must have the same number of elements")
+    end
+
     # copy conf (dereference)
     conf = copy(conf)
     # append data to figure
@@ -174,16 +232,16 @@ function addcoords(X::Matrix,Y::Matrix,conf::CurveConf)
         addcoords(X[:,i],Y[:,i],[],conf)
     end
 end
-function addcoords(X::Matrix,conf::CurveConf)
-    y = 1:size(X,1)
-    Y = zeros(size(X))
-    for i = 1:size(X,2)
-        Y[:,i] = y
+function addcoords(Y::Matrix,conf::CurveConf)
+    x = 1:size(Y,1)
+    X = zeros(size(Y))
+    for i = 1:size(Y,2)
+        X[:,i] = x
     end
     addcoords(X,Y,conf)
 end
 addcoords(X::Matrix, Y::Matrix) = addcoords(X,Y,CurveConf())
-addcoords(X::Matrix) = addcoords(X,CurveConf())
+addcoords(Y::Matrix) = addcoords(Y,CurveConf())
 
 # append error data to current set of coordinates
 function adderror(yl,yh)
