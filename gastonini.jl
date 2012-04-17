@@ -23,9 +23,9 @@ type GnuplotState
     running::Bool               # true when gnuplot is already running
     current::Int                # current figure
     fid                         # pipe stream id
-    tmpdir::ASCIIString         # where to store data files
+    tmpdir::String              # where to store data files
 
-    function GnuplotState(running::Bool,current::Int,fid,tmpdir::ASCIIString)
+    function GnuplotState(running::Bool,current::Int,fid,tmpdir::String)
         # Check to see if tmpdir exists, and create it if not
         try
             f = open(tmpdir)
@@ -40,7 +40,7 @@ end
 # return a random string (for filenames)
 function randstring(len::Int)
     const cset = char([0x30:0x39,0x41:0x5a,0x61:0x7a])
-    const strset = convert(ASCIIString,strcat(cset...))
+    const strset = convert(String,strcat(cset...))
     index = int(ceil(strlen(strset)*rand(len)))
     s = strset[index]
     return s
@@ -53,12 +53,12 @@ gnuplot_state = GnuplotState(false,0,0,strcat("/tmp/gaston-",getenv("USER"),"-",
 # Two types of configuration are needed: one to configure a single curve, and
 # another to configure a set of curves (the 'axes').
 type CurveConf
-    legend::ASCIIString     # legend text
-    plotstyle::ASCIIString  # one of lines, linespoints, points, impulses,
+    legend::String          # legend text
+    plotstyle::String       # one of lines, linespoints, points, impulses,
                             # errorbars, errorlines, pm3d, boxes
-    color::ASCIIString      # one of gnuplot's builtin colors
+    color::String           # one of gnuplot's builtin colors
                             # run 'show colornames' inside gnuplot
-    marker::ASCIIString     # +, x, *, esquare, fsquare, ecircle, fcircle,
+    marker::String          # +, x, *, esquare, fsquare, ecircle, fcircle,
                             # etrianup, ftrianup, etriandn, ftriandn,
                             # edmd, fdmd
     linewidth               # a number
@@ -79,12 +79,12 @@ function copy(conf::CurveConf)
 end
 
 type AxesConf
-    title::ASCIIString      # plot title
-    xlabel::ASCIIString     # xlabel
-    ylabel::ASCIIString     # ylabel
-    zlabel::ASCIIString     # zlabel for 3-d plots
-    box::ASCIIString        # legend box (used with 'set key')
-    axis::ASCIIString       # normal, semilog{x,y}, loglog
+    title::String      # plot title
+    xlabel::String     # xlabel
+    ylabel::String     # ylabel
+    zlabel::String     # zlabel for 3-d plots
+    box::String        # legend box (used with 'set key')
+    axis::String       # normal, semilog{x,y}, loglog
 end
 AxesConf() = AxesConf("Untitled","x","y","z","inside vertical right top","")
 

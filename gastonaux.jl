@@ -71,7 +71,7 @@ end
 finalizer(gnuplot_state,gnuplot_exit)
 
 # convert marker string description to gnuplot's expected number
-function pointtype(x::ASCIIString)
+function pointtype(x::String)
     if x == "+"
         return 1
     elseif x == "x"
@@ -127,7 +127,7 @@ function linestr_single(conf::CurveConf)
 end
 
 # build a string with plot commands according to configuration
-function linestr(curves::Vector{CurveData},cmd::ASCIIString, file::ASCIIString,postcmd::ASCIIString)
+function linestr(curves::Vector{CurveData},cmd::String, file::String,postcmd::String)
     # We have to insert "," between plot commands. One easy way to do this
     # is create the first plot command, then the rest
     # We also need to keep track of the current index (starts at zero)
