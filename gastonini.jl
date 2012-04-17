@@ -54,15 +54,30 @@ gnuplot_state = GnuplotState(false,0,0,strcat("/tmp/gaston-",getenv("USER"),"-",
 # another to configure a set of curves (the 'axes').
 type CurveConf
     legend::String          # legend text
-    plotstyle::String       # one of lines, linespoints, points, impulses,
-                            # errorbars, errorlines, pm3d, boxes
-    color::String           # one of gnuplot's builtin colors
+    plotstyle::String
+    color::String           # one of gnuplot's builtin colors --
                             # run 'show colornames' inside gnuplot
-    marker::String          # +, x, *, esquare, fsquare, ecircle, fcircle,
-                            # etrianup, ftrianup, etriandn, ftriandn,
-                            # edmd, fdmd
-    linewidth               # a number
-    pointsize               # a number
+    marker::String          # point type
+    linewidth::Real
+    pointsize::Real
+
+    function CurveConf(leg,pstyle,col,mark,lw,ps)
+        # check valid values of plotstyle
+        validps=["lines", "linespoints", "points", "impulses", "errorbars",
+        "errorlines", "pm3d", "boxes"]
+        assert(contains(validps,pstyle),"Invalid plotstyle specified")
+
+        # TODO: figure out how to check valid color names -- gnuplot supports
+        #  112 different color names.
+
+        # check valid values of marker
+        validmks = ["", "+", "x", "*", "esquare", "fsquare", "ecircle",
+        "fcircle", "etrianup", "ftrianup", "etriandn", "ftriandn", "edmd",
+        "fdmd"]
+        assert(contains(validmks,mark), "Invalid mark name specified")
+
+        new(leg,pstyle,col,mark,lw,ps)
+    end
 end
 CurveConf() = CurveConf("","lines","","",1,0.5)
 
