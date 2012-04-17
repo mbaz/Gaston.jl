@@ -244,16 +244,56 @@ addcoords(X::Matrix, Y::Matrix) = addcoords(X,Y,CurveConf())
 addcoords(Y::Matrix) = addcoords(Y,CurveConf())
 
 # append error data to current set of coordinates
-function adderror(yl,yh)
+function adderror(yl::Coord,yh::Coord)
     global figs
     # check that at least one figure has been setup
     if gnuplot_state.current == 0
         figure(1)
     end
-    # set fields in current curve
     c = findfigure(gnuplot_state.current)
+
+    # check arguments and convert to vectors
+    if isempty(yl)
+        error("Invalid error data")
+    else
+        assert(eltype(yl)<:Real,"Invalid error data")
+        if isa(yl,Matrix)
+            s = size(yl)
+            if s[1] == 1 || s[2] == 1
+                yl = squeeze(yl)
+            else
+                error("Invalid error data")
+            end
+        elseif isa(yl,Range1) || isa(yl,Range)
+            yl = [yl]
+        end
+    end
+    if !isempty(yh)
+        assert(eltype(yh)<:Real,"Invalid error data")
+        if isa(yl,Matrix)
+            s = size(yh)
+            if s[1] == 1 || s[2] == 1
+                yh = squeeze(yh)
+            else
+                error("Invalid error data")
+            end
+        elseif isa(yh,Range1) || isa(yh,Range)
+            yh = [yh]
+        end
+    end
+    # verify vector sizes -- this also implies that x,y coordinates must be
+    # added to figure, before error data can be attached to it
+    assert(length(figs[c].curves[end].x) == length(yl),
+        "Error data vector must be of same size as abscissa")
+    if !isempty(yh)
+        assert(length(yh) == length(yl),
+            "Error data vectors must be of same size")
+    end
+
+    # set fields in current curve
     figs[c].curves[end].ylow = yl
     figs[c].curves[end].yhigh = yh
+
 end
 adderror(ydelta) = adderror(ydelta,[])
 
