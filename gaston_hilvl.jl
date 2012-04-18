@@ -132,4 +132,5 @@ function plot(args...)
             error("Unforseen situation, bailing out")
         end
     end
+    return h
 end
