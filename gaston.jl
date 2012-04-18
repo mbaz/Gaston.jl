@@ -153,7 +153,7 @@ function addcoords(x::Coord,y::Coord,Z::Array,conf::CurveConf)
         figure(1)
     end
 
-    # check arguments
+    # check coordinates: dimensions, sizes and types
     nex = !isempty(x); ney = !isempty(y); neZ = !isempty(Z)
     # check types
     if nex
@@ -209,8 +209,20 @@ function addcoords(x::Coord,y::Coord,Z::Array,conf::CurveConf)
         "Abscissa and ordinate must have the same number of elements")
     end
 
-    # copy conf (dereference)
-    conf = copy(conf)
+    # check curve configuration: property names
+    # TODO: figure out how to check valid color names -- gnuplot supports
+    #  112 different color names.
+    # check valid values of plotstyle
+    validps=["lines", "linespoints", "points", "impulses", "errorbars",
+    "errorlines", "pm3d", "boxes","image","rgbimage"]
+    assert(contains(validps,conf.plotstyle),"Invalid plotstyle specified")
+    # check valid values of marker
+    validmks = ["", "+", "x", "*", "esquare", "fsquare", "ecircle",
+    "fcircle", "etrianup", "ftrianup", "etriandn", "ftriandn", "edmd",
+    "fdmd"]
+    assert(contains(validmks,conf.marker), "Invalid mark name specified")
+
+    conf = copy(conf)       # we need to dereference conf
     # append data to figure
     c = findfigure(gnuplot_state.current)
     if isempty(figs[c].curves[1].x)
