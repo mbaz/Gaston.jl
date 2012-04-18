@@ -127,7 +127,7 @@ function figure(x...)
     if !contains(handles,h)
         figs = [figs, Figure(h)]
     else
-        plot()
+        llplot()
     end
     return h
 end
@@ -311,7 +311,7 @@ function addconf(conf::AxesConf)
 end
 
 # 'plot' is our workhorse plotting function
-function plot()
+function llplot()
     # select current plot
     c = findfigure(gnuplot_state.current)
     if c == 0

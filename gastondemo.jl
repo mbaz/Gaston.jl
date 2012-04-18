@@ -29,12 +29,12 @@ function demo()
     # simplest figure
     figure(1)
     addcoords(st)
-    plot()
+    llplot()
 
     # with x coordinates
     figure(2)
     addcoords(t,st)
-    plot()
+    llplot()
 
     # plot configuration
     figure(3)
@@ -46,7 +46,7 @@ function demo()
     c.pointsize = 2
     c.linewidth = 1.5
     addcoords(t,st,c)
-    plot()
+    llplot()
 
     # figure configuration
     figure(4)
@@ -59,7 +59,7 @@ function demo()
     c.plotstyle = "linespoints"
     addcoords(t,st,c)
     addconf(a)
-    plot()
+    llplot()
 
     # multiple plots
     figure(5)
@@ -82,7 +82,7 @@ function demo()
     a.title = "Multiple plots in the same figure"
     a.box = "outside top horizontal box"
     addconf(a)
-    plot()
+    llplot()
 
     # error bars with ydelta
     y = exp(-(1:.1:4.9))
@@ -95,7 +95,7 @@ function demo()
     a = AxesConf()
     a.title = "Error bars (ydelta)"
     addconf(a)
-    plot()
+    llplot()
 
     # error bars with ylow, yhigh
     figure(7)
@@ -111,7 +111,7 @@ function demo()
     a = AxesConf()
     a.title = "Error bars (ylow, yhigh)"
     addconf(a)
-    plot()
+    llplot()
 
     # error lines
     figure(8)
@@ -123,7 +123,7 @@ function demo()
     a = AxesConf()
     a.title = "Error lines (ydelta)"
     addconf(a)
-    plot()
+    llplot()
 
     # plotting columns of matrices
     figure(9)
@@ -133,7 +133,7 @@ function demo()
     a = AxesConf()
     a.title = "Plotting matrix columns"
     addconf(a)
-    plot()
+    llplot()
 
     # simple 3-D plot with default config
     figure(10)
@@ -144,7 +144,7 @@ function demo()
     a = AxesConf()
     a.title = "3D: Valley of the Gnu from gnuplot manual"
     addconf(a)
-    plot()
+    llplot()
 
     # same plot with colored surfaces
     figure(11)
@@ -154,7 +154,7 @@ function demo()
     a = AxesConf()
     a.title = "3D: Valley of the Gnu with pm3d"
     addconf(a)
-    plot()
+    llplot()
 
     # sombrero
     figure(12)
@@ -167,7 +167,7 @@ function demo()
     a = AxesConf()
     a.title = "3D: Sombrero"
     addconf(a)
-    plot()
+    llplot()
 
     # simple image
     figure(13)
@@ -178,7 +178,7 @@ function demo()
     a = AxesConf()
     a.title = "Image"
     addconf(a)
-    plot()
+    llplot()
 
     # rgb image
     figure(14)
@@ -195,7 +195,7 @@ function demo()
     a = AxesConf()
     a.title = "RGB Image"
     addconf(a)
-    plot()
+    llplot()
 
     # histogram
     figure(15)
@@ -217,6 +217,6 @@ function demo()
     a = AxesConf()
     a.title = "Histogram"
     addconf(a)
-    plot()
+    llplot()
 
 end
