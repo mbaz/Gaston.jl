@@ -30,7 +30,7 @@ function plot(args...)
         h = gnuplot_state.current
     end
     if h == 0
-        figure()     # new figure
+        h = figure()     # new figure
     else
         closefigure(h)
         figure(h)    # overwrite specific figure
@@ -39,13 +39,6 @@ function plot(args...)
     state = "SINI"
     la = length(args)
     while(true)
-        println(state)
-        try
-            println(cc)
-            println(ac)
-            println(i)
-        catch
-        end
         if state == "SINI"
             i = 1
             cc = CurveConf()
@@ -100,7 +93,7 @@ function plot(args...)
             elseif ai == "plotstyle"
                 assert(contains(["lines", "linespoints", "points",
                     "impulses","boxes"],ai1),"Invalid plot style")
-                cc.plotstyle == ai1
+                cc.plotstyle = ai1
             elseif ai == "color"
                 cc.color = ai1
             elseif ai == "marker"
