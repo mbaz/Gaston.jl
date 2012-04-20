@@ -89,7 +89,7 @@ function plot(args...)
             end
             ai = args[i]; ai1 = args[i+1]
             if ai == "legend"
-                cc.legend == ai1
+                cc.legend = ai1
             elseif ai == "plotstyle"
                 assert(contains(["lines", "linespoints", "points",
                     "impulses","boxes"],ai1),"Invalid plot style")
@@ -106,6 +106,8 @@ function plot(args...)
                 ac.title = ai1
             elseif ai == "xlabel"
                 ac.xlabel = ai1
+            elseif ai == "ylabel"
+                ac.ylabel = ai1
             elseif ai == "box"
                 ac.box = ai1
             elseif ai == "axis"
