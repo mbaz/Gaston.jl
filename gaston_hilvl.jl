@@ -129,3 +129,96 @@ function plot(args...)
     end
     return h
 end
+
+function histogram(args...)
+    # if args[1] is an integer, it's the function handle.
+    if isa(args[1], Int)
+        h = args[1]
+        args = args[2:end]   # argument parsing starts with 1 (eases debug)
+    else
+        h = gnuplot_state.current
+    end
+    if h == 0
+        h = figure()     # new figure
+    else
+        closefigure(h)
+        figure(h)    # overwrite specific figure
+    end
+    # parse arguments
+    state = "SINI"
+    la = length(args)
+    while(true)
+        if state == "SINI"
+            i = 1
+            bins::Int = 10
+            norm::Int = 0
+            cc = CurveConf()
+            cc.plotstyle = "boxes"
+            ac = AxesConf()
+            state = "S1"
+        elseif state == "S1"
+            if i > la
+                state = "SERROR"
+                continue
+            end
+            y = args[i]
+            i = i+1
+            state = "S2"
+        elseif state == "S2"
+            if i > la
+                # validate bins and norm
+                if bins <= 0 || norm < 0
+                    state = "SERROR"
+                    continue
+                end
+                (x,y) = histdata(y,bins)
+                if norm != 0
+                    delta = x[2] - x[1]
+                    y = norm*y/(delta*sum(y))
+                end
+                addcoords(x,y,cc)
+                state = "SEND"
+                continue
+            end
+            state = "S3"
+        elseif state == "S3"
+            if i+1 > la
+                state = "SERROR"
+                continue
+            end
+            ai = args[i]; ai1 = args[i+1]
+            if ai == "legend"
+                cc.legend = ai1
+            elseif ai == "color"
+                cc.color = ai1
+            elseif ai == "linewidth"
+                cc.linewidth = ai1
+            elseif ai == "bins"
+                bins = ai1
+            elseif ai == "norm"
+                norm = ai1
+            elseif ai == "title"
+                ac.title = ai1
+            elseif ai == "xlabel"
+                ac.xlabel = ai1
+            elseif ai == "ylabel"
+                ac.ylabel = ai1
+            elseif ai == "box"
+                ac.box = ai1
+            else
+                error("Invalid property specified")
+            end
+            i = i+2
+            state = "S2"
+        elseif state == "SEND"
+            addconf(ac)
+            llplot()
+            break
+        elseif state == "SERROR"
+            error("Invalid arguments")
+        else
+            error("Unforseen situation, bailing out")
+        end
+    end
+    return h
+end
