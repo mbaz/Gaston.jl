@@ -1,5 +1,9 @@
 \documentclass[11pt]{article}
 
+\usepackage{booktabs}
+
+\usepackage{amssymb}
+
 \usepackage{fontspec}
 % Libertine
 \setmainfont[Ligatures={Common,TeX}]{Linux Libertine O}
@@ -17,7 +21,7 @@
 
 \hyphenpenalty 300
 
-\title{Gaston \\[0.8cm] \large A gnuplot library for Julia \\[0.8cm] v. 0.2}
+\title{Gaston \\[0.8cm] \large A plotting utility for Julia \\[0.8cm] v. 0.3}
 \author{M. Bazdresch}
 \date{\today}
 
@@ -41,9 +45,9 @@ with plots (zooming and rotating a plot with the mouse, for instance).
 
 The primary purpose of Gaston is to provide easy-to-use functions to quickly
 and conveniently plot the most common kinds of scientific and numeric data. It
-is concerned only with screen output (although we plan to support printing to a
-file in a future version), and provides only for the most common
-plot configurations. Tweaking a plot to produce a specific look or producing
+is concerned with screen output only (although we plan to support printing to a
+file in a future version), and supports the most common plot configurations
+only. Tweaking a plot to produce a specific look or producing
 publication-quality graphics are outside its scope.
 
 \section{Installation}
@@ -52,9 +56,9 @@ To use Gaston, follow this procedure:
 
 \begin{enumerate}
 
-\item Save the files \cmd{gaston.jl}, \cmd{gastonini.jl}, \cmd{gastonaux.jl}
-and \cmd{gastondemo.jl} somewhere convenient. Then, you may \cmd{cd} to that
-directory and start julia there, or do
+\item Save the files \cmd{gaston.jl}, \cmd{gastonini.jl}, \cmd{gastonaux.jl},
+	\cmd{gaston\_hilvl.jl} and \cmd{gastondemo.jl} somewhere convenient. Then,
+	you may \cmd{cd} to that directory and start julia there, or do
 
 \begin{juliacode}
 push(LOAD_PATH, "/path/to/gaston/jl")
@@ -78,14 +82,7 @@ of the program. The same file may also serve as a guide on how to create
 different types of plots.
 \end{enumerate}
 
-\section{Plotting}
-
-In future versions, Gaston will offer plotting functions similar to Octave or
-Matlab's -- what we call ``high-level'' functions. At the moment, it offers a
-``mid-level'' set of functions that require that plots be created step-by-step.
-Before delving into that process, some definitions are in order.
-
-\subsection{Definitions}
+\section{Definitions}
 
 A \textbf{figure} is an independent window, which contains a set of axes, on
 which one or more \textbf{curves} are plotted. A figure may contain
@@ -95,16 +92,172 @@ number of figures open at the same time; however, gnuplot requires that only
 one figure is able to offer mouse interactivity at a given time. Each figure is
 identified by a unique \textbf{handle}. Handles are natural numbers.
 
-A curve is defined by a set of coordinates. Two-dimensional curves have
-\textbf{x} and \textbf{y} coordinates; in three dimensions, an additional
-\textbf{z} coordinate must be specified. A curve also has a plotting
-configuration (for instance, it may have a \textbf{linestyle}, a
-\textbf{linewidth}, a \textbf{linecolor}, etc), which define how the curve
-is to be plotted.
+A \textbf{curve} is defined by a set of coordinates. Two-dimensional curves
+have \textbf{x} and \textbf{y} coordinates; in three dimensions, an additional
+\textbf{z} coordinate must be specified. A curve also has several
+\textbf{properties} that specify a plotting configuration (for instance, it may
+have a \textbf{plotstyle}, a \textbf{linewidth}, a \textbf{linecolor}, etc),
+which define how the curve is to be plotted.
 
-Please note that there is a single command to plot, which is \cmd{plot()}.
-According to the type of coordinates and plotstyle, it will figure out how to
-plot.
+\section{Plotting}
+
+\subsection{Figures}
+
+A figure may be created by the function \cmd{figure()}. Many plotting functions
+create or reuse an existing figure, as needed (see each function's
+documentation). Called with no arguments, \cmd{figure()} creates a new figure
+with the smallest available handle. Called with an argument (which must be a
+natural number), it will create a figure with that handle if no such figure
+exists, or will select it (make it current) if it exists.
+
+Selecting an existing figure may be useful, for instance, to make it mouse and
+keyboard interactive.
+
+Handles may be created in any numerical order.
+
+This function always returns the handle of the current figure.
+
+\subsection{2-D plotting}
+
+There are two commands for two-dimensional plotting: \cmd{plot()} and
+\cmd{histogram()}.
+
+\subsubsection{plot()}
+
+The \cmd{plot()} function takes any number of arguments, with the following
+format:
+
+\cmd{plot(\{h,\} \{x,\} y \{, property, value,...\} \{...\})}
+
+\begin{itemize}
+	\item If the optional argument \cmd{h} is provided, it is assumed to be the
+		figure handle in which to plot.
+		\begin{itemize}
+			\item If the handle doesn't exist, a new figure is created.
+			\item If it exists, the figure will be overwritten.
+			\item If it is 0, then a new figure to plot in will be created,
+				using the next handle available.
+		\end{itemize}
+		If it is not provided, then the current figure will be used and
+		overwritten.
+	\item The \cmd{x} and \cmd{y} arguments specifiy coordinates (they must be ranges, vectors, or
+		two-dimensional arrays with a singleton dimension). If only \cmd{y} is
+		provided, it is assumed to be the ordinate. If \cmd{x} and \cmd{y} are provided, they
+		are assumed to be the abscissa and the ordinate, in that order.
+	\item The coordinates may be followed by any number of
+		\cmd{property}, \cmd{value} pairs. These are used to set the value of
+		any of the curve's or the axes' properties (see section Reference,
+		below). \cmd{property}s are always strings. The \cmd{value}s must be of
+		the appropriate type.
+	\item The pattern \cmd{\{x,\} y \{, property, value,...\}} may be repeated any
+		number of times.
+		\begin{itemize}
+			\item Curve settings are always set for the immediately
+				preceding curve.
+			\item Axes settings may be specified at any time,
+				and in the case of repeated properties, the last one set is the
+				one that is used.
+		\end{itemize}
+	\item Properties may take the following values: \cmd{plotstyle},
+		\cmd{legend}, \cmd{color},
+		\cmd{marker}, \cmd{linewidth}, \cmd{pointsize}, \cmd{title},
+		\cmd{xlabel}, \cmd{ylabel}, \cmd{box}, \cmd{axis}.
+	\item Supported plotstyles are \cmd{lines}, \cmd{linespoints},
+		\cmd{points}, \cmd{impulses} and \cmd{boxes}.
+	\item plot() returns the handle of the figure that was plotted.
+\end{itemize}
+
+As an example, to plot an amplitude modulated signal and its envelope, we may
+run the following code:
+
+\begin{juliacode}
+t = 0:0.0001:.15
+carrier = cos(2pi*t*200)
+modulator = 0.7+0.5*cos(2pi*t*15)
+am = carrier.*modulator
+plot(t,am,"color","blue","legend","AM DSB-SC","linewidth",1.5,
+    t,modulator,"color","black","legend","Envelope",
+    t,-modulator,"color","black","title","AM DSB-SC example",
+    "xlabel","Time (s)","ylabel","Amplitude",
+    "box","horizontal top left")
+\end{juliacode}
+
+\noindent which produces this plot:
+
+\begin{center}
+\includegraphics[width=10cm]{plotexample}
+\end{center}
+
+\subsubsection{histogram()}
+
+The \cmd{histogram()} function plots a single histogram in a figure. It has the
+following format:
+
+\cmd{histogram(\{h,\} y \{, "bins", bins\} \{, "norm", norm\}
+\{, property, value,...\})}
+
+\begin{itemize}
+	\item The optional argument \cmd{h} has the same meaning as in
+		\cmd{plot()}.
+	\item The histogram consists of boxes, where the height of each box is
+		given by the number of elements of \cmd{y} that fall in a given range.
+	\item \cmd{bins} specify the number of bins (boxes) that will be plotted.
+	\item If \cmd{norm} is specified, the histogram will be normalized, so that
+		the area under the histogram is equal to \cmd{norm}.
+	\item The pairs \cmd{\{property, value,...\}} have the same meaning as in
+		\cmd{plot()}.
+	\item Properties may take the following values: \cmd{legend}, \cmd{color},
+		\cmd{linewidth}, \cmd{title}, \cmd{xlabel}, \cmd{ylabel}, \cmd{box}.
+	\item \cmd{histogram()} returns the handle of the figure that was plotted.
+\end{itemize}
+
+As an example, to plot an approximation of a Rayleigh density, we may run the
+following code:
+
+\begin{juliacode}
+y = sqrt( randn(1000).^2 + randn(1000).^2 )
+histogram(y,"bins",25,"norm",1,"color","blue","title","Rayleigh density (25 bins)")
+\end{juliacode}
+
+which produces this plot:
+
+\begin{center}
+	\includegraphics[width=10cm]{histexample}
+\end{center}
+
+\subsection{3-D plotting}
+
+TBW
+
+\subsection{Plotting images}
+
+TBW
+
+\section{Plotting with mid-level functions}
+
+In addition to the plotting functions described in the section above, Gaston
+offers a ``mid-level'' set of functions that allow plots to be created
+step-by-step.
+
+Having this mid-level layer has two benefits. One is that this layer is more
+flexible and allows direct control over all aspects of the plot. For instance,
+using high-level functions it is not currently possible to plot more than one
+histogram, or a histogram and another curve, on the same figure. The mid-level
+layer allows such combinations. Another example is an algorithm that builds
+figures step-by-step as data becomes available, instead of waiting until all
+the data needed has been produced.
+
+A second benefit is that this layer abstracts Gaston's internal graphics
+representation from the high-level layer. This means Gaston's whole back-end
+may change without affecting the high-level functions; only the mid-level layer
+would have to be adapted.
+
+Also, much of Gaston's error checking and argument validation is performed at
+this layer.
+
+Please note that there is a single mid-level plot command, which is
+\cmd{llplot()}. According to the type of coordinates and plotstyle, it will
+figure out how to plot.
 
 \subsection{2-D plotting}
 
@@ -120,12 +273,12 @@ Plotting proceeds in steps:
 	\item Add a configuration for the entire figure (axis), with
 		\cmd{addconf(conf)}, where \cmd{conf} contains the figure
 		configuration.
-	\item Issue the \cmd{plot()} command.
+	\item Issue the \cmd{llplot()} command.
 \end{enumerate}
 
 A curve configuration is created as follows:
 \begin{enumerate}
-	\item Create a default configuration with \cmd{c = Curve\_conf()}.
+	\item Create a default configuration with \cmd{c = CurveConf()}.
 	\item \cmd{c} is a structure, each of whose fields controls one aspect of
 		the curve's configuration. These fields may be set individually.
 		Available fields are: \cmd{legend}, \cmd{plotstyle}, \cmd{color},
@@ -145,7 +298,7 @@ c.color = "blue"
 
 A figure (axis) configuration is created as follows:
 \begin{enumerate}
-	\item Create a default configuration with \cmd{a = Axes\_conf()}
+	\item Create a default configuration with \cmd{a = AxesConf()}
 	\item Just as in the case of a curve configuration, \cmd{a} is a structure
 		whose fields may be modified. Available fields are: \cmd{title},
 		\cmd{xlabel}, \cmd{ylabel}, \cmd{zlabel}, \cmd{box}, \cmd{axis}.
@@ -163,7 +316,7 @@ Several rules apply:
 		be interpreted as a different plot.
 	\item Calling \cmd{addcoords()} will create a new figure if none have been
 		created yet.
-	\item Calling \cmd{plot()} without an axis configuration will just use one
+	\item Calling \cmd{llplot()} without an axis configuration will just use one
 		by default.
 	\item Gnuplot only provides mouse interaction support for the current
 		figure. To use the mouse in a previously created figure \cmd{i}, just
@@ -211,5 +364,147 @@ the color at that point.
 dimensional. The first and second dimensions correspond to the value at each
 point in the image.  The third dimension specifies red, green and blue values
 at each point.  Finally, set the plotstyle to \cmd{rgbimage}.
+
+\section{Reference}
+
+Note: In this section, at least superficial knowledge of Julia and gnuplot is
+assumed. Please refer to the respective documentation for more details.
+
+\subsection{Curve configuration}
+
+A given curve's configuration is stored in a structure of type \cmd{CurveConf}.
+This structure has the following fields:
+
+{\small
+\begin{center}
+\begin{tabular}{lll}
+	\toprule
+	\textbf{Field} & \multicolumn{1}{c}{\textbf{Notes}} &
+	\multicolumn{1}{c}{\textbf{Meaning in gnuplot}} \\
+	\midrule
+	\cmd{legend} & The text that appears in the legend box. & Argument of
+	\cmd{title}. \\
+	\cmd{plotstyle} & How the curve will be plotted. & Argument of \cmd{with}.
+	\\
+	\cmd{color} & The curve color. & Argument of \cmd{linecolor rgb}. \\
+	\cmd{marker} & The marker name. & Argument of \cmd{pointtype}. \\
+	\cmd{linewidth} & The curve line width; must be a positive number. &
+	Argument of \cmd{linewidth}. \\
+	\cmd{pointsize} & The marker size; must be a positive number. & Argument
+	of \cmd{pointsize}. \\
+	\bottomrule
+\end{tabular}
+\end{center}}
+
+The types, default and valid values for each field are given in the following
+table.
+
+{\small
+\begin{center}
+	\begin{tabular}{lp{1.5cm}p{2cm}p{7.5cm}}
+	\toprule
+	\textbf{Field} & \textbf{Type} & \textbf{Default value} & \textbf{Valid values} \\
+	\midrule
+	\cmd{legend} & \cmd{String} & \cmd{""} & Any string. \\
+	\cmd{plotstyle} & \cmd{String} & \cmd{lines} & \cmd{lines}, \cmd{linespoints},
+	\cmd{points}, \cmd{impulses}, \cmd{errorbars}, \cmd{errorlines},
+	\cmd{pm3d}, \cmd{boxes}. \\
+	\cmd{color} & \cmd{String} & \cmd{""} & \cmd{""}, any gnuplot color name,
+	or a color specified in a string in the format \cmd{"\#RRGGBB"}. \\
+	\cmd{marker} & \cmd{String} & \cmd{""} & \cmd{""}, \cmd{+}, \cmd{x}, \cmd{*}, \cmd{esquare},
+	\cmd{fsquare}, \cmd{ecircle}, \cmd{fcircle}, \cmd{etrianup},
+	\cmd{ftrianup}, \cmd{etriandn}, \cmd{ftriandn}, \cmd{edmd}, \cmd{fdmd} (run
+	\cmd{test} in gnuplot terminal). \\
+	\cmd{linewidth} & \cmd{Real} & 1 & Any real number \\
+	\cmd{pointsize} & \cmd{Real} & 0.5 & Any real number \\
+	\bottomrule
+\end{tabular}
+\end{center}}
+
+Notes: When \cmd{color} or \cmd{marker} are set to the empty string, gnuplot will use
+its own default values. Gaston does not verify that the color name provided is
+valid. You can see a list of valid colornames running \cmd{show colornames} in
+a gnuplot terminal.
+
+The following table lists the marker names and corresponding symbols.
+
+{\small
+\begin{center}
+\begin{tabular}{lc}
+	\toprule
+	\textbf{Marker name} & \textbf{Symbol} \\
+	\midrule
+	\cmd{+} & + \\
+	\cmd{x} & $\times$ \\
+	\cmd{*} & $\ast$ \\
+	\cmd{esquare} & $\square$ \\
+	\cmd{fsquare} & $\blacksquare$ \\
+	\cmd{ecircle} & $\circ$ \\
+	\cmd{fcircle} & ● \\
+	\cmd{etrianup} & △ \\
+	\cmd{ftrianup} & ▲ \\
+	\cmd{etriandn} & ▽ \\
+	\cmd{ftriandn} & ▼ \\
+	\cmd{edmd} & ◇ \\
+	\cmd{fdmd} & ◆ \\
+	\bottomrule
+\end{tabular}
+\end{center}}
+
+\subsection{Axes configuration}
+
+There may be only one configuration per figure. This configuration is stored in
+a structure of type \cmd{AxesConf}, which has the following fields:
+
+{\small
+\begin{center}
+\begin{tabular}{lll}
+	\toprule
+	\textbf{Field} & \multicolumn{1}{c}{\textbf{Notes}} &
+	\multicolumn{1}{c}{\textbf{Meaning in gnuplot}} \\
+	\midrule
+	\cmd{title} & The figure's title & \cmd{title-spec} \\
+	\cmd{xlabel} & Abscissa's label & Argument to \cmd{set xlabel} \\
+	\cmd{ylabel} & Ordinate's label & Argument to \cmd{set ylabel} \\
+	\cmd{zlabel} & Z-axis label & Argument to \cmd{set zlabel} \\
+	\cmd{box} & Legend box configuration & Argument to \cmd{set key} \\
+	\cmd{axis} & Axis scale & Argument to \cmd{set logscale} \\
+	\bottomrule
+\end{tabular}
+\end{center}}
+
+The types, default and valid values for each field are given in the following
+table.
+
+{\small
+\begin{center}
+	\begin{tabular}{lp{1.5cm}p{2cm}p{7.5cm}}
+	\toprule
+	\textbf{Field} & \textbf{Type} & \textbf{Default value} & \textbf{Valid values} \\
+	\midrule
+	\cmd{title} & \cmd{String} & \cmd{"Untitled"} & Any string \\
+	\cmd{xlabel} & \cmd{String} & \cmd{"x"} & Any string \\
+	\cmd{ylabel} & \cmd{String} & \cmd{"y"} & Any string \\
+	\cmd{zlabel} & \cmd{String} & \cmd{"z"} & Any string \\
+	\cmd{box} & \cmd{String} & \cmd{"inside vertical right top"} & Any valid
+	string \\
+	\cmd{axis} & \cmd{String} & \cmd{""} & \cmd{normal}, \cmd{semilogx},
+	\cmd{semilogy}, \cmd{loglog}  \\
+	\bottomrule
+\end{tabular}
+\end{center}}
+
+Notes: Gaston does not verify that \cmd{box} contains a valid \cmd{set key}
+argument. The \cmd{axis} values follow Matlab's conventions for logscale axes;
+Gaston translates them to gnuplot's equivalents.
+
+\subsection{Global variables}
+
+TBW
+
+\subsection{Types}
+
+TBW
+
 
 \end{document}
