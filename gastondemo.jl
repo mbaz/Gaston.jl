@@ -197,8 +197,20 @@ function demo()
     addconf(a)
     llplot()
 
-    # histogram
+    # histograms
     figure(15)
+    c = CurveConf()
+    c.plotstyle = "boxes"
+    c.color = "blue"
+    y = [1 2 3 4 5 6 7 8 9 10]
+    (x,y) = histdata(y,10)
+    addcoords(x,y,c)
+    a = AxesConf()
+    a.title = "Simple histogram test"
+    addconf(a)
+    llplot()
+
+    figure(16)
     c = CurveConf()
     c.plotstyle = "boxes"
     c.color = "blue"
