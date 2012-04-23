@@ -1,9 +1,17 @@
 
-version 0.2:
+version 0.3:
+
+	* Add 'high-level' plot() and histogram() functions
+	* Add error checking of arguments and types, to minimise risk of gnuplot
+		barfing on us on misconfigured plots
+	* Change type names to conform to Julia conventions (no underscores)
+	* Improved PDF documentation
+	* Fixed a few bugs
+
+ version 0.2:
 
 	* Add support for histograms, via the "boxes" plot style.
 	* Add example histogram to demos.
-	* Add support for rgbimage plot style.
+	* Add support for rgbimage plot style
 	* Add rgbimage example to demos.
 	* Fix bug (issue #1 on bitbucket) in the way figure handles were used.
-	* Improved PDF documentation.
