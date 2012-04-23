@@ -20,6 +20,7 @@
 
 load("gastonini.jl")
 load("gastonaux.jl")
+load("gaston_hilvl.jl")
 
 # Close a figure, or current figure.
 # Returns the handle of the figure that was closed.
