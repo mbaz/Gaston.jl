@@ -154,13 +154,21 @@ end
 # create x,y coordinates for a histogram, from a sample vector, using a number
 # of bins
 function histdata(s,bins)
-    ms = min(s)
+    # When adding an element s to a bin, we use an iequality m < s <= M.
+    # In order to account for elements s==m, we need to artificially reduce
+    # m a tiny bit. Note that this cannot be changed by using other
+    # inequalities:
+    # m <= s < M -- we'd have to increase M to account for s==M
+    # m <= s <= M -- we'd risk adding s to more than one bin
+    ms = min(s)-eps()
     Ms = max(s)
-    int = (Ms-ms)/(bins-1)
-    x = (ms-1):int:Ms   # lower limit is made a bit lower
+    delta = (Ms-ms)/bins
+    x = ms:delta:Ms
     y = zeros(numel(x))
     for i in 1:numel(x)-1
         y[i] = sum(x[i] < s <= x[i+1])
     end
+    # We want the left bin to start at ms and the right bin to end at Ms
+    x = x+delta/2
     return x,y
 end
