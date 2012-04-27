@@ -18,23 +18,6 @@
 ## FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 ## DEALINGS IN THE SOFTWARE.
 
-# write commands to gnuplot's pipe
-function gnuplot_send(s::String)
-    fid = gnuplot_state.fid
-    err = ccall(:fputs, Int, (Ptr{Uint8},Ptr), strcat(s,"\n"), fid)
-    # fputs returns a positive number if everything worked all right
-    if err < 0
-        println("Something went wrong writing to the gnuplot pipe.")
-        return
-    end
-    err = ccall(:fflush, Int, (Ptr,), fid)
-    ## fflush returns 0 if everything worked all right
-    if err != 0
-        println("Something went wrong writing to the gnuplot pipe.")
-        return
-    end
-end
-
 # initialize
 # The way to interface to gnuplot is by setting up a pipe that gnuplot
 # reads commands from. I don't see how to create such a 'persistent'
@@ -67,8 +50,27 @@ function gnuplot_exit(x...)
     gnuplot_state.current = 0
     gnuplot_state.fid = 0
 end
-# when gnuplot_state goes out of scope, close the pipe
-finalizer(gnuplot_state,gnuplot_exit)
+
+# return a random string (for filenames)
+function randstring(len::Int)
+    const cset = char([0x30:0x39,0x41:0x5a,0x61:0x7a])
+    const strset = convert(String,strcat(cset...))
+    index = int(ceil(strlen(strset)*rand(len)))
+    s = strset[index]
+    return s
+end
+
+# Return index to figure with handle 'c'. If no such figure exists, returns 0.
+function findfigure(c)
+    i = 0
+    for j = 1:length(figs)
+        if figs[j].handle == c
+            i = j
+            break
+        end
+    end
+    return i
+end
 
 # convert marker string description to gnuplot's expected number
 function pointtype(x::String)
@@ -117,7 +119,8 @@ function linestr_single(conf::CurveConf)
     s = strcat(s, "lw ", string(conf.linewidth), " ")
     # some plotstyles don't allow point specifiers
     cp = conf.plotstyle
-    if cp != "lines" && cp != "impulses" && cp != "pm3d" && cp != "image" && cp != "rgbimage" && cp != "boxes"
+    if cp != "lines" && cp != "impulses" && cp != "pm3d" && cp != "image" &&
+        cp != "rgbimage" && cp != "boxes"
         if conf.marker != ""
             s = strcat(s, "pt ", string(pointtype(conf.marker)), " ")
         end
@@ -127,16 +130,19 @@ function linestr_single(conf::CurveConf)
 end
 
 # build a string with plot commands according to configuration
-function linestr(curves::Vector{CurveData},cmd::String, file::String,postcmd::String)
+function linestr(curves::Vector{CurveData}, cmd::String, file::String,
+    postcmd::String)
     # We have to insert "," between plot commands. One easy way to do this
     # is create the first plot command, then the rest
     # We also need to keep track of the current index (starts at zero)
     index = 0
-    s = strcat(cmd," '",file,"' ",postcmd," i 0 ",linestr_single(curves[1].conf))
+    s = strcat(cmd, " '", file, "' ", postcmd, " i 0 ",
+        linestr_single(curves[1].conf))
     if length(curves) > 1
         for i in curves[2:end]
             index += 1
-            s = strcat(s,", '",file,"' ",postcmd," i ",string(index)," ",linestr_single(i.conf))
+            s = strcat(s, ", '", file, "' ", postcmd, " i ", string(index)," ",
+                linestr_single(i.conf))
         end
     end
     return s
@@ -171,4 +177,28 @@ function histdata(s,bins)
     # We want the left bin to start at ms and the right bin to end at Ms
     x = x+delta/2
     return x,y
+end
+
+# dereference CurveConf, by adding a method to copy()
+function copy(conf::CurveConf)
+    new = CurveConf()
+    new.legend = conf.legend
+    new.plotstyle = conf.plotstyle
+    new.color = conf.color
+    new.marker = conf.marker
+    new.linewidth = conf.linewidth
+    new.pointsize = conf.pointsize
+    return new
+end
+
+# dereference AxesConf
+function copy(conf::AxesConf)
+    new = AxesConf()
+    new.title = conf.title
+    new.xlabel = conf.xlabel
+    new.ylabel = conf.ylabel
+    new.zlabel = conf.zlabel
+    new.box = conf.box
+    new.axis = conf.axis
+    return new
 end

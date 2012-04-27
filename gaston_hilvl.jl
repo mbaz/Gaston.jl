@@ -20,6 +20,118 @@
 
 ## This file contains "high-level" plotting functions, similar to Octave's.
 
+# figure handling
+# Close a figure, or current figure.
+# Returns the handle of the figure that was closed.
+function closefigure(x...)
+    global gnuplot_state
+    global figs
+    # create vector of handles
+    handles = []
+    if gnuplot_state.current != 0
+        for i in figs
+            handles = [handles, i.handle]
+        end
+    end
+    if isempty(x)
+        # close current figure
+        h = gnuplot_state.current
+    else
+        h = x[1]
+    end
+    if contains(handles,h)
+        if gnuplot_state.running
+            gnuplot_send(strcat("set term wxt ", string(h), " close"))
+        end
+        # delete all data related to this figure
+        _figs = []
+        for i in figs
+            if i.handle != h
+                _figs = [_figs, i]
+            end
+        end
+        figs = _figs
+        # update state
+        if isempty(figs)
+            # we just closed the last figure
+            gnuplot_state.current = 0
+        else
+            # select the most-recently created figure
+            gnuplot_state.current = figs[end].handle
+        end
+    else
+        println("No such figure exists");
+        h = 0
+    end
+    return h
+end
+
+# close all figures
+function closeall()
+    try
+        for i in figs
+            closefigure()
+        end
+    catch
+    end
+end
+
+# Select or create a figure. When called with no arguments, create a new
+# figure. Figure handles must be natural numbers.
+# Returns the current figure handle.
+function figure(x...)
+    global gnuplot_state
+    global figs
+
+    # check arguments
+    if !isempty(x)
+        # assert x[1] is a natural integer
+        assert((x[1] > 0) && (isa(x[1],Int)),
+            "Figure handle must be a natural number.")
+        # assert x contains a single value
+        assert(length(x) == 1,"figure() argument must be a single number")
+    end
+
+    # see if we need to set up gnuplot
+    if gnuplot_state.running == false
+        gnuplot_init();
+    end
+    # create vector of handles, needed later
+    handles = []
+    for i in figs
+        handles = [handles, i.handle]
+    end
+    # determine figure handle
+    if gnuplot_state.current == 0
+        if isempty(x)
+            h = 1
+        else
+            h = x[1]
+        end
+    else
+        if isempty(x)
+            # use lowest numbered handle available
+            for i = 1:max(handles)+1
+                if !contains(handles,i)
+                    h = i
+                    break
+                end
+            end
+        else
+            h = x[1]
+        end
+    end
+    # if figure with handle h exists, replot it; otherwise create it
+    gnuplot_state.current = h
+    gnuplot_send(strcat("set term wxt ", string(h)))
+    if !contains(handles,h)
+        figs = [figs, Figure(h)]
+    else
+        llplot()
+    end
+    return h
+end
+
 # 2-d plots
 function plot(args...)
     # if args[1] is an integer, it's the function handle.

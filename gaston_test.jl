@@ -18,19 +18,4 @@
 ## FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 ## DEALINGS IN THE SOFTWARE.
 
-# load files
-load("gaston_types.jl")
-load("gaston_aux.jl")
-load("gaston_lowlvl.jl")
-load("gaston_midlvl.jl")
-load("gaston_hilvl.jl")
 
-# set up global variables
-# global variable that stores gnuplot's state
-gnuplot_state = GnuplotState(false,0,0,strcat("/tmp/gaston-",getenv("USER"),
-    "-",randstring(5),"/"))
-# when gnuplot_state goes out of scope, close the pipe
-finalizer(gnuplot_state,gnuplot_exit)
-
-# curves and configuration for all figures
-figs = []

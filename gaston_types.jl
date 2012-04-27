@@ -18,6 +18,8 @@
 ## FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 ## DEALINGS IN THE SOFTWARE.
 
+# types and constructors
+
 # We need a global variable to keep track of gnuplot's state
 type GnuplotState
     running::Bool               # true when gnuplot is already running
@@ -37,18 +39,6 @@ type GnuplotState
     end
 end
 
-# return a random string (for filenames)
-function randstring(len::Int)
-    const cset = char([0x30:0x39,0x41:0x5a,0x61:0x7a])
-    const strset = convert(String,strcat(cset...))
-    index = int(ceil(strlen(strset)*rand(len)))
-    s = strset[index]
-    return s
-end
-
-# global variable that stores gnuplot's state
-gnuplot_state = GnuplotState(false,0,0,strcat("/tmp/gaston-",getenv("USER"),"-",randstring(5),"/"))
-
 # Structs to configure a plot
 # Two types of configuration are needed: one to configure a single curve, and
 # another to configure a set of curves (the 'axes').
@@ -64,18 +54,6 @@ type CurveConf
 end
 CurveConf() = CurveConf("","lines","","",1,0.5)
 
-# dereference CurveConf, by adding a method to copy()
-function copy(conf::CurveConf)
-    new = CurveConf()
-    new.legend = conf.legend
-    new.plotstyle = conf.plotstyle
-    new.color = conf.color
-    new.marker = conf.marker
-    new.linewidth = conf.linewidth
-    new.pointsize = conf.pointsize
-    return new
-end
-
 type AxesConf
     title::String      # plot title
     xlabel::String     # xlabel
@@ -85,18 +63,6 @@ type AxesConf
     axis::String       # normal, semilog{x,y}, loglog
 end
 AxesConf() = AxesConf("Untitled","x","y","z","inside vertical right top","")
-
-# dereference AxesConf
-function copy(conf::AxesConf)
-    new = AxesConf()
-    new.title = conf.title
-    new.xlabel = conf.xlabel
-    new.ylabel = conf.ylabel
-    new.zlabel = conf.zlabel
-    new.box = conf.box
-    new.axis = conf.axis
-    return new
-end
 
 # coordinates and configuration for a single curve
 type CurveData
@@ -118,5 +84,5 @@ type Figure
 end
 Figure(handle) = Figure(handle,[CurveData()],AxesConf())
 
-# curves and configuration for all figures
-figs = []
+# coordinate type
+Coord = Union(Range1,Range,Matrix,Vector)
