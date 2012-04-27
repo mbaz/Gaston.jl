@@ -28,9 +28,6 @@ load("gaston_hilvl.jl")
 # set up global variables
 # global variable that stores gnuplot's state
 gnuplot_state = GnuplotState(false,0,0,strcat("/tmp/gaston-",getenv("USER"),
-    "-",randstring(5),"/"))
+    "-",randstring(5),"/"),[])
 # when gnuplot_state goes out of scope, close the pipe
 finalizer(gnuplot_state,gnuplot_exit)
-
-# curves and configuration for all figures
-figs = []

@@ -26,8 +26,10 @@ type GnuplotState
     current::Int                # current figure
     fid                         # pipe stream id
     tmpdir::String              # where to store data files
+    figs::Array                 # storage for all figures
 
-    function GnuplotState(running::Bool,current::Int,fid,tmpdir::String)
+    function GnuplotState(running::Bool,current::Int,fid,tmpdir::String,
+        figs::Array)
         # Check to see if tmpdir exists, and create it if not
         try
             f = open(tmpdir)
@@ -35,7 +37,7 @@ type GnuplotState
         catch
             system(strcat("mkdir ",tmpdir))
         end
-        new(running,current,fid,tmpdir)
+        new(running,current,fid,tmpdir,figs)
     end
 end
 

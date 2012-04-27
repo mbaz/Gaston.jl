@@ -21,7 +21,7 @@
 
 # append x,y,z coordinates and configuration to current figure
 function addcoords(x::Coord,y::Coord,Z::Array,conf::CurveConf)
-    global figs
+    global gnuplot_state
     # check that at least one figure has been setup
     if gnuplot_state.current == 0
         figure(1)
@@ -99,6 +99,7 @@ function addcoords(x::Coord,y::Coord,Z::Array,conf::CurveConf)
     conf = copy(conf)       # we need to dereference conf
     # append data to figure
     c = findfigure(gnuplot_state.current)
+    figs = gnuplot_state.figs
     if isempty(figs[c].curves[1].x)
         # figure() creates a structure with one empty curve; we want to
         # overwrite it with the first actual curve
@@ -106,6 +107,7 @@ function addcoords(x::Coord,y::Coord,Z::Array,conf::CurveConf)
     else
         figs[c].curves = [figs[c].curves, CurveData(x,y,Z,conf)]
     end
+    gnuplot_state.figs = figs
 end
 addcoords(y) = addcoords(1:length(y),y,[],CurveConf())
 addcoords(y,c::CurveConf) = addcoords(1:length(y),y,[],c)
@@ -131,7 +133,7 @@ addcoords(Y::Matrix) = addcoords(Y,CurveConf())
 
 # append error data to current set of coordinates
 function adderror(yl::Coord,yh::Coord)
-    global figs
+    global gnuplot_state
     # check that at least one figure has been setup
     if gnuplot_state.current == 0
         figure(1)
@@ -169,7 +171,7 @@ function adderror(yl::Coord,yh::Coord)
     end
     # verify vector sizes -- this also implies that x,y coordinates must be
     # added to figure, before error data can be attached to it
-    assert(length(figs[c].curves[end].x) == length(yl),
+    assert(length(gnuplot_state.figs[c].curves[end].x) == length(yl),
         "Error data vector must be of same size as abscissa")
     if !isempty(yh)
         assert(length(yh) == length(yl),
@@ -177,15 +179,15 @@ function adderror(yl::Coord,yh::Coord)
     end
 
     # set fields in current curve
-    figs[c].curves[end].ylow = yl
-    figs[c].curves[end].yhigh = yh
+    gnuplot_state.figs[c].curves[end].ylow = yl
+    gnuplot_state.figs[c].curves[end].yhigh = yh
 
 end
 adderror(ydelta) = adderror(ydelta,[])
 
 # add axes configuration to current figure
 function addconf(conf::AxesConf)
-    global figs
+    global gnuplot_state
     # check that at least one figure has been setup
     if gnuplot_state.current == 0
         figure(1)
@@ -193,17 +195,19 @@ function addconf(conf::AxesConf)
     conf = copy(conf)
     # select current plot
     c = findfigure(gnuplot_state.current)
-    figs[c].conf = conf
+    gnuplot_state.figs[c].conf = conf
 end
 
 # 'plot' is our workhorse plotting function
 function llplot()
+    global gnuplot_state
     # select current plot
     c = findfigure(gnuplot_state.current)
     if c == 0
         println("No current figure")
         return
     end
+    figs = gnuplot_state.figs
     config = figs[c].conf
     gnuplot_send(strcat("set term wxt ",string(c)))
     gnuplot_send("set autoscale")

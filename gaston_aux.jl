@@ -49,6 +49,7 @@ function gnuplot_exit(x...)
     gnuplot_state.running = false
     gnuplot_state.current = 0
     gnuplot_state.fid = 0
+    gnuplot_state.figs = []
 end
 
 # return a random string (for filenames)
@@ -62,9 +63,10 @@ end
 
 # Return index to figure with handle 'c'. If no such figure exists, returns 0.
 function findfigure(c)
+    global gnuplot_state
     i = 0
-    for j = 1:length(figs)
-        if figs[j].handle == c
+    for j = 1:length(gnuplot_state.figs)
+        if gnuplot_state.figs[j].handle == c
             i = j
             break
         end

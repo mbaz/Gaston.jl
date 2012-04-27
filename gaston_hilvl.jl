@@ -25,11 +25,10 @@
 # Returns the handle of the figure that was closed.
 function closefigure(x...)
     global gnuplot_state
-    global figs
     # create vector of handles
     handles = []
     if gnuplot_state.current != 0
-        for i in figs
+        for i in gnuplot_state.figs
             handles = [handles, i.handle]
         end
     end
@@ -45,19 +44,19 @@ function closefigure(x...)
         end
         # delete all data related to this figure
         _figs = []
-        for i in figs
+        for i in gnuplot_state.figs
             if i.handle != h
                 _figs = [_figs, i]
             end
         end
-        figs = _figs
+        gnuplot_state.figs = _figs
         # update state
-        if isempty(figs)
+        if isempty(gnuplot_state.figs)
             # we just closed the last figure
             gnuplot_state.current = 0
         else
             # select the most-recently created figure
-            gnuplot_state.current = figs[end].handle
+            gnuplot_state.current = gnuplot_state.figs[end].handle
         end
     else
         println("No such figure exists");
@@ -69,7 +68,7 @@ end
 # close all figures
 function closeall()
     try
-        for i in figs
+        for i in gnuplot_state.figs
             closefigure()
         end
     catch
@@ -81,7 +80,6 @@ end
 # Returns the current figure handle.
 function figure(x...)
     global gnuplot_state
-    global figs
 
     # check arguments
     if !isempty(x)
@@ -98,7 +96,7 @@ function figure(x...)
     end
     # create vector of handles, needed later
     handles = []
-    for i in figs
+    for i in gnuplot_state.figs
         handles = [handles, i.handle]
     end
     # determine figure handle
@@ -125,7 +123,7 @@ function figure(x...)
     gnuplot_state.current = h
     gnuplot_send(strcat("set term wxt ", string(h)))
     if !contains(handles,h)
-        figs = [figs, Figure(h)]
+        gnuplot_state.figs = [gnuplot_state.figs, Figure(h)]
     else
         llplot()
     end
@@ -134,6 +132,7 @@ end
 
 # 2-d plots
 function plot(args...)
+    global gnuplot_state
     # if args[1] is an integer, it's the function handle.
     if isa(args[1], Int)
         h = args[1]
@@ -243,6 +242,7 @@ function plot(args...)
 end
 
 function histogram(args...)
+    global gnuplot_state
     # if args[1] is an integer, it's the function handle.
     if isa(args[1], Int)
         h = args[1]
