@@ -18,20 +18,17 @@
 ## FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 ## DEALINGS IN THE SOFTWARE.
 
-# load files
-load("gaston_types.jl")
-load("gaston_aux.jl")
-load("gaston_lowlvl.jl")
-load("gaston_midlvl.jl")
-load("gaston_hilvl.jl")
-load("gaston_config.jl")
+# setter functions for write access to gaston_config
 
-# set up global variables
-# global variable that stores gnuplot's state
-gnuplot_state = GnuplotState(false,0,0,strcat("/tmp/gaston-",getenv("USER"),
-    "-",randstring(5),"/"),[])
-# when gnuplot_state goes out of scope, close the pipe
-finalizer(gnuplot_state,gnuplot_exit)
-
-# global variable that stores Gaston's configuration
-gaston_config = GastonConfig()
+# Set terminal type.
+# Returns new terminal name upon success, errors out otherwise.
+function set_terminal(term::String)
+    # verify terminal type is supported
+    supp_terms = ["wxt", "x11"]
+    if !contains(supp_terms, term)
+        error(strcat("Terminal type ", term, " not supported."))
+    else
+        gaston_config.terminal = term
+    end
+    return term
+end
