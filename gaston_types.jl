@@ -41,6 +41,33 @@ type GnuplotState
     end
 end
 
+# Structure to keep Gaston's configuration
+type GastonConfig
+    # default CurveConf values
+    legend::String
+    plotstyle::String
+    color::String
+    marker::String
+    linewidth::Real
+    pointsize::Real
+    # default AxesConf values
+    title::String
+    xlabel::String
+    ylabel::String
+    zlabel::String
+    box::String
+    axis::String
+    # default terminal type
+    terminal::String
+end
+GastonConfig() = GastonConfig(
+    # CurveConf
+    "","lines","","",1,0.5,
+    # AxesConf
+    "Untitled","x","y","z","inside vertical right top","",
+    # terminal
+    "wxt")
+
 # Structs to configure a plot
 # Two types of configuration are needed: one to configure a single curve, and
 # another to configure a set of curves (the 'axes').
@@ -54,7 +81,13 @@ type CurveConf
     pointsize::Real
 
 end
-CurveConf() = CurveConf("","lines","","",1,0.5)
+CurveConf() = CurveConf(
+    gaston_config.legend,
+    gaston_config.plotstyle,
+    gaston_config.color,
+    gaston_config.marker,
+    gaston_config.linewidth,
+    gaston_config.pointsize)
 
 type AxesConf
     title::String      # plot title
@@ -64,7 +97,13 @@ type AxesConf
     box::String        # legend box (used with 'set key')
     axis::String       # normal, semilog{x,y}, loglog
 end
-AxesConf() = AxesConf("Untitled","x","y","z","inside vertical right top","")
+AxesConf() = AxesConf(
+    gaston_config.title,
+    gaston_config.xlabel,
+    gaston_config.ylabel,
+    gaston_config.zlabel,
+    gaston_config.box,
+    gaston_config.axis)
 
 # coordinates and configuration for a single curve
 type CurveData

@@ -201,6 +201,9 @@ end
 # 'plot' is our workhorse plotting function
 function llplot()
     global gnuplot_state
+    global gaston_config
+
+    term = gaston_config.terminal
     # select current plot
     c = findfigure(gnuplot_state.current)
     if c == 0
@@ -209,7 +212,7 @@ function llplot()
     end
     figs = gnuplot_state.figs
     config = figs[c].conf
-    gnuplot_send(strcat("set term wxt ",string(c)))
+    gnuplot_send(strcat("set term ", term, " ", string(c)))
     gnuplot_send("set autoscale")
     # legend box
     if config.box != ""

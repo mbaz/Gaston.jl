@@ -31,3 +31,6 @@ gnuplot_state = GnuplotState(false,0,0,strcat("/tmp/gaston-",getenv("USER"),
     "-",randstring(5),"/"),[])
 # when gnuplot_state goes out of scope, close the pipe
 finalizer(gnuplot_state,gnuplot_exit)
+
+# global variable that stores Gaston's configuration
+gaston_config = GastonConfig()

@@ -25,6 +25,9 @@
 # Returns the handle of the figure that was closed.
 function closefigure(x...)
     global gnuplot_state
+    global gaston_config
+
+    term = gaston_config.terminal
     # create vector of handles
     handles = []
     if gnuplot_state.current != 0
@@ -40,7 +43,7 @@ function closefigure(x...)
     end
     if contains(handles,h)
         if gnuplot_state.running
-            gnuplot_send(strcat("set term wxt ", string(h), " close"))
+            gnuplot_send(strcat("set term ", term, " ", string(h), " close"))
         end
         # delete all data related to this figure
         _figs = []
@@ -67,6 +70,8 @@ end
 
 # close all figures
 function closeall()
+    global gnuplot_state
+
     try
         for i in gnuplot_state.figs
             closefigure()
@@ -80,6 +85,9 @@ end
 # Returns the current figure handle.
 function figure(x...)
     global gnuplot_state
+    global gaston_config
+
+    term = gaston_config.terminal
 
     # check arguments
     if !isempty(x)
@@ -121,7 +129,7 @@ function figure(x...)
     end
     # if figure with handle h exists, replot it; otherwise create it
     gnuplot_state.current = h
-    gnuplot_send(strcat("set term wxt ", string(h)))
+    gnuplot_send(strcat("set term ", term, " ", string(h)))
     if !contains(handles,h)
         gnuplot_state.figs = [gnuplot_state.figs, Figure(h)]
     else
