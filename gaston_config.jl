@@ -23,12 +23,31 @@
 # Set terminal type.
 # Returns new terminal name upon success, errors out otherwise.
 function set_terminal(term::String)
-    # verify terminal type is supported
-    supp_terms = ["wxt", "x11"]
-    if !contains(supp_terms, term)
-        error(strcat("Terminal type ", term, " not supported."))
-    else
+    global gaston_config
+
+    if validate_terminal(term)
         gaston_config.terminal = term
+    else
+        error(strcat("Terminal type ", term, " not supported."))
     end
     return term
+end
+
+# Set default values for CurveConf and AxesConf. Return set value upon
+# success, error out otherwise.
+function set_default_legend(s::String)
+    global gaston_config
+
+    gaston_config.legend = s
+end
+
+function set_default_plotstyle(s::String)
+    global gaston_config
+
+    if validate_2d_plotstyle(s) || validate_3d_plotstyle(s) ||
+        validate_image_plotstyle(s)
+        gaston_config.plotstyle = s
+    else
+        error(strcat("Plotstyle ", s, " not supported."))
+    end
 end

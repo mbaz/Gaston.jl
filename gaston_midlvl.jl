@@ -22,6 +22,7 @@
 # append x,y,z coordinates and configuration to current figure
 function addcoords(x::Coord,y::Coord,Z::Array,conf::CurveConf)
     global gnuplot_state
+
     # check that at least one figure has been setup
     if gnuplot_state.current == 0
         figure(1)
@@ -86,15 +87,19 @@ function addcoords(x::Coord,y::Coord,Z::Array,conf::CurveConf)
     # check curve configuration: property names
     # TODO: figure out how to check valid color names -- gnuplot supports
     #  112 different color names.
-    # check valid values of plotstyle
-    validps=["lines", "linespoints", "points", "impulses", "errorbars",
-    "errorlines", "pm3d", "boxes","image","rgbimage"]
-    assert(contains(validps,conf.plotstyle),"Invalid plotstyle specified")
     # check valid values of marker
-    validmks = ["", "+", "x", "*", "esquare", "fsquare", "ecircle",
-    "fcircle", "etrianup", "ftrianup", "etriandn", "ftriandn", "edmd",
-    "fdmd"]
-    assert(contains(validmks,conf.marker), "Invalid mark name specified")
+    assert(validate_marker(conf.marker), "Invalid mark name specified")
+    if nex && !neZ ## 2-d plot
+        # check valid values of plotstyle
+        assert(validate_2d_plotstyle(conf.plotstyle),
+            "Invalid plotstyle specified")
+    elseif nex && neZ ## 3-d plot
+        assert(validate_3d_plotstyle(conf.plotstyle),
+            "Invalid plotstyle specified")
+    else ## image
+        assert(validate_image_plotstyle(conf.plotstyle),
+            "Invalid plotstyle specified")
+    end
 
     conf = copy(conf)       # we need to dereference conf
     # append data to figure
@@ -192,13 +197,19 @@ function addconf(conf::AxesConf)
     if gnuplot_state.current == 0
         figure(1)
     end
+
+    # Perform argument validation
+    # TODO: find a way to validate the box argument
+    # validate axis type
+    assert(validate_axis(conf.axis),"Invalid axis type specified")
+
     conf = copy(conf)
     # select current plot
     c = findfigure(gnuplot_state.current)
     gnuplot_state.figs[c].conf = conf
 end
 
-# 'plot' is our workhorse plotting function
+# llplot() is our workhorse plotting function
 function llplot()
     global gnuplot_state
     global gaston_config

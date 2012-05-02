@@ -210,8 +210,6 @@ function plot(args...)
             if ai == "legend"
                 cc.legend = ai1
             elseif ai == "plotstyle"
-                assert(contains(["lines", "linespoints", "points",
-                    "impulses","boxes"],ai1),"Invalid plot style")
                 cc.plotstyle = ai1
             elseif ai == "color"
                 cc.color = ai1

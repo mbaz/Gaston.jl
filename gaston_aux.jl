@@ -204,3 +204,63 @@ function copy(conf::AxesConf)
     new.axis = conf.axis
     return new
 end
+
+# Validation functions.
+# These functions validate that configuration parameters are valid and
+# supported. They return true iff the argument validates.
+
+# Validate terminal type.
+function validate_terminal(s::String)
+    supp_terms = ["wxt", "x11"]
+    if contains(supp_terms, s)
+        return true
+    end
+    return false
+end
+
+# Valid plotstyles supported by gnuplot's plot
+function validate_2d_plotstyle(s::String)
+    valid = ["lines", "linespoints", "points", "impulses", "boxes",
+        "errorlines", "errorbars"]
+    if contains(valid, s)
+        return true
+    end
+    return false
+end
+
+# Valid plotstyles supported by gnuplot's splot
+function validate_3d_plotstyle(s::String)
+    valid = ["lines", "linespoints", "points", "impulses", "pm3d"]
+    if contains(valid, s)
+        return true
+    end
+    return false
+end
+
+# Valid plotstyles supported by gnuplot's plot with images
+function validate_image_plotstyle(s::String)
+    valid = ["image", "rgbimage"]
+    if contains(valid, s)
+        return true
+    end
+    return false
+end
+
+# Valid axis types
+function validate_axis(s::String)
+    valid = ["", "normal", "semilogx", "semilogy", "loglog"]
+    if contains(valid,s)
+        return true
+    end
+    return false
+end
+
+# Valid markers supported by Gaston
+function validate_marker(s::String)
+    valid = ["", "+", "x", "*", "esquare", "fsquare", "ecircle", "fcircle",
+    "etrianup", "ftrianup", "etriandn", "ftriandn", "edmd", "fdmd"]
+    if contains(valid, s)
+        return true
+    end
+    return false
+end
