@@ -1,3 +1,17 @@
+version 0.4:
+
+  User visible:
+	* Add support for x11 terminal
+	* Add support for printing to files (gif and svg)
+	* Add support for setting default values for all plot properties
+	* Improved documentation
+
+  Under the hood:
+	* Improved detection of invalid configurations
+	* No longer require 'figs' global variable
+	* Add new 'config' type to store configuration: this will allow the user
+	  to configure many aspects of Gaston's behavior
+	* File organization has been completely revamped
 
 version 0.3:
 
