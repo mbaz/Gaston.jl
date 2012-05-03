@@ -59,3 +59,72 @@ function set_default_plotstyle(s::String)
     end
 end
 
+function set_default_color(s::String)
+    global gaston_config
+
+    # We can't validate colors yet
+    gaston_config.color = s
+end
+
+function set_default_marker(s::String)
+    global gaston_config
+
+    if validate_marker(s)
+        gaston_config.marker = s
+    else
+        error(strcat("Marker ", s, " not supported."))
+    end
+end
+
+function set_default_linewidth(i::Real)
+    global gaston_config
+
+    gaston_config.linewidth = i
+end
+
+function set_default_pointsize(i::Real)
+    global gaston_config
+
+    gaston_config.pointsize = i
+end
+
+function set_default_title(s::String)
+    global gaston_config
+
+    gaston_config.title = s
+end
+
+function set_default_xlabel(s::String)
+    global gaston_config
+
+    gaston_config.xlabel = s
+end
+
+function set_default_ylabel(s::String)
+    global gaston_config
+
+    gaston_config.ylabel = s
+end
+
+function set_default_zlabel(s::String)
+    global gaston_config
+
+    gaston_config.zlabel = s
+end
+
+function set_default_box(s::String)
+    global gaston_config
+
+    # We can't validate box yet
+    gaston_config.box = s
+end
+
+function set_default_axis(s::String)
+    global gaston_config
+
+    if validate_axis(s)
+        gaston_config.marker = s
+    else
+        error(strcat("Axis ", s, " not supported."))
+    end
+end
