@@ -1,6 +1,7 @@
 \documentclass[11pt]{article}
 
 \usepackage{booktabs}
+\usepackage{multirow}
 
 \usepackage{amssymb}
 
@@ -20,6 +21,8 @@
 }
 
 \hyphenpenalty 300
+
+\newcommand{\cm}{$\checkmark$}
 
 \title{Gaston \\[0.8cm] \large A plotting utility for Julia \\[0.8cm] v. 0.3}
 \author{M. Bazdresch}
@@ -56,8 +59,7 @@ To use Gaston, follow this procedure:
 
 \begin{enumerate}
 
-\item Save the files \cmd{gaston.jl}, \cmd{gastonini.jl}, \cmd{gastonaux.jl},
-	\cmd{gaston\_hilvl.jl} and \cmd{gastondemo.jl} somewhere convenient. Then,
+\item Save all files \cmd{gaston*.jl} somewhere convenient. Then,
 	you may \cmd{cd} to that directory and start julia there, or do
 
 \begin{juliacode}
@@ -73,7 +75,7 @@ load("gaston.jl")
 \item To run a demo, do
 
 \begin{juliacode}
-load("gastondemo.jl")
+load("gaston_demo.jl")
 demo()
 \end{juliacode}
 
@@ -116,6 +118,21 @@ keyboard interactive.
 Handles may be created in any numerical order.
 
 This function always returns the handle of the current figure.
+
+\subsection{Terminals}
+
+Gaston supports plotting to the screen as well as printing the plots to files.
+Two screen terminals are supported: \cmd{wxt} and \cmd{x11}. The \cmd{x11}
+terminal is provided for use in systems that don't support WxWindows.
+
+For printint to files, terminals \cmd{svg} and \cmd{gif} are supported. For
+more details on printing, see section \ref{s:print} below.
+
+To set the terminal type, use the command
+\begin{juliacode}
+set_terminal(term)
+\end{juliacode}
+where \cmd{term} is a string.
 
 \subsection{2-D plotting}
 
@@ -365,6 +382,42 @@ dimensional. The first and second dimensions correspond to the value at each
 point in the image.  The third dimension specifies red, green and blue values
 at each point.  Finally, set the plotstyle to \cmd{rgbimage}.
 
+\subsection{Printing to a file}
+\label{s:print}
+
+Gaston supports plotting a figure to a file instead of the screen
+(\textit{printing} a file). Currently
+supported are SVG and GIF files. There are two ways to print figures.
+
+\subsubsection{Printing a single figure}
+
+If you have a figure on screen that you want to print, you have to change the
+terminal type, specify the filename, and then select the figure. For example,
+if you want to print the figure with handle 10 to a GIF file named
+\cmd{test.gif}, you would issue these commands:
+\begin{juliacode}
+set_terminal("gif")
+set_filename("test.gif")
+figure(10)
+set_terminal("wxt")
+\end{juliacode}
+The final \cmd{set\_terminal} will allow subsequent plot commands to go to the
+screen again.
+
+\subsubsection{Always print to files}
+
+If you want regular plot commands to print to files instead of showing the
+plots on the screen, just set the terminal type and filename at the start of
+your session. For example, Gaston may beused in a webserver that reads SVG
+plots from a pipe; this may be set up as follows:
+\begin{juliacode}
+set_terminal("svg")
+set_filename("|serverpipe")
+plot(sin(-3:0.01:3),"title","SVG test")
+\end{juliacode}
+The plot command in the last line will cause the SVG data representing the
+figure to be sent to the pipe \cmd{serverpipe}.
+
 \section{Reference}
 
 Note: In this section, at least superficial knowledge of Julia and gnuplot is
@@ -408,7 +461,7 @@ table.
 	\cmd{legend} & \cmd{String} & \cmd{""} & Any string. \\
 	\cmd{plotstyle} & \cmd{String} & \cmd{lines} & \cmd{lines}, \cmd{linespoints},
 	\cmd{points}, \cmd{impulses}, \cmd{errorbars}, \cmd{errorlines},
-	\cmd{pm3d}, \cmd{boxes}. \\
+	\cmd{pm3d}, \cmd{boxes}, \cmd{image}, \cmd{rgbimage}. \\
 	\cmd{color} & \cmd{String} & \cmd{""} & \cmd{""}, any gnuplot color name,
 	or a color specified in a string in the format \cmd{"\#RRGGBB"}. \\
 	\cmd{marker} & \cmd{String} & \cmd{""} & \cmd{""}, \cmd{+}, \cmd{x}, \cmd{*}, \cmd{esquare},
@@ -488,8 +541,8 @@ table.
 	\cmd{zlabel} & \cmd{String} & \cmd{"z"} & Any string \\
 	\cmd{box} & \cmd{String} & \cmd{"inside vertical right top"} & Any valid
 	string \\
-	\cmd{axis} & \cmd{String} & \cmd{""} & \cmd{normal}, \cmd{semilogx},
-	\cmd{semilogy}, \cmd{loglog}  \\
+	\cmd{axis} & \cmd{String} & \cmd{""} & \cmd{""}, \cmd{normal},
+	\cmd{semilogx}, \cmd{semilogy}, \cmd{loglog}  \\
 	\bottomrule
 \end{tabular}
 \end{center}}
@@ -497,6 +550,75 @@ table.
 Notes: Gaston does not verify that \cmd{box} contains a valid \cmd{set key}
 argument. The \cmd{axis} values follow Matlab's conventions for logscale axes;
 Gaston translates them to gnuplot's equivalents.
+
+\subsection{Changing default configuration}
+
+Gaston provides functions to change the default values listed above. There is
+one function per each property, both for curves and for axes. For example, a
+Spanish speaker may wish to change the default value for figure titles from
+``Untitled'' to ``Sin título''. This is achieved by
+\begin{juliacode}
+set_default_title("Sin título")
+\end{juliacode}
+and, from that point on, any figure with an unspecified title will be titled
+thus.
+
+Functions to change the defaults have the form \cmd{set\_default\_*(arg)},
+where \texttt{*} is the property name and \cmd{arg} is the new default
+value (must be of the appropriate type).
+
+\subsection{Plot types}
+
+In this section, we describe how Gaston decides which kind of plot to produce
+(2-d, 3-d, or image), based on the available coordinates and specified plot
+style.
+
+In the following table, a checkmark (\cm) means that the coordinate has been
+specified by the user in either a mid-level or high-level command (\cmd{y}
+coordinates, if not specified, are calculated by Gaston, and are not included
+in the following table. The same applies to \cmd{yhigh}).
+
+{\small
+\begin{center}
+	\begin{tabular}{lcccl}
+	\toprule
+	\textbf{plotstyle} & \textbf{x} & \textbf{Z} & \textbf{ylow} &
+	\textbf{Gnuplot command} \\
+	\midrule
+	\multirow{2}{*}{\cmd{lines}}
+	& \cm &     &  & \cmd{plot with lines} \\
+	& \cm & \cm &  & \cmd{splot with lines} \\
+	\cmidrule(r){2-5}
+	\multirow{2}{*}{\cmd{linespoints}}
+	& \cm &     &  & \cmd{plot with linespoints} \\
+	& \cm & \cm &  & \cmd{splot with linespoints} \\
+	\cmidrule(r){2-5}
+	\multirow{2}{*}{\cmd{points}}
+	& \cm &     &  & \cmd{plot with points} \\
+	& \cm & \cm &  & \cmd{splot with points} \\
+	\cmidrule(r){2-5}
+	\multirow{2}{*}{\cmd{impulses}}
+	& \cm &     &  & \cmd{plot with impulses} \\
+	& \cm & \cm &  & \cmd{splot with impulses} \\
+	\cmidrule(r){2-5}
+	\cmd{boxes}       & \cm &  &     & \cmd{plot with boxes} \\
+	\cmd{errorbars}   & \cm &  & \cm & \cmd{plot with errorbars} \\
+	\cmd{errorlines}  & \cm &  & \cm & \cmd{plot with errorlines} \\
+	\cmidrule(r){2-5}
+	\multirow{2}{*}{\cmd{pm3d}}
+	&     & \cm &  & \cmd{splot with pm3d} \\
+	& \cm & \cm &  & \cmd{splot with pm3d} \\
+	\cmidrule(r){2-5}
+	\cmd{image}       &  & \cm &  & \cmd{plot with image} \\
+	\cmd{rgbimage}    &  & \cm &  & \cmd{plot with rgbimage} \\
+	\bottomrule
+\end{tabular}
+\end{center}}
+
+Any other combination of coordinates and plotstyle produces undefined behavior
+-- we try to identify invalid combinations and produce an error, but this is
+not guaranteed. Please note that mixing 2-d and 3-d plots on the same figure
+also produces undefined behavior.
 
 \subsection{Global variables}
 
