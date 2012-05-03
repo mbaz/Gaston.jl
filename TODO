@@ -1,30 +1,27 @@
 To do file for Gaston
 
-v 0.4:
+v 0.5:
 
 * keep improving error checking
+* keep improving documentation
 * remove the restriction to have only one image per figure
-* add curve fill support
 * add high-level plotting functions for 3-d and images
-* reorganize functions in files (aux,types,llvl,mlvl,hlvl)
-* add support for x11 terminal, as a fallback for people without wxwindows
 * add unit tests that try to break the program
 * add demo for high-level functions
+* add support for pdfcairo (or pngcairo?) for basic print-to-file support
 
-v 0.5 and later:
+v 0.6 and later:
 
 * keep improving error checking
+* keep improving documentation
 * improve high-level, 'quick plot' functions, similar to Octave's
 * improve demo() and unit tests as needed
-* add support for pdfcairo (or pngcairo?) for basic print-to-file support
 * review type annotations to see if they can be improved
-* review which other plot styles may be supported (filledcurves, map)
+* review which other plot styles may be supported (filledcurves, map, dot)
 * add suport for setting the colormap
 * add debug options: print gnuplot command line, etc
-* move figs inside gnuplot_state, to get rid of one global variable
 * let image types specify x,y coordinates (will allow spectrograms)
 * review the new 'optional arguments' framework and see if we can use it
 * allow user setting gnuplot command
 * add support for curve smoothing
-* add support for user setting default curve and axis properties
-* improve documentation
+* look into the mmap interface to avoid creating files
