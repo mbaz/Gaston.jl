@@ -214,7 +214,6 @@ function llplot()
     global gnuplot_state
     global gaston_config
 
-    term = gaston_config.terminal
     # select current plot
     c = findfigure(gnuplot_state.current)
     if c == 0
@@ -223,7 +222,11 @@ function llplot()
     end
     figs = gnuplot_state.figs
     config = figs[c].conf
-    gnuplot_send(strcat("set term ", term, " ", string(c)))
+
+    # Build terminal setup string and send it to gnuplot
+    ts = termstring(gaston_config.terminal)
+    gnuplot_send(ts)
+
     gnuplot_send("set autoscale")
     # legend box
     if config.box != ""

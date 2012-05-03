@@ -33,6 +33,13 @@ function set_terminal(term::String)
     return term
 end
 
+# For terminals that support file output, set the file name
+function set_filename(s::String)
+    global gaston_config
+
+    gaston_config.outputfile = s
+end
+
 # Set default values for CurveConf and AxesConf. Return set value upon
 # success, error out otherwise.
 function set_default_legend(s::String)
@@ -51,3 +58,4 @@ function set_default_plotstyle(s::String)
         error(strcat("Plotstyle ", s, " not supported."))
     end
 end
+

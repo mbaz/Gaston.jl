@@ -59,6 +59,8 @@ type GastonConfig
     axis::String
     # default terminal type
     terminal::String
+    # for terminals that support filenames
+    outputfile::String
 end
 GastonConfig() = GastonConfig(
     # CurveConf
@@ -66,7 +68,10 @@ GastonConfig() = GastonConfig(
     # AxesConf
     "Untitled","x","y","z","inside vertical right top","",
     # terminal
-    "wxt")
+    "wxt",
+    # output file name
+    ""
+    )
 
 # Structs to configure a plot
 # Two types of configuration are needed: one to configure a single curve, and

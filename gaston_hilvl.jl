@@ -42,8 +42,12 @@ function closefigure(x...)
         h = x[1]
     end
     if contains(handles,h)
-        if gnuplot_state.running
-            gnuplot_send(strcat("set term ", term, " ", string(h), " close"))
+        # only care about closing windows if term type is screen
+        if is_term_screen(term)
+            if gnuplot_state.running
+                gnuplot_send(
+                    strcat("set term ", term, " ", string(h), " close"))
+            end
         end
         # delete all data related to this figure
         _figs = []
@@ -128,8 +132,9 @@ function figure(x...)
         end
     end
     # if figure with handle h exists, replot it; otherwise create it
+    ts = termstring(gaston_config.terminal)
+    gnuplot_send(ts)
     gnuplot_state.current = h
-    gnuplot_send(strcat("set term ", term, " ", string(h)))
     if !contains(handles,h)
         gnuplot_state.figs = [gnuplot_state.figs, Figure(h)]
     else

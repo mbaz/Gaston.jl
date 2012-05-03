@@ -205,14 +205,46 @@ function copy(conf::AxesConf)
     return new
 end
 
+# Build a "set term" string appropriate for the terminal type
+function termstring(term::String)
+    global gnuplot_state
+    global gaston_config
+
+    c = findfigure(gnuplot_state.current)
+    if is_term_screen(term)
+        ts = strcat("set term ", term, " ", string(c))
+    else
+        ts = strcat("set term ", term, "\nset output ", "\"",
+            gaston_config.outputfile, "\"")
+    end
+    return ts
+end
+
 # Validation functions.
 # These functions validate that configuration parameters are valid and
 # supported. They return true iff the argument validates.
 
 # Validate terminal type.
 function validate_terminal(s::String)
-    supp_terms = ["wxt", "x11"]
+    supp_terms = ["wxt", "x11", "svg", "gif"]
     if contains(supp_terms, s)
+        return true
+    end
+    return false
+end
+
+# Identify terminal by type: file or screen
+function is_term_screen(s::String)
+    screenterms = ["wxt", "x11"]
+    if contains(screenterms, s)
+        return true
+    end
+    return false
+end
+
+function is_term_file(s::String)
+    screenterms = ["svg", "gif"]
+    if contains(screenterms, s)
         return true
     end
     return false
