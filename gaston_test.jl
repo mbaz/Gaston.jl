@@ -55,10 +55,10 @@ function run_tests_error()
     @test_error figure(1.0)
     @test_error figure(1:2)
     # high-level functions: closefigure
-    @test_error closefigure(-1)  # TODO: should fail
-    @test_error closefigure("invalid")  # TODO: should fail
-    @test_error closefigure(1.0)  # TODO: should fail
-    @test_error closefigure(1:2)  # TODO: should fail
+    @test_error closefigure(-1)
+    @test_error closefigure("invalid")
+    @test_error closefigure(1.0)
+    @test_error closefigure(1:2)
     # high-level functions: plot and histogram
     for op = (:plot, :histogram)
         @test_error op("linewidth")
@@ -99,6 +99,9 @@ function run_tests_success()
     tn = 0
     tp = 0
     closeall()
+    # high-level functions: closefigure
+    @test_success @assert 0 == closefigure()
+    @test_success @assert 0 == closefigure(10)
     # high-level functions: figure
     @test_success @assert 1 == figure()
     @test_success @assert 1 == figure(1)

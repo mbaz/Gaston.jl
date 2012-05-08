@@ -34,7 +34,7 @@ function closefigure(x...)
         h = gnuplot_state.current
     else
         h = x[1]
-        if !(isa(Int,h) && h > 0)
+        if !(isa(h,Int) && h > 0)
             error("Invalid handle")
         end
     end
