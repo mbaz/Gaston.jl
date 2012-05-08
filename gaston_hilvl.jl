@@ -20,12 +20,24 @@
 
 ## This file contains "high-level" plotting functions, similar to Octave's.
 
-# figure handling
-# Close a figure, or current figure.
-# Returns the handle of the figure that was closed.
+# Closes a figure, or current figure if not given any arguments.
+# If handle is not empty, and it's not a natural number, errors out.
+# If handle is a natural number but no such figure exists, returns 0.
+# Otherwise, returns the handle of the figure that was closed.
 function closefigure(x...)
     global gnuplot_state
     global gaston_config
+
+    # parse argument
+    if isempty(x)
+        # close current figure
+        h = gnuplot_state.current
+    else
+        h = x[1]
+        if !(isa(Int,h) && h > 0)
+            error("Invalid handle")
+        end
+    end
 
     term = gaston_config.terminal
     # create vector of handles
@@ -34,12 +46,6 @@ function closefigure(x...)
         for i in gnuplot_state.figs
             handles = [handles, i.handle]
         end
-    end
-    if isempty(x)
-        # close current figure
-        h = gnuplot_state.current
-    else
-        h = x[1]
     end
     if contains(handles,h)
         # only care about closing windows if term type is screen
@@ -66,7 +72,6 @@ function closefigure(x...)
             gnuplot_state.current = gnuplot_state.figs[end].handle
         end
     else
-        println("No such figure exists");
         h = 0
     end
     return h
