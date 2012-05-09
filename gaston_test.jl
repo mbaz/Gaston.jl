@@ -18,37 +18,65 @@
 ## FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 ## DEALINGS IN THE SOFTWARE.
 
+
+# Gaston test framework
+#
+# Note: once julia has its own test framework, we might want to migrate to it.
+#
+# There are three kinds of tests:
+#   - Tests that should error -- things that Gaston should not allow, such as
+#     building a figure with an invalid plotstyle. In these cases, Gaston
+#     should issue an error().
+#     For these tests, we use the test_error macro.
+#   - Tests that should succeed -- things that should work without producing
+#     an error.
+#     For these tests, we use the test_success macro.
+#   - Test that certain functions return certain values. These tests help to
+#     verify the functions are working correctly, not just erroring or
+#     succeeding.
+#     For these tests, we use the test_success macro in combination with
+#     @assert.
+#
+# In all cases, when a test fails, the expression under test is echoed to
+# the screen to help identify it.
+
 macro test_error(ex)
     quote
-        tn = tn + 1
-        s = strcat("Test number ", string(tn), ". Error expected. Result: ")
+        testnumber = testnumber + 1
+        testsrun = testsrun + 1
+        s = strcat("Test number ", string(testnumber), ". Error expected. Result: ")
         try
             eval($ex)
             println(strcat(s, "Success (Test failed.)"))
+            println($string(ex))
         catch
             println(strcat(s, "Error (Test passed.)"))
-            tp = tp + 1
+            testspassed = testspassed + 1
         end
     end
 end
 
 macro test_success(ex)
     quote
-        tn = tn + 1
-        s = strcat("Test number ", string(tn), ". Success expected. Result: ")
+        testnumber = testnumber + 1
+        testsrun = testsrun + 1
+        s = strcat("Test number ", string(testnumber), ". Success expected. Result: ")
         try
             eval($ex)
             println(strcat(s, "Success (Test passed.)"))
-            tp = tp + 1
+            testspassed = testspassed + 1
         catch
             println(strcat(s, "Error (Test failed.)"))
+            println($string(ex))
         end
     end
 end
 
-function run_tests_error()
-    tn = 0
-    tp = 0
+function run_tests_error(ini)
+    testnumber = ini
+    testspassed = 0
+    testsrun = 0
+
     # high-level functions: figure
     @test_error figure(-1)
     @test_error figure("invalid")
@@ -92,14 +120,18 @@ function run_tests_error()
     ## commented out because gnuplot barfs all over the screen
     #@test_error plot(0:10,"color","nonexistant")
     #@test_error plot(0:10,"box","invalid")
-    return tn, tp
+
+    return testsrun, testspassed
 end
 
-function run_tests_success()
-    tn = 0
-    tp = 0
+function run_tests_success(ini)
+    testnumber = ini
+    testspassed = 0
+    testsrun = 0
+
     closeall()
     # high-level functions: closefigure
+    @test_success closefigure()
     @test_success @assert 0 == closefigure()
     @test_success @assert 0 == closefigure(10)
     # high-level functions: figure
@@ -153,15 +185,17 @@ function run_tests_success()
             "box","inside horizontal left top")
         closeall()
     end
+    @test_success figure(10)
     # type instantiation
     @test_success CurveConf()
-    return tn, tp
+
+    return testsrun, testspassed
 end
 
 function run_tests()
     println("Running tests...")
-    (tn_e,tp_e) = run_tests_error()
-    (tn_s,tp_s) = run_tests_success()
-    s = println(strcat("Tests run: ", string(tn_e+tn_s)))
-    s = println(strcat("Tests passed: ", string(tp_e+tp_s)))
+    (total,passed) = run_tests_error(0)
+    (total1,passed1) = run_tests_success(total)
+    s = println(strcat("Tests run: ", string(total+total1)))
+    s = println(strcat("Tests passed: ", string(passed+passed1)))
 end
