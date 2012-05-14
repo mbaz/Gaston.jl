@@ -132,18 +132,16 @@ function linestr_single(conf::CurveConf)
 end
 
 # build a string with plot commands according to configuration
-function linestr(curves::Vector{CurveData}, cmd::String, file::String,
-    postcmd::String)
+function linestr(curves::Vector{CurveData}, cmd::String, file::String)
     # We have to insert "," between plot commands. One easy way to do this
     # is create the first plot command, then the rest
     # We also need to keep track of the current index (starts at zero)
     index = 0
-    s = strcat(cmd, " '", file, "' ", postcmd, " i 0 ",
-        linestr_single(curves[1].conf))
+    s = strcat(cmd, " '", file, "' ", " i 0 ", linestr_single(curves[1].conf))
     if length(curves) > 1
         for i in curves[2:end]
             index += 1
-            s = strcat(s, ", '", file, "' ", postcmd, " i ", string(index)," ",
+            s = strcat(s, ", '", file, "' ", " i ", string(index)," ",
                 linestr_single(i.conf))
         end
     end

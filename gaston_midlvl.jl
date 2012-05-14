@@ -105,7 +105,7 @@ function addcoords(x::Coord,y::Coord,Z::Array,conf::CurveConf)
     # append data to figure
     c = findfigure(gnuplot_state.current)
     figs = gnuplot_state.figs
-    if isempty(figs[c].curves[1].x)
+    if isempty(figs[c].curves[1].x) && isempty(figs[c].curves[1].Z)
         # figure() creates a structure with one empty curve; we want to
         # overwrite it with the first actual curve
         figs[c].curves[1] = CurveData(x,y,Z,conf)
@@ -227,6 +227,7 @@ function llplot()
     ts = termstring(gaston_config.terminal)
     gnuplot_send(ts)
 
+    # send figure configuration to gnuplot
     gnuplot_send("set autoscale")
     # legend box
     if config.box != ""
@@ -260,23 +261,49 @@ function llplot()
             gnuplot_send("set logscale xy")
         end
     end
+
     # datafile filename
     filename = strcat(string(gnuplot_state.tmpdir),"figure",string(c),".dat")
-    # send coordinates, checking each special case
-    # first check whether we are doing 2-d, 3-d or image plots
-    # 2-d plot: x is not empty, Z is empty
-    if isempty(figs[c].curves[1].Z) && !isempty(figs[c].curves[1].x)
+
+    # Send appropriate coordinates and data to gnuplot, depending on
+    # whether we are doing 2-d, 3-d or image plots.
+
+
+    # 2-d plot: (x is not empty and Z is empty) or plostyle is {,rgb}image
+    if ( (!isempty(figs[c].curves[1].x) && isempty(figs[c].curves[1].Z)) ||
+        figs[c].curves[1].conf.plotstyle == "image" ||
+        figs[c].curves[1].conf.plotstyle == "rgbimage" )
         # create data file
         f = open(filename,"w")
         for i in figs[c].curves
-            tmp = i.conf.plotstyle
-            if tmp == "errorbars" || tmp == "errorlines"
+            ps = i.conf.plotstyle
+            if ps == "errorbars" || ps == "errorlines"
                 if isempty(i.yhigh)
                     # ydelta (single error coordinate)
                     dlmwrite(f,[i.x i.y i.ylow],' ')
                 else
                     # ylow, yhigh (double error coordinate)
                     dlmwrite(f,[i.x i.y i.ylow i.yhigh],' ')
+                end
+            elseif ps == "image"
+                # output matrix
+                for col = 1:size(i.Z,2)
+                    y = size(i.Z,1)
+                    for row = 1:size(i.Z,1)
+                        dlmwrite(f,[col row i.Z[y,col]],' ')
+                        y = y-1
+                    end
+                end
+            elseif ps == "rgbimage"
+                # output matrix
+                for col = 1:size(i.Z,2)
+                    y = size(i.Z,1)
+                    for row = 1:size(i.Z,1)
+                        dlmwrite(f,
+                        [col row i.Z[y,col,1] i.Z[y,col,2] i.Z[y,col,3]],
+                        ' ')
+                        y = y-1
+                    end
                 end
             else
                 dlmwrite(f,[i.x i.y],' ')
@@ -285,8 +312,9 @@ function llplot()
         end
         close(f)
         # send command to gnuplot
-        gnuplot_send(linestr(figs[c].curves, "plot", filename,""))
-        # 3-d plot: x is not empty, Z is not empty
+        gnuplot_send(linestr(figs[c].curves, "plot", filename))
+
+    # 3-d plot: x is not empty, Z is not empty
     elseif !isempty(figs[c].curves[1].Z) && !isempty(figs[c].curves[1].x)
         # create data file
         f = open(filename,"w")
@@ -303,36 +331,6 @@ function llplot()
         # send command to gnuplot
         gnuplot_send(linestr(figs[c].curves, "splot",filename,
             "nonuniform matrix"))
-        # image plot: plotstyle is "image" or "rgbimage"
-    elseif figs[c].curves[1].conf.plotstyle == "image" ||
-            figs[c].curves[1].conf.plotstyle == "rgbimage"
-        # create data file
-        f = open(filename,"w")
-        # assume there is only one image per figure
-        if figs[c].curves[1].conf.plotstyle == "image"
-            # output matrix
-            dlmwrite(f,figs[c].curves[1].Z,' ')
-            close(f)
-            # send command to gnuplot
-            gnuplot_send("set yrange [*:*] reverse")  # flip y axis
-            gnuplot_send(linestr(figs[c].curves,"plot",filename,"matrix"))
-        end
-        if figs[c].curves[1].conf.plotstyle == "rgbimage"
-            # output matrix
-            Z = figs[c].curves[1].Z
-            y = 1.0:size(Z,2)
-            for i = 1:size(Z,1)
-                c1 = i*ones(length(y))
-                r = slicedim(Z,3,1)[i,:]
-                g = slicedim(Z,3,2)[i,:]
-                b = slicedim(Z,3,3)[i,:]
-                dlmwrite(f,hcat(c1,y,r',g',b'),' ')
-            end
-            close(f)
-            # send command to gnuplot
-            gnuplot_send("set yrange [*:*] reverse")  # flip y axis
-            gnuplot_send(linestr(figs[c].curves,"plot",filename,""))
-        end
     end
     gnuplot_send("reset")
 end

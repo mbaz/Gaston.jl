@@ -231,4 +231,20 @@ function demo()
     addconf(a)
     llplot()
 
+    # image and curve on the same figure
+    figure(17)
+    c = CurveConf()
+    c.plotstyle = "image"
+    Z = [5 4 3 1 0; 2 2 0 0 1; 0 0 0 1 0; 0 1 2 4 3]
+    addcoords([],[],Z,c)
+    c = CurveConf()
+    c.plotstyle = "lines"
+    c.color = "blue"
+    t = linspace(0,2pi,10)
+    addcoords(3*sin(t)+3,c)
+    a = AxesConf()
+    a.title = "Image and curve on the same figure"
+    addconf(a)
+    llplot()
+
 end
