@@ -247,4 +247,21 @@ function demo()
     addconf(a)
     llplot()
 
+    # Two surfaces in one figure, plus low-level use of gnuplot_send
+    # for final tweaking
+    figure(18)
+    gnuplot_send("set view 69,20")
+    c = CurveConf()
+    c.plotstyle = "pm3d"
+    x = -15:0.33:15
+    y = -15:0.33:15
+    Z = meshgrid(x,y,(x,y)->sin(sqrt(x.*x+y.*y))/sqrt(x.*x+y.*y))
+    addcoords(x,y,Z,c)
+    Z = meshgrid(x,y,(x,y)->cos(x/2)*sin(y/2)+3)
+    addcoords(x,y,Z,c)
+    a = AxesConf()
+    a.title = "3D: Two surfaces on the same figure"
+    addconf(a)
+    llplot()
+
 end

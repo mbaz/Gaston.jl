@@ -319,18 +319,17 @@ function llplot()
         # create data file
         f = open(filename,"w")
         for i in figs[c].curves
-            # nonuniform matrix -- see gnuplot 4.6 manual, p. 169
-            write(f,"0 ")
-            dlmwrite(f,[i.x]',' ');
-            for y = 1:length(i.y)
-                dlmwrite(f,[i.y[y] i.Z[:,y]'],' ')
+            for row in 1:numel(i.x)
+                for col in 1:numel(i.y)
+                    dlmwrite(f,[i.x[row] i.y[col] i.Z[row,col]],' ')
+                end
+                write(f,"\n")
             end
             write(f,"\n\n")
         end
         close(f)
         # send command to gnuplot
-        gnuplot_send(linestr(figs[c].curves, "splot",filename,
-            "nonuniform matrix"))
+        gnuplot_send(linestr(figs[c].curves, "splot",filename))
     end
     gnuplot_send("reset")
 end
