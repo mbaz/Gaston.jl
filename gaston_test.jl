@@ -116,6 +116,12 @@ function run_tests_error(ini)
     @test_error histogram(0:10,"marker","ecircle")
     @test_error histogram(0:10,"pointsize",1)
     @test_error histogram(0:10,"axis","loglog")
+    # addcoords
+    @test_error addcoords(im*(1:10))
+    @test_error addcoords(["a" "b"])
+    @test_error addcoords(1:10,1:10,1:10)
+    @test_error addcoords(1:10,1:11)
+    @test_error addcoords(1:2,1:3,[[1 2 3 4],[1 2 3 4]])
     ## tests that should fail, but (still) don't
     ## commented out because gnuplot barfs all over the screen
     #@test_error plot(0:10,"color","nonexistant")
