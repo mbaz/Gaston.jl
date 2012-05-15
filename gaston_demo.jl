@@ -197,8 +197,18 @@ function demo()
     addconf(a)
     llplot()
 
-    # histograms
+    # image with x,y coordinates
     figure(15)
+    c = CurveConf()
+    c.plotstyle = "rgbimage"
+    addcoords(linspace(-2.0,5.0,25),linspace(4.0,6.0,25),Z,c)
+    a = AxesConf()
+    a.title = "RGB Image with explicit (x,y) coordinates"
+    addconf(a)
+    llplot()
+
+    # histograms
+    figure(16)
     c = CurveConf()
     c.plotstyle = "boxes"
     c.color = "blue"
@@ -210,7 +220,7 @@ function demo()
     addconf(a)
     llplot()
 
-    figure(16)
+    figure(17)
     c = CurveConf()
     c.plotstyle = "boxes"
     c.color = "blue"
@@ -232,7 +242,7 @@ function demo()
     llplot()
 
     # image and curve on the same figure
-    figure(17)
+    figure(18)
     c = CurveConf()
     c.plotstyle = "image"
     Z = [5 4 3 1 0; 2 2 0 0 1; 0 0 0 1 0; 0 1 2 4 3]
@@ -249,7 +259,7 @@ function demo()
 
     # Two surfaces in one figure, plus low-level use of gnuplot_send
     # for final tweaking
-    figure(18)
+    figure(19)
     gnuplot_send("set view 69,20")
     c = CurveConf()
     c.plotstyle = "pm3d"
