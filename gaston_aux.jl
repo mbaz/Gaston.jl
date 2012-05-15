@@ -260,16 +260,8 @@ end
 
 # Valid plotstyles supported by gnuplot's splot
 function validate_3d_plotstyle(s::String)
-    valid = ["lines", "linespoints", "points", "impulses", "pm3d"]
-    if contains(valid, s)
-        return true
-    end
-    return false
-end
-
-# Valid plotstyles supported by gnuplot's plot with images
-function validate_image_plotstyle(s::String)
-    valid = ["image", "rgbimage"]
+    valid = ["lines", "linespoints", "points", "impulses", "pm3d",
+            "image", "rgbimage"]
     if contains(valid, s)
         return true
     end

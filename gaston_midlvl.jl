@@ -41,45 +41,44 @@ function addcoords(x::Coord,y::Coord,Z::Array,conf::CurveConf)
         assert(eltype(Z)<:Real,"Invalid coordinates")
         assert(1 < ndims(Z) < 4,"Invalid coordinates")
     end
-    # valid combinations of x,y,Z, where 0 means empty:
-    #  x  y  Z
-    #  1  1  0   # 2-d plot
-    #  1  1  1   # 3-d plot
-    #  0  0  1   # image
-    assert((nex && ney) || (!nex && !ney && neZ), "Invalid coordinates")
-    # if x,y are matrices, convert to vectors
-    if nex
-        if isa(x,Matrix)
-            s = size(x)
-            if s[1] == 1 || s[2] == 1
-                x = squeeze(x)
-            else
-                error("Invalid abscissa coordinates")
-            end
-        elseif isa(x,Range1) || isa(x,Range)
-            x = [x]
-        end
+    # fill missing x, y coordinates when Z is not empty
+    if neZ && !nex
+        x = 1:size(Z,2)
     end
-    if ney
-        if isa(y,Matrix)
-            s = size(y)
-            if s[1] == 1 || s[2] == 1
-                y = squeeze(y)
-            else
-                error("Invalid abscissa coordinates")
-            end
-        elseif isa(y,Range1) || isa(y,Range)
-            y = [y]
+    if neZ && !ney
+        y = 1:size(Z,1)
+    end
+    # if x,y are matrices, convert to vectors
+    if isa(x,Matrix)
+        s = size(x)
+        if s[1] == 1 || s[2] == 1
+            x = squeeze(x)
+        else
+            error("Invalid abscissa coordinates")
         end
+    elseif isa(x,Range1) || isa(x,Range)
+        x = [x]
+    end
+    if isa(y,Matrix)
+        s = size(y)
+        if s[1] == 1 || s[2] == 1
+            y = squeeze(y)
+        else
+            error("Invalid abscissa coordinates")
+        end
+    elseif isa(y,Range1) || isa(y,Range)
+        y = [y]
     end
     # check number of elements
-    if nex && neZ
-        assert(size(Z,1) == length(x),
-        "Number of columns in 3-d coordinates must match length of abscissa")
-        assert(size(Z,2) == length(y),
-        "Number of rows in 3-d coordinates must match length of ordinate")
-    end
-    if nex && !neZ
+    if neZ
+        if conf.plotstyle == "image" || conf.plotstyle == "rgbimage"
+            assert(size(Z,2) == numel(x), "Wrong number of columns in Z")
+            assert(size(Z,1) == numel(y), "Wrong number of rows in Z")
+        else
+            assert(size(Z,1) == numel(x), "Wrong number of columns in Z")
+            assert(size(Z,2) == numel(y), "Wrong number of rows in Z")
+        end
+    else
         assert(length(x) == length(y),
         "Abscissa and ordinate must have the same number of elements")
     end
@@ -93,11 +92,8 @@ function addcoords(x::Coord,y::Coord,Z::Array,conf::CurveConf)
         # check valid values of plotstyle
         assert(validate_2d_plotstyle(conf.plotstyle),
             "Invalid plotstyle specified")
-    elseif nex && neZ ## 3-d plot
+    elseif nex && neZ ## 3-d plot or image
         assert(validate_3d_plotstyle(conf.plotstyle),
-            "Invalid plotstyle specified")
-    else ## image
-        assert(validate_image_plotstyle(conf.plotstyle),
             "Invalid plotstyle specified")
     end
 
@@ -117,8 +113,8 @@ end
 addcoords(y) = addcoords(1:length(y),y,[],CurveConf())
 addcoords(y,c::CurveConf) = addcoords(1:length(y),y,[],c)
 addcoords(x,y) = addcoords(x,y,[],CurveConf())
-addcoords(x,y,Z) = addcoords(x,y,Z,CurveConf())
 addcoords(x,y,c::CurveConf) = addcoords(x,y,[],c)
+addcoords(x,y,Z) = addcoords(x,y,Z,CurveConf())
 # X, Y data in matrix columns
 function addcoords(X::Matrix,Y::Matrix,conf::CurveConf)
     for i = 1:size(X,2)
@@ -227,6 +223,11 @@ function llplot()
     ts = termstring(gaston_config.terminal)
     gnuplot_send(ts)
 
+    # if figure has no data, stop here
+    if isempty(figs[c].curves[1].x)
+        return
+    end
+
     # send figure configuration to gnuplot
     gnuplot_send("set autoscale")
     # legend box
@@ -268,11 +269,10 @@ function llplot()
     # Send appropriate coordinates and data to gnuplot, depending on
     # whether we are doing 2-d, 3-d or image plots.
 
-
-    # 2-d plot: (x is not empty and Z is empty) or plostyle is {,rgb}image
-    if ( (!isempty(figs[c].curves[1].x) && isempty(figs[c].curves[1].Z)) ||
+    # 2-d plot: Z is empty or plostyle is {,rgb}image
+    if isempty(figs[c].curves[1].Z) ||
         figs[c].curves[1].conf.plotstyle == "image" ||
-        figs[c].curves[1].conf.plotstyle == "rgbimage" )
+        figs[c].curves[1].conf.plotstyle == "rgbimage"
         # create data file
         f = open(filename,"w")
         for i in figs[c].curves
@@ -287,20 +287,20 @@ function llplot()
                 end
             elseif ps == "image"
                 # output matrix
-                for col = 1:size(i.Z,2)
-                    y = size(i.Z,1)
-                    for row = 1:size(i.Z,1)
-                        dlmwrite(f,[col row i.Z[y,col]],' ')
+                for col = 1:numel(i.x)
+                    y = numel(i.y)
+                    for row = 1:numel(i.y)
+                        dlmwrite(f,[i.x[col] i.y[row] i.Z[y,col]],' ')
                         y = y-1
                     end
                 end
             elseif ps == "rgbimage"
                 # output matrix
-                for col = 1:size(i.Z,2)
-                    y = size(i.Z,1)
-                    for row = 1:size(i.Z,1)
+                for col = 1:numel(i.x)
+                    y = numel(i.y)
+                    for row = 1:numel(i.y)
                         dlmwrite(f,
-                        [col row i.Z[y,col,1] i.Z[y,col,2] i.Z[y,col,3]],
+                        [i.x[col] i.y[row] i.Z[y,col,1] i.Z[y,col,2] i.Z[y,col,3]],
                         ' ')
                         y = y-1
                     end
@@ -314,8 +314,10 @@ function llplot()
         # send command to gnuplot
         gnuplot_send(linestr(figs[c].curves, "plot", filename))
 
-    # 3-d plot: x is not empty, Z is not empty
-    elseif !isempty(figs[c].curves[1].Z) && !isempty(figs[c].curves[1].x)
+    # 3-d plot: Z is not empty and plotstyle is not {,rgb}image
+    elseif !isempty(figs[c].curves[1].Z) &&
+            figs[c].curves[1].conf.plotstyle != "image" &&
+            figs[c].curves[1].conf.plotstyle != "rgbimage"
         # create data file
         f = open(filename,"w")
         for i in figs[c].curves
