@@ -125,10 +125,11 @@ CurveData(x,y,Z,conf::CurveConf) = CurveData(x,y,Z,[],[],conf)
 # curves and configuration for a single figure
 type Figure
     handle::Int                  # each figure has a unique handle
-    curves::Vector{CurveData}   # a vector of curves (x,y,conf)
+    curves::Vector{CurveData}    # a vector of curves (x,y,conf)
     conf::AxesConf               # figure configuration
+    isempty::Bool                # a flag to indicate if figure is empty
 end
-Figure(handle) = Figure(handle,[CurveData()],AxesConf())
+Figure(handle) = Figure(handle,[CurveData()],AxesConf(),true)
 
 # coordinate type
 Coord = Union(Range1,Range,Matrix,Vector)

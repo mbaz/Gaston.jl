@@ -100,15 +100,14 @@ function addcoords(x::Coord,y::Coord,Z::Array,conf::CurveConf)
     conf = copy(conf)       # we need to dereference conf
     # append data to figure
     c = findfigure(gnuplot_state.current)
-    figs = gnuplot_state.figs
-    if isempty(figs[c].curves[1].x) && isempty(figs[c].curves[1].Z)
-        # figure() creates a structure with one empty curve; we want to
-        # overwrite it with the first actual curve
-        figs[c].curves[1] = CurveData(x,y,Z,conf)
+    fig = gnuplot_state.figs[c]
+    if fig.isempty == true
+        fig.curves[1] = CurveData(x,y,Z,conf)
+        fig.isempty = false
     else
-        figs[c].curves = [figs[c].curves, CurveData(x,y,Z,conf)]
+        fig.curves = [fig.curves, CurveData(x,y,Z,conf)]
     end
-    gnuplot_state.figs = figs
+    gnuplot_state.figs[c] = fig
 end
 addcoords(y) = addcoords(1:length(y),y,[],CurveConf())
 addcoords(y,c::CurveConf) = addcoords(1:length(y),y,[],c)
