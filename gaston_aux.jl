@@ -152,7 +152,7 @@ end
 function meshgrid(x,y,f)
     Z = zeros(length(x),length(y))
     for k = 1:length(x)
-        Z[k,:] = [ f(i,j) | i=x[k], j=y ]
+        Z[k,:] = [ f(i,j) for i=x[k], j=y ]
     end
     return Z
 end

@@ -184,9 +184,9 @@ function demo()
     figure(14)
     c = CurveConf()
     c.plotstyle = "rgbimage"
-    R = [ x+y | x=0:5:120, y=0:5:120]
-    G = [ x+y | x=0:5:120, y=120:-5:0]
-    B = [ x+y | x=120:-5:0, y=0:5:120]
+    R = [ x+y for x=0:5:120, y=0:5:120]
+    G = [ x+y for x=0:5:120, y=120:-5:0]
+    B = [ x+y for x=120:-5:0, y=0:5:120]
     Z = zeros(25,25,3)
     Z[:,:,1] = R
     Z[:,:,2] = G
