@@ -350,3 +350,135 @@ function histogram(args...)
     end
     return h
 end
+
+# image plots
+function imagesc(args...)
+    global gnuplot_state
+    # if args[1] is an integer, it's the function handle.
+    if isa(args[1], Int)
+        h = args[1]
+        args = args[2:end]   # argument parsing starts with 1 (eases debug)
+    else
+        h = gnuplot_state.current
+    end
+    if h == 0
+        h = figure()     # new figure
+    else
+        closefigure(h)
+        figure(h)    # overwrite specific figure
+    end
+    # parse arguments
+    state = "SINI"
+    la = length(args)
+    while(true)
+        if state == "SINI"
+            i = 1
+            cc = CurveConf()
+            ac = AxesConf()
+            state = "S1"
+        elseif state == "S1"
+            if i > la
+                state = "SERROR"
+                continue
+            end
+            tmp = args[i]
+            i = i+1
+            state = "S2"
+        elseif state == "S2"
+            if i > la
+                Z = tmp
+                if isa(Z,Array) && 2 <= ndims(Z) <= 3
+                    y = 1:size(Z)[1]
+                    x = 1:size(Z)[2]
+                    state = "S3"
+                else
+                    state = "SERROR"
+                end
+            else
+                if isa(args[i],String)
+                    Z = tmp
+                    if isa(Z,Array) && 2 <= ndims(Z) <= 3
+                        y = 1:size(Z)[1]
+                        x = 1:size(Z)[2]
+                        state = "S6"
+                    else
+                        state = "SERROR"
+                    end
+                else
+                    y = tmp
+                    tmp = args[i]
+                    i = i+1
+                    state = "S4"
+                end
+            end
+        elseif state == "S3"
+            if ndims(Z) == 2
+                cc.plotstyle = "image"
+            elseif ndims(Z) == 3
+                cc.plotstyle = "rgbimage"
+            end
+            addcoords(x,y,Z,cc)
+            state = "SEND"
+        elseif state == "S4"
+            if i > la
+                Z = tmp
+                x = 1:size(Z)[2]
+                state = "S3"
+            else
+                if isa(args[i],String)
+                    Z = tmp
+                    x = 1:size(Z)[2]
+                    state = "S6"
+                end
+                x = tmp
+                tmp = args[i]
+                i = i+1
+                state = "S5"
+            end
+        elseif state == "S5"
+            Z = tmp
+            if i > la
+                state = "S3"
+            else
+                state = "S6"
+            end
+        elseif state == "S6"
+            if i+1 > la
+                state = "S3"
+            else
+                ai = args[i]; ai1 = args[i+1]
+                if ai == "xlabel"
+                    ac.xlabel = ai1
+                elseif ai == "ylabel"
+                    ac.ylabel = ai1
+                elseif ai == "title"
+                    ac.title = ai1
+                elseif ai == "clim"
+                        cmin = ai1[1]
+                        cmax = ai1[2]
+                        if !isa(cmin,Real) || !isa(cmax,Real)
+                            error("Invalid limits specified")
+                        else
+                            Z -= cmin
+                            Z[Z<0] = 0
+                            Z *= 255/(cmax-cmin)
+                            Z[Z>255] = 255
+                            show(Z)
+                        end
+                else
+                    error("Invalid property specified")
+                end
+                i = i+2
+            end
+        elseif state == "SEND"
+            addconf(ac)
+            llplot()
+            break
+        elseif state == "SERROR"
+            error("Invalid arguments")
+        else
+            error("Unforseen situation, bailing out")
+        end
+    end
+    return h
+end
