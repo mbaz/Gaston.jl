@@ -463,7 +463,6 @@ function imagesc(args...)
                             Z[Z<0] = 0
                             Z *= 255/(cmax-cmin)
                             Z[Z>255] = 255
-                            show(Z)
                         end
                 else
                     error("Invalid property specified")
