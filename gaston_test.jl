@@ -42,6 +42,7 @@
 
 macro test_error(ex)
     quote
+        system("sleep 0.2")
         testnumber = testnumber + 1
         testsrun = testsrun + 1
         s = strcat("Test number ", string(testnumber), ". Error expected. Result: ")
@@ -58,6 +59,7 @@ end
 
 macro test_success(ex)
     quote
+        system("sleep 0.2")
         testnumber = testnumber + 1
         testsrun = testsrun + 1
         s = strcat("Test number ", string(testnumber), ". Success expected. Result: ")
