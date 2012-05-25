@@ -61,6 +61,13 @@ type GastonConfig
     terminal::String
     # for terminals that support filenames
     outputfile::String
+    # for printing to file
+    print_color::String
+    print_fontface::String
+    print_fontsize
+    print_fontscale::Real
+    print_linewidth::Real
+    print_size::String
 end
 GastonConfig() = GastonConfig(
     # CurveConf
@@ -70,7 +77,9 @@ GastonConfig() = GastonConfig(
     # terminal
     "wxt",
     # output file name
-    ""
+    "",
+    # print parameters
+    "color", "Sans", "12", 0.5, 1, "5in,3in"
     )
 
 # Structs to configure a plot

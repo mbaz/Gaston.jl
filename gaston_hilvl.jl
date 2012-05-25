@@ -137,8 +137,6 @@ function figure(x...)
         end
     end
     # if figure with handle h exists, replot it; otherwise create it
-    ts = termstring(gaston_config.terminal)
-    gnuplot_send(ts)
     gnuplot_state.current = h
     if !contains(handles,h)
         gnuplot_state.figs = [gnuplot_state.figs, Figure(h)]
@@ -482,3 +480,55 @@ function imagesc(args...)
     end
     return h
 end
+
+# print a figure to a file
+function print(args...)
+    global gnuplot_state
+    global gaston_config
+
+    # if args is empty, print current figure in pdf
+    if isempty(args)
+        term = "pdf"
+        h = gnuplot_state.current
+    elseif length(args) == 1
+        a = args[1]
+        if isa(a, Int)
+            # if a is an integer, it's the figure handle.
+            h = a
+        elseif isa(a, String)
+            # if a is a string, it's the term type
+            h = gnuplot_state.current
+            term = a
+        else
+            error("Wrong arguments.")
+        end
+    elseif length(args) == 2
+        a = args[1]
+        if isa(a, Int)
+            h = a
+        else
+            error("Wrong arguments.")
+        end
+        term = args[2]
+        if !is_term_file(term)
+            error("Wrong arguments.")
+        end
+    end
+
+    # we may need to set up a new figure
+    if h == 0
+        h = figure()
+    end
+
+    # save terminal
+    saveterm = gaston_config.terminal
+    # set temporary terminal and replot
+    set_terminal(term)
+    figure(h)
+    set_terminal(saveterm)
+    # gnuplot is weird: this command is needed to close the output file
+    gnuplot_send("set output")
+
+    return h
+end
+

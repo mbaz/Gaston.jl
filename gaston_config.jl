@@ -128,3 +128,40 @@ function set_default_axis(s::String)
         error(strcat("Axis ", s, " not supported."))
     end
 end
+
+# functions to set print parameters
+function set_print_color(b::Bool)
+    global gaston_config
+
+    gaston_config.print_color = b
+end
+
+function set_print_fontface(s::String)
+    global gaston_config
+
+    gaston_config.print_fontface = s
+end
+
+function set_print_fontsize(s)
+    global gaston_config
+
+    gaston_config.print_fontsize = s
+end
+
+function set_print_fontscale(r::Real)
+    global gaston_config
+
+    gaston_config.print_fontscale = r
+end
+
+function set_print_linewidth(r::Real)
+    global gaston_config
+
+    gaston_config.print_linewidth = r
+end
+
+function set_print_size(s::String)
+    global gaston_config
+
+    gaston_config.print_size = s
+end
