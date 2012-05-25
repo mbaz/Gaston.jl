@@ -118,6 +118,13 @@ function run_tests_error(ini)
     @test_error histogram(0:10,"marker","ecircle")
     @test_error histogram(0:10,"pointsize",1)
     @test_error histogram(0:10,"axis","loglog")
+    # high-level functions: imagesc
+    z = rand(3,3)
+    @test_error imagesc(1:5,z)
+    @test_error imagesc("title","none")
+    @test_error imagesc(z,"clim",3)
+    @test_error imagesc(1:3)
+    @test_error imagesc(z,"none","none")
     # addcoords
     @test_error addcoords(im*(1:10))
     @test_error addcoords(["a" "b"])
@@ -163,13 +170,13 @@ function run_tests_success(ini)
     end
     @test_success begin
         plot(sin(-3:0.01:3),
-            "legend", "test",
+            "legend", "sine",
             "plotstyle", "lines",
             "color","blue",
             "marker","ecircle",
             "linewidth",2,
             "pointsize",1.1,
-            "title","test",
+            "title","test plot 1",
             "xlabel","x",
             "ylabel","y",
             "box","inside horizontal left top",
@@ -187,13 +194,26 @@ function run_tests_success(ini)
             "norm",1,
             "color","blue",
             "linewidth",2,
-            "title","test",
+            "title","test histogram",
             "xlabel","x",
             "ylabel","y",
             "box","inside horizontal left top")
         closeall()
     end
-    @test_success figure(10)
+    # high-level functions: imagesc
+    z = rand(5,6)
+    @test_success begin
+        imagesc(z,"title","test imagesc 1","xlabel","xx","ylabel","yy")
+        closeall()
+    end
+    @test_success begin
+        imagesc(1:5,z,"title","test imagesc 2","xlabel","xx","ylabel","yy")
+        closeall()
+    end
+    @test_success begin
+        imagesc(1:5,1:6,z,"title","test imagesc 3","xlabel","xx","ylabel","yy")
+        closeall()
+    end
     # type instantiation
     @test_success CurveConf()
 
