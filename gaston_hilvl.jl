@@ -278,8 +278,8 @@ function histogram(args...)
     while(true)
         if state == "SINI"
             i = 1
-            bins::Int = 10
-            norm::Int = 0
+            bins = 10
+            norm = 0
             cc = CurveConf()
             cc.plotstyle = "boxes"
             ac = AxesConf()
@@ -295,7 +295,7 @@ function histogram(args...)
         elseif state == "S2"
             if i > la
                 # validate bins and norm
-                if bins <= 0 || norm < 0
+                if !isa(bins,Int) || !isa(norm,Real) || bins <= 0 || norm < 0
                     state = "SERROR"
                     continue
                 end
