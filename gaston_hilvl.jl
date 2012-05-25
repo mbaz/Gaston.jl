@@ -429,11 +429,12 @@ function imagesc(args...)
                     Z = tmp
                     x = 1:size(Z)[2]
                     state = "S6"
+                else
+                    x = tmp
+                    tmp = args[i]
+                    i = i+1
+                    state = "S5"
                 end
-                x = tmp
-                tmp = args[i]
-                i = i+1
-                state = "S5"
             end
         elseif state == "S5"
             Z = tmp
