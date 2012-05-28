@@ -481,6 +481,141 @@ function imagesc(args...)
     return h
 end
 
+# surface plots
+function surf(args...)
+    global gnuplot_state
+    # if args[1] is an integer, it's the function handle.
+    if isa(args[1], Int)
+        h = args[1]
+        args = args[2:end]   # argument parsing starts with 1 (eases debug)
+    else
+        h = gnuplot_state.current
+    end
+    if h == 0
+        h = figure()     # new figure
+    else
+        closefigure(h)
+        figure(h)    # overwrite specific figure
+    end
+    # parse arguments
+    state = "SINI"
+    la = length(args)
+    while(true)
+        if state == "SINI"
+            i = 1
+            cc = CurveConf()
+            ac = AxesConf()
+            state = "S1"
+        elseif state == "S1"
+            if i > la
+                state = "SERROR"
+                continue
+            end
+            tmp = args[i]
+            i = i+1
+            state = "S2"
+        elseif state == "S2"
+            if i > la
+                Z = tmp
+                if isa(Z,Array) && 2 <= ndims(Z) <= 3
+                    y = 1:size(Z)[1]
+                    x = 1:size(Z)[2]
+                    state = "S3"
+                else
+                    state = "SERROR"
+                end
+            else
+                if isa(args[i],String)
+                    Z = tmp
+                    if isa(Z,Array) && ndims(Z) == 2
+                        y = 1:size(Z)[1]
+                        x = 1:size(Z)[2]
+                        state = "S6"
+                    else
+                        state = "SERROR"
+                    end
+                else
+                    y = tmp
+                    tmp = args[i]
+                    i = i+1
+                    state = "S4"
+                end
+            end
+        elseif state == "S3"
+            if isa(Z,Function)
+                Z = meshgrid(x,y,Z)
+            end
+            addcoords(x,y,Z,cc)
+            state = "SEND"
+        elseif state == "S4"
+            if i > la
+                Z = tmp
+                x = 1:size(Z)[2]
+                state = "S3"
+            else
+                if isa(args[i],String)
+                    Z = tmp
+                    x = 1:size(Z)[2]
+                    state = "S6"
+                else
+                    x = tmp
+                    tmp = args[i]
+                    i = i+1
+                    state = "S5"
+                end
+            end
+        elseif state == "S5"
+            Z = tmp
+            if i > la
+                state = "S3"
+            else
+                state = "S6"
+            end
+        elseif state == "S6"
+            if i+1 > la
+                state = "S3"
+            else
+                ai = args[i]; ai1 = args[i+1]
+                if ai == "xlabel"
+                    ac.xlabel = ai1
+                elseif ai == "ylabel"
+                    ac.ylabel = ai1
+                elseif ai == "zlabel"
+                    ac.zlabel = ai1
+                elseif ai == "title"
+                    ac.title = ai1
+                elseif ai == "legend"
+                    cc.legend = ai1
+                elseif ai == "plotstyle"
+                    cc.plotstyle = ai1
+                elseif ai == "color"
+                    cc.color = ai1
+                elseif ai == "marker"
+                    cc.marker = ai1
+                elseif ai == "linewidth"
+                    cc.linewidth = ai1
+                elseif ai == "pointsize"
+                    cc.pointsize = ai1
+                elseif ai == "box"
+                    ac.box = ai1
+                else
+                    error("Invalid property specified")
+                end
+                i = i+2
+            end
+        elseif state == "SEND"
+            addconf(ac)
+            llplot()
+            break
+        elseif state == "SERROR"
+            error("Invalid arguments")
+        else
+            error("Unforseen situation, bailing out")
+        end
+    end
+    return h
+end
+
 # print a figure to a file
 function print(args...)
     global gnuplot_state
