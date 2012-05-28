@@ -79,7 +79,7 @@ GastonConfig() = GastonConfig(
     # output file name
     "",
     # print parameters
-    "color", "Sans", "12", 0.5, 1, "5in,3in"
+    "color", "Sans", 12, 0.5, 1, "5in,3in"
     )
 
 # Structs to configure a plot
