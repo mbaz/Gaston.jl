@@ -59,7 +59,7 @@ end
 
 macro test_success(ex)
     quote
-        system("sleep 0.2")
+        system("sleep 0.3")
         testnumber = testnumber + 1
         testsrun = testsrun + 1
         s = strcat("Test number ", string(testnumber), ". Success expected. Result: ")
@@ -125,6 +125,21 @@ function run_tests_error(ini)
     @test_error imagesc(z,"clim",3)
     @test_error imagesc(1:3)
     @test_error imagesc(z,"none","none")
+    # high-level functions: print
+    @test_error begin
+        closeall()
+        print(1)
+    end
+    @test_error begin
+        closeall()
+        plot(1,sin(-3:0.1:3))
+        print(1,"none")
+    end
+    @test_error begin
+        closeall()
+        plot(1,sin(-3:0.1:3))
+        print(2)
+    end
     # addcoords
     @test_error addcoords(im*(1:10))
     @test_error addcoords(["a" "b"])
@@ -212,6 +227,37 @@ function run_tests_success(ini)
     end
     @test_success begin
         imagesc(1:5,1:6,z,"title","test imagesc 3","xlabel","xx","ylabel","yy")
+        closeall()
+    end
+    # high-level functions: print
+    @test_success begin
+        closeall()
+        plot(1,sin(-3:0.1:3))
+        set_filename("/dev/null")
+        print()
+        closeall()
+    end
+    @test_success begin
+        closeall()
+        plot(1,sin(-3:0.1:3))
+        set_filename("/dev/null")
+        print(1,"png")
+        closeall()
+    end
+    @test_success begin
+        closeall()
+        plot(1,sin(-3:0.1:3))
+        set_filename("/dev/null")
+        set_print_size("640,480")
+        print("svg")
+        closeall()
+    end
+    @test_success begin
+        closeall()
+        plot(1,sin(-3:0.1:3))
+        set_filename("/dev/null")
+        set_print_size("640,480")
+        print("gif")
         closeall()
     end
     # type instantiation
