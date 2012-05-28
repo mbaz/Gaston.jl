@@ -515,9 +515,9 @@ function print(args...)
         end
     end
 
-    # we may need to set up a new figure
-    if h == 0
-        h = figure()
+    # make sure requested figure exists
+    if findfigure(h) == 0
+        error("Requested figure does not exist.")
     end
 
     # save terminal
