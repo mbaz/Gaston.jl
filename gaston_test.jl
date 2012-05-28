@@ -42,7 +42,7 @@
 
 macro test_error(ex)
     quote
-        system("sleep 0.2")
+        system("sleep 0.3")
         testnumber = testnumber + 1
         testsrun = testsrun + 1
         s = strcat("Test number ", string(testnumber), ". Error expected. Result: ")
@@ -59,7 +59,7 @@ end
 
 macro test_success(ex)
     quote
-        system("sleep 0.3")
+        system("sleep 0.4")
         testnumber = testnumber + 1
         testsrun = testsrun + 1
         s = strcat("Test number ", string(testnumber), ". Success expected. Result: ")
@@ -139,6 +139,15 @@ function run_tests_error(ini)
         closeall()
         plot(1,sin(-3:0.1:3))
         print(2)
+    end
+    # high-level functions: surf
+    @test_error surf("property")
+    @test_error surf("title","none")
+    @test_error surf(1:10)
+    @test_error surf(1:10,1:10)
+    @test_error begin
+        z = rand(5,5)
+        surf(1:5,1:4,z)
     end
     # addcoords
     @test_error addcoords(im*(1:10))
@@ -229,6 +238,12 @@ function run_tests_success(ini)
         imagesc(1:5,1:6,z,"title","test imagesc 3","xlabel","xx","ylabel","yy")
         closeall()
     end
+    # high-level functions: surf
+    @test_success surf(rand(10,10))
+    @test_success surf(2:11,rand(10,10))
+    @test_success surf(0:9,2:11,rand(10,10))
+    @test_success surf(0:9,2:11,(x,y)->x*y)
+    @test_success surf(0:9,2:11,(x,y)->x*y,"title","test","plotstyle","pm3d")
     # high-level functions: print
     @test_success begin
         closeall()
