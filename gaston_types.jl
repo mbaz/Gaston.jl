@@ -64,7 +64,7 @@ type GastonConfig
     # for printing to file
     print_color::String
     print_fontface::String
-    print_fontsize
+    print_fontsize::Real
     print_fontscale::Real
     print_linewidth::Real
     print_size::String

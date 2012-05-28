@@ -130,7 +130,7 @@ function set_default_axis(s::String)
 end
 
 # functions to set print parameters
-function set_print_color(b::Bool)
+function set_print_color(s::String)
     global gaston_config
 
     gaston_config.print_color = b
@@ -142,7 +142,7 @@ function set_print_fontface(s::String)
     gaston_config.print_fontface = s
 end
 
-function set_print_fontsize(s)
+function set_print_fontsize(s::Real)
     global gaston_config
 
     gaston_config.print_fontsize = s
