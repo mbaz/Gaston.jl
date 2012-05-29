@@ -2,9 +2,16 @@ examples = plotex.pdf imagescex.pdf histoex.pdf surfex.pdf
 
 gastondoc.pdf : $(examples) gastondoc.tex examples.jl
 	xelatex -shell-escape gastondoc
+	while grep -q 'Rerun to get' gastondoc.log ; \
+		do xelatex -shell-escape gastondoc ; \
+	done
 
-$(examples)  : examples.jl
+$(examples) : examples.jl
 	julia examples.jl
+
+.PHONY : clean
+clean :
+	rm $(examples) gastondoc.pdf *aux *log
 
 .PHONY : help
 help :
