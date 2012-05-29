@@ -517,7 +517,7 @@ function surf(args...)
         elseif state == "S2"
             if i > la
                 Z = tmp
-                if isa(Z,Array) && 2 <= ndims(Z) <= 3
+                if isa(Z,Array) && ndims(Z) == 2
                     y = 1:size(Z)[1]
                     x = 1:size(Z)[2]
                     state = "S3"
@@ -550,13 +550,21 @@ function surf(args...)
         elseif state == "S4"
             if i > la
                 Z = tmp
-                x = 1:size(Z)[2]
-                state = "S3"
+                if isa(Z,Array) && ndims(Z) == 2
+                    x = 1:size(Z)[2]
+                    state = "S3"
+                else
+                    state = "SERROR"
+                end
             else
                 if isa(args[i],String)
                     Z = tmp
-                    x = 1:size(Z)[2]
-                    state = "S6"
+                    if isa(Z,Array) && ndims(Z) == 2
+                        x = 1:size(Z)[2]
+                        state = "S6"
+                    else
+                        state = "SERROR"
+                    end
                 else
                     x = tmp
                     tmp = args[i]

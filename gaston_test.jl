@@ -149,6 +149,7 @@ function run_tests_error(ini)
         z = rand(5,5)
         surf(1:5,1:4,z)
     end
+    @test_error surf(1:10,(x,y)->x*y)
     # addcoords
     @test_error addcoords(im*(1:10))
     @test_error addcoords(["a" "b"])
