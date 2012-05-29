@@ -135,8 +135,27 @@ function demo()
     addconf(a)
     llplot()
 
-    # simple 3-D plot with default config
+    # dots plotstyle
     figure(10)
+    x = 1 + 0.1*randn(200)
+    y = 1 + 0.1*randn(200)
+    c = CurveConf()
+    c.plotstyle = "points"
+    c.marker = "*"
+    c.pointsize = 3
+    c.color = "red"
+    addcoords([1],[1],c)
+    c = CurveConf()
+    c.plotstyle = "dots"
+    c.color = "blue"
+    addcoords(x,y,c)
+    a = AxesConf()
+    a.title = "dots demo"
+    addconf(a)
+    llplot()
+
+    # simple 3-D plot with default config
+    figure(11)
     x=[0,1,2,3]
     y=[0,1,2]
     Z=[10 10 10; 10 5 10;10 1 10; 10 0 10]
@@ -147,7 +166,7 @@ function demo()
     llplot()
 
     # same plot with colored surfaces
-    figure(11)
+    figure(12)
     c = CurveConf()
     c.plotstyle = "pm3d"
     addcoords(x,y,Z,c)
@@ -157,7 +176,7 @@ function demo()
     llplot()
 
     # sombrero
-    figure(12)
+    figure(13)
     c = CurveConf()
     c.plotstyle = "pm3d"
     x = -15:0.33:15
@@ -170,7 +189,7 @@ function demo()
     llplot()
 
     # simple image
-    figure(13)
+    figure(14)
     c = CurveConf()
     c.plotstyle = "image"
     Z = [5 4 3 1 0; 2 2 0 0 1; 0 0 0 1 0; 0 1 2 4 3]
@@ -181,7 +200,7 @@ function demo()
     llplot()
 
     # rgb image
-    figure(14)
+    figure(15)
     c = CurveConf()
     c.plotstyle = "rgbimage"
     R = [ x+y for x=0:5:120, y=0:5:120]
@@ -198,7 +217,7 @@ function demo()
     llplot()
 
     # image with x,y coordinates
-    figure(15)
+    figure(16)
     c = CurveConf()
     c.plotstyle = "rgbimage"
     addcoords(linspace(-2.0,5.0,25),linspace(4.0,6.0,25),Z,c)
@@ -208,7 +227,7 @@ function demo()
     llplot()
 
     # histograms
-    figure(16)
+    figure(17)
     c = CurveConf()
     c.plotstyle = "boxes"
     c.color = "blue"
@@ -220,7 +239,7 @@ function demo()
     addconf(a)
     llplot()
 
-    figure(17)
+    figure(18)
     c = CurveConf()
     c.plotstyle = "boxes"
     c.color = "blue"
@@ -242,7 +261,7 @@ function demo()
     llplot()
 
     # image and curve on the same figure
-    figure(18)
+    figure(19)
     c = CurveConf()
     c.plotstyle = "image"
     Z = [5 4 3 1 0; 2 2 0 0 1; 0 0 0 1 0; 0 1 2 4 3]
@@ -259,7 +278,7 @@ function demo()
 
     # Two surfaces in one figure, plus low-level use of gnuplot_send
     # for final tweaking
-    figure(19)
+    figure(20)
     gnuplot_send("set view 69,20")
     c = CurveConf()
     c.plotstyle = "pm3d"

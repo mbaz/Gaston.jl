@@ -121,7 +121,7 @@ function linestr_single(conf::CurveConf)
     # some plotstyles don't allow point specifiers
     cp = conf.plotstyle
     if cp != "lines" && cp != "impulses" && cp != "pm3d" && cp != "image" &&
-        cp != "rgbimage" && cp != "boxes"
+        cp != "rgbimage" && cp != "boxes" && cp != "dots"
         if conf.marker != ""
             s = strcat(s, "pt ", string(pointtype(conf.marker)), " ")
         end
@@ -275,7 +275,7 @@ end
 # Valid plotstyles supported by gnuplot's plot
 function validate_2d_plotstyle(s::String)
     valid = ["lines", "linespoints", "points", "impulses", "boxes",
-        "errorlines", "errorbars"]
+        "errorlines", "errorbars", "dots"]
     if contains(valid, s)
         return true
     end
@@ -285,7 +285,7 @@ end
 # Valid plotstyles supported by gnuplot's splot
 function validate_3d_plotstyle(s::String)
     valid = ["lines", "linespoints", "points", "impulses", "pm3d",
-            "image", "rgbimage"]
+            "image", "rgbimage", "dots"]
     if contains(valid, s)
         return true
     end
