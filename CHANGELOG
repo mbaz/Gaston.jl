@@ -1,3 +1,22 @@
+version 0.5:
+
+	User visible:
+
+	* New high-level command imagesc.
+	* New high-level command surf.
+	* Support for printing to file; SVG, PNG, GIF and PDF formats supported.
+	* Add support for 'dots' plotstyle.
+	* Add a test framework and 93 tests.
+	* Remove artificial restrictions on mixing many images and curves on the
+	  same figure.
+	* Images support explicit x, y coordinates.
+	* Updated and improved documentation.
+
+	Under the hood:
+
+	* A few small bug fixes.
+	* Code has been simplified in many places.
+
 version 0.4:
 
   User visible:
