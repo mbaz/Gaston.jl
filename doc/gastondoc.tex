@@ -213,7 +213,7 @@ format:
 		\cmd{marker}, \cmd{linewidth}, \cmd{pointsize}, \cmd{title},
 		\cmd{xlabel}, \cmd{ylabel}, \cmd{box}, \cmd{axis}.
 	\item Supported plotstyles are \cmd{lines}, \cmd{linespoints},
-		\cmd{points}, \cmd{impulses} and \cmd{boxes}.
+		\cmd{points}, \cmd{impulses}, \cmd{dots} and \cmd{boxes}.
 	\item plot() returns the handle of the figure that was plotted.
 \end{itemize}
 
@@ -302,7 +302,7 @@ plotting surfaces. Its format is as follows:
 		\cmd{pointsize}, \cmd{title}, \cmd{xlabel}, \cmd{ylabel}, \cmd{zlabel},
 		\cmd{box}.
 	\item Supported plotstyles are \cmd{lines}, \cmd{linespoints},
-		\cmd{points}, \cmd{impulses} and \cmd{pm3d}.
+		\cmd{points}, \cmd{impulses}, \cmd{dots} and \cmd{pm3d}.
 \end{itemize}
 
 As an example, to plot \cmd{f(x,y)=cos(x)*sin(y)} using points, one may use the
@@ -779,6 +779,10 @@ in the following table. The same applies to \cmd{yhigh}).
 	\multirow{2}{*}{\cmd{impulses}}
 	& \cm &     &  & \cmd{plot with impulses} \\
 	& \cm & \cm &  & \cmd{splot with impulses} \\
+	\cmidrule(r){2-5}
+	\multirow{2}{*}{\cmd{dots}}
+	& \cm &     &  & \cmd{plot with dots} \\
+	& \cm & \cm &  & \cmd{splot with dots} \\
 	\cmidrule(r){2-5}
 	\cmd{boxes}       & \cm &  &     & \cmd{plot with boxes} \\
 	\cmd{errorbars}   & \cm &  & \cm & \cmd{plot with errorbars} \\
