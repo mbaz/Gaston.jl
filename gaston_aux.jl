@@ -48,6 +48,7 @@ function gnuplot_exit(x...)
     gnuplot_state.current = 0
     gnuplot_state.fid = 0
     gnuplot_state.figs = []
+    return 0
 end
 
 # return a random string (for filenames)
