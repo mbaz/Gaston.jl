@@ -25,13 +25,11 @@
 function gnuplot_init()
     global gnuplot_state
     f = ccall(:popen, Ptr, (Ptr{Uint8},Ptr{Uint8}), "gnuplot" ,"w")
-    if f == 0
-        println("There was a problem starting up gnuplot.")
-        return
-    else
-        gnuplot_state.running = true
-        gnuplot_state.fid = f
+    if f == C_NULL
+        error("There was a problem starting up gnuplot.")
     end
+    gnuplot_state.running = true
+    gnuplot_state.fid = f
 end
 
 # close gnuplot pipe

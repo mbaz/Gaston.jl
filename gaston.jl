@@ -18,6 +18,11 @@
 ## FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 ## DEALINGS IN THE SOFTWARE.
 
+# before doing anything else, verify gnuplot is present on this system
+if system("which gnuplot > /dev/null") != 0
+    error("Gaston cannot be loaded: gnuplot is not available on this system.")
+end
+
 # load files
 load("gaston_types.jl")
 load("gaston_aux.jl")
