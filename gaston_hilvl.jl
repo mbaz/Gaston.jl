@@ -149,7 +149,7 @@ end
 # 2-d plots
 function plot(args...)
     global gnuplot_state
-    # if args[1] is an integer, it's the function handle.
+    # if args[1] is an integer, it's the figure handle.
     if isa(args[1], Int)
         h = args[1]
         args = args[2:end]   # argument parsing starts with 1 (eases debug)
@@ -257,7 +257,7 @@ end
 
 function histogram(args...)
     global gnuplot_state
-    # if args[1] is an integer, it's the function handle.
+    # if args[1] is an integer, it's the figure handle.
     if isa(args[1], Int)
         h = args[1]
         args = args[2:end]   # argument parsing starts with 1 (eases debug)
@@ -352,7 +352,7 @@ end
 # image plots
 function imagesc(args...)
     global gnuplot_state
-    # if args[1] is an integer, it's the function handle.
+    # if args[1] is an integer, it's the figure handle.
     if isa(args[1], Int)
         h = args[1]
         args = args[2:end]   # argument parsing starts with 1 (eases debug)
@@ -484,7 +484,7 @@ end
 # surface plots
 function surf(args...)
     global gnuplot_state
-    # if args[1] is an integer, it's the function handle.
+    # if args[1] is an integer, it's the figure handle.
     if isa(args[1], Int)
         h = args[1]
         args = args[2:end]   # argument parsing starts with 1 (eases debug)
