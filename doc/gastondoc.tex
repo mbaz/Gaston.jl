@@ -527,13 +527,13 @@ files. There are two ways to print figures.
 \subsection{Printing a single figure}
 
 If you have a figure on screen that you want to print, you may use the
-\cmd{print()} command. The following example shows hows to print a figure to a
-PNG file:
+\cmd{printfigure()} command. The following example shows hows to print a figure
+to a PNG file:
 
 \begin{juliacode}
 plot(sin(-pi:0.01:pi))
 set_filename("test.png")
-print("png")
+printfigure("png")
 \end{juliacode}
 
 If the filename is not set, output will be sent to the screen.

@@ -625,7 +625,7 @@ function surf(args...)
 end
 
 # print a figure to a file
-function print(args...)
+function printfigure(args...)
     global gnuplot_state
     global gaston_config
 

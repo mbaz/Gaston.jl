@@ -128,17 +128,17 @@ function run_tests_error(ini)
     # high-level functions: print
     @test_error begin
         closeall()
-        print(1)
+        printfigure(1)
     end
     @test_error begin
         closeall()
         plot(1,sin(-3:0.1:3))
-        print(1,"none")
+        printfigure(1,"none")
     end
     @test_error begin
         closeall()
         plot(1,sin(-3:0.1:3))
-        print(2)
+        printfigure(2)
     end
     # high-level functions: surf
     @test_error surf("property")
@@ -250,22 +250,14 @@ function run_tests_success(ini)
         closeall()
         plot(1,sin(-3:0.1:3))
         set_filename("/dev/null")
-        print()
+        printfigure()
         closeall()
     end
     @test_success begin
         closeall()
         plot(1,sin(-3:0.1:3))
         set_filename("/dev/null")
-        print(1,"png")
-        closeall()
-    end
-    @test_success begin
-        closeall()
-        plot(1,sin(-3:0.1:3))
-        set_filename("/dev/null")
-        set_print_size("640,480")
-        print("svg")
+        printfigure(1,"png")
         closeall()
     end
     @test_success begin
@@ -273,7 +265,15 @@ function run_tests_success(ini)
         plot(1,sin(-3:0.1:3))
         set_filename("/dev/null")
         set_print_size("640,480")
-        print("gif")
+        printfigure("svg")
+        closeall()
+    end
+    @test_success begin
+        closeall()
+        plot(1,sin(-3:0.1:3))
+        set_filename("/dev/null")
+        set_print_size("640,480")
+        printfigure("gif")
         closeall()
     end
     # type instantiation
