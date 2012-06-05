@@ -171,7 +171,7 @@ function histdata(s,bins)
     x = ms:delta:Ms
     y = zeros(numel(x))
     for i in 1:numel(x)-1
-        y[i] = sum(x[i] < s <= x[i+1])
+        y[i] = sum(x[i] .< s .<= x[i+1])
     end
     # We want the left bin to start at ms and the right bin to end at Ms
     x = x+delta/2
