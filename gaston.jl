@@ -18,25 +18,32 @@
 ## FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 ## DEALINGS IN THE SOFTWARE.
 
+# When Julia loads a file, its contents are executed on each available
+# processor. In order to avoid having each Julia process try to create a
+# gnuplot instance, all executable code in this file is wrapped by calls to
+# isinteractive().
+
 # before doing anything else, verify gnuplot is present on this system
-if system("which gnuplot > /dev/null") != 0
-    error("Gaston cannot be loaded: gnuplot is not available on this system.")
-end
+if isinteractive()
+    if system("which gnuplot > /dev/null") != 0
+        error("Gaston cannot be loaded: gnuplot is not available on this system.")
+    end
 
-# load files
-load("gaston_types.jl")
-load("gaston_aux.jl")
-load("gaston_lowlvl.jl")
-load("gaston_midlvl.jl")
-load("gaston_hilvl.jl")
-load("gaston_config.jl")
+    # load files
+    load("gaston_types.jl")
+    load("gaston_aux.jl")
+    load("gaston_lowlvl.jl")
+    load("gaston_midlvl.jl")
+    load("gaston_hilvl.jl")
+    load("gaston_config.jl")
 
-# set up global variables
-# global variable that stores gnuplot's state
-gnuplot_state = GnuplotState(false,0,0,strcat("/tmp/gaston-",getenv("USER"),
+    # set up global variables
+    # global variable that stores gnuplot's state
+    gnuplot_state = GnuplotState(false,0,0,strcat("/tmp/gaston-",getenv("USER"),
     "-",randstring(5),"/"),[])
-# when gnuplot_state goes out of scope, close the pipe
-finalizer(gnuplot_state,gnuplot_exit)
+    # when gnuplot_state goes out of scope, close the pipe
+    finalizer(gnuplot_state,gnuplot_exit)
 
-# global variable that stores Gaston's configuration
-gaston_config = GastonConfig()
+    # global variable that stores Gaston's configuration
+    gaston_config = GastonConfig()
+end
