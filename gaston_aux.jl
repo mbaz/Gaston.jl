@@ -219,6 +219,12 @@ function termstring(term::String)
             s = "$s fontscale $(gc.print_fontscale) "
             s = "$s linewidth $(gc.print_linewidth) "
             s = "$s size $(gc.print_size)"
+        elseif term == "eps"
+            s = "set term epscairo $(gc.print_color) "
+            s = "$s font \"$(gc.print_fontface),$(gc.print_fontsize)\" "
+            s = "$s fontscale $(gc.print_fontscale) "
+            s = "$s linewidth $(gc.print_linewidth) "
+            s = "$s size $(gc.print_size)"
         elseif term == "png"
             s = "set term pngcairo $(gc.print_color) "
             s = "$s font \"$(gc.print_fontface),$(gc.print_fontsize)\" "
@@ -248,7 +254,7 @@ end
 
 # Validate terminal type.
 function validate_terminal(s::String)
-    supp_terms = ["wxt", "x11", "svg", "gif", "png", "pdf"]
+    supp_terms = ["wxt", "x11", "svg", "gif", "png", "pdf", "eps"]
     if contains(supp_terms, s)
         return true
     end
@@ -265,7 +271,7 @@ function is_term_screen(s::String)
 end
 
 function is_term_file(s::String)
-    screenterms = ["svg", "gif", "png", "pdf"]
+    screenterms = ["svg", "gif", "png", "pdf", "eps"]
     if contains(screenterms, s)
         return true
     end

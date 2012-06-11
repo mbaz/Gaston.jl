@@ -264,6 +264,20 @@ function run_tests_success(ini)
         closeall()
         plot(1,sin(-3:0.1:3))
         set_filename("/dev/null")
+        printfigure(1,"eps")
+        closeall()
+    end
+    @test_success begin
+        closeall()
+        plot(1,sin(-3:0.1:3))
+        set_filename("/dev/null")
+        printfigure(1,"pdf")
+        closeall()
+    end
+    @test_success begin
+        closeall()
+        plot(1,sin(-3:0.1:3))
+        set_filename("/dev/null")
         set_print_size("640,480")
         printfigure("svg")
         closeall()
