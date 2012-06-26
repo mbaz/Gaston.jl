@@ -156,6 +156,11 @@ function run_tests_error(ini)
     @test_error addcoords(1:10,1:10,1:10)
     @test_error addcoords(1:10,1:11)
     @test_error addcoords(1:2,1:3,[[1 2 3 4],[1 2 3 4]])
+    # set_terminal
+    @test_error set_terminal("none")
+    if CURRENT_OS != "OSX" || CURRENT_OS != "Darwin"
+        @test_error set_terminal("aqua")
+    end
     ## tests that should fail, but (still) don't
     ## commented out because gnuplot barfs all over the screen
     #@test_error plot(0:10,"color","nonexistant")
@@ -298,6 +303,12 @@ function run_tests_success(ini)
     end
     # type instantiation
     @test_success CurveConf()
+    # setting terminal
+    set_terminal("x11")
+    set_terminal("wxt")
+    if CURRENT_OS == "OSX" || CURRENT_OS == "Darwin"
+        @test_error set_terminal("aqua")
+    end
 
     return testsrun, testspassed
 end

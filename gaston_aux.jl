@@ -290,7 +290,11 @@ end
 
 # Validate terminal type.
 function validate_terminal(s::String)
-    supp_terms = ["wxt", "x11", "svg", "gif", "png", "pdf", "eps"]
+    supp_terms = ["wxt", "x11", "svg", "gif", "png", "pdf",
+        "aqua", "eps"]
+    if s == "aqua" && (CURRENT_OS != "OSX" || CURRENT_OS != "Darwin")
+        error("aqua terminal is only supported on Mac OS.")
+    end
     if contains(supp_terms, s)
         return true
     end
@@ -299,7 +303,7 @@ end
 
 # Identify terminal by type: file or screen
 function is_term_screen(s::String)
-    screenterms = ["wxt", "x11"]
+    screenterms = ["wxt", "x11", "aqua"]
     if contains(screenterms, s)
         return true
     end
