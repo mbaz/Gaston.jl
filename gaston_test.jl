@@ -249,34 +249,39 @@ function run_tests_success(ini)
     @test_success begin
         closeall()
         plot(1,sin(-3:0.1:3))
+        sleep(0.1)
         set_filename("/dev/null")
         printfigure()
         closeall()
     end
     @test_success begin
         closeall()
-        plot(1,sin(-3:0.1:3))
+        plot(2,sin(-3:0.1:3))
+        sleep(0.1)
         set_filename("/dev/null")
-        printfigure(1,"png")
+        printfigure(2,"png")
         closeall()
     end
     @test_success begin
         closeall()
-        plot(1,sin(-3:0.1:3))
+        plot(3,sin(-3:0.1:3))
+        sleep(0.1)
         set_filename("/dev/null")
-        printfigure(1,"eps")
+        printfigure(3,"eps")
         closeall()
     end
     @test_success begin
         closeall()
-        plot(1,sin(-3:0.1:3))
+        plot(4,sin(-3:0.1:3))
+        sleep(0.1)
         set_filename("/dev/null")
-        printfigure(1,"pdf")
+        printfigure(4,"pdf")
         closeall()
     end
     @test_success begin
         closeall()
-        plot(1,sin(-3:0.1:3))
+        plot(5,sin(-3:0.1:3))
+        sleep(0.1)
         set_filename("/dev/null")
         set_print_size("640,480")
         printfigure("svg")
@@ -284,7 +289,8 @@ function run_tests_success(ini)
     end
     @test_success begin
         closeall()
-        plot(1,sin(-3:0.1:3))
+        plot(6,sin(-3:0.1:3))
+        sleep(0.1)
         set_filename("/dev/null")
         set_print_size("640,480")
         printfigure("gif")
