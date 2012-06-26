@@ -51,8 +51,7 @@ function closefigure(x...)
         # only care about closing windows if term type is screen
         if is_term_screen(term)
             if gnuplot_state.running
-                gnuplot_send(
-                    strcat("set term ", term, " ", string(h), " close"))
+                gnuplot_send("set term $term $h close")
             end
         end
         # delete all data related to this figure
@@ -89,23 +88,28 @@ function closeall()
     end
 end
 
+# remove a figure's data without closing it
+function clearfigure(h::Int)
+    global gnuplot_state
+
+    f = findfigure(h)
+    if f != 0
+        gnuplot_state.figs[f] = Figure(h)
+    end
+end
+
+
 # Select or create a figure. When called with no arguments, create a new
 # figure. Figure handles must be natural numbers.
 # Returns the current figure handle.
-function figure(x...)
+function figure(h::Int,redraw::Bool)
     global gnuplot_state
     global gaston_config
 
     term = gaston_config.terminal
 
-    # check arguments
-    if !isempty(x)
-        # assert x[1] is a natural integer
-        assert((x[1] > 0) && (isa(x[1],Int)),
-            "Figure handle must be a natural number.")
-        # assert x contains a single value
-        assert(length(x) == 1,"figure() argument must be a single number")
-    end
+    # assert h is non-negative
+    assert(h >= 0, "Figure handle must not be negative.")
 
     # see if we need to set up gnuplot
     if gnuplot_state.running == false
@@ -118,13 +122,11 @@ function figure(x...)
     end
     # determine figure handle
     if gnuplot_state.current == 0
-        if isempty(x)
+        if h == 0
             h = 1
-        else
-            h = x[1]
         end
     else
-        if isempty(x)
+        if h == 0
             # use lowest numbered handle available
             for i = 1:max(handles)+1
                 if !contains(handles,i)
@@ -132,8 +134,6 @@ function figure(x...)
                     break
                 end
             end
-        else
-            h = x[1]
         end
     end
     # if figure with handle h exists, replot it; otherwise create it
@@ -141,10 +141,14 @@ function figure(x...)
     if !contains(handles,h)
         gnuplot_state.figs = [gnuplot_state.figs, Figure(h)]
     else
-        llplot()
+        if redraw
+            llplot()
+        end
     end
     return h
 end
+figure() = figure(0,true)
+figure(h::Int) = figure(h,true)
 
 # 2-d plots
 function plot(args...)
@@ -156,12 +160,8 @@ function plot(args...)
     else
         h = gnuplot_state.current
     end
-    if h == 0
-        h = figure()     # new figure
-    else
-        closefigure(h)
-        figure(h)    # overwrite specific figure
-    end
+    figure(h,false) # create/select figure
+    clearfigure(h)  # remove all figure configuration
     # parse arguments
     state = "SINI"
     la = length(args)
@@ -264,12 +264,8 @@ function histogram(args...)
     else
         h = gnuplot_state.current
     end
-    if h == 0
-        h = figure()     # new figure
-    else
-        closefigure(h)
-        figure(h)    # overwrite specific figure
-    end
+    figure(h,false) # create/select figure
+    clearfigure(h)  # remove all figure configuration
     # parse arguments
     state = "SINI"
     la = length(args)
@@ -359,12 +355,8 @@ function imagesc(args...)
     else
         h = gnuplot_state.current
     end
-    if h == 0
-        h = figure()     # new figure
-    else
-        closefigure(h)
-        figure(h)    # overwrite specific figure
-    end
+    figure(h,false) # create/select figure
+    clearfigure(h)  # remove all figure configuration
     # parse arguments
     state = "SINI"
     la = length(args)
@@ -491,12 +483,8 @@ function surf(args...)
     else
         h = gnuplot_state.current
     end
-    if h == 0
-        h = figure()     # new figure
-    else
-        closefigure(h)
-        figure(h)    # overwrite specific figure
-    end
+    figure(h,false) # create/select figure
+    clearfigure(h)  # remove all figure configuration
     # parse arguments
     state = "SINI"
     la = length(args)

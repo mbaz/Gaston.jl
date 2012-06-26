@@ -209,9 +209,8 @@ function termstring(term::String)
 
     gc = gaston_config
 
-    c = findfigure(gnuplot_state.current)
     if is_term_screen(term)
-        ts = strcat("set term ", term, " ", string(c))
+        ts = "set term $term $(gnuplot_state.current)"
     else
         if term == "pdf"
             s = "set term pdfcairo $(gc.print_color) "
@@ -246,6 +245,43 @@ function termstring(term::String)
         ts = "$s \nset output \"$(gc.outputfile)\""
     end
     return ts
+end
+
+# send gnuplot the current figure's configuration
+function gnuplot_send_fig_config(config)
+    gnuplot_send("set autoscale")
+    # legend box
+    if config.box != ""
+        gnuplot_send(strcat("set key ",config.box))
+    end
+    # plot title
+    if config.title != ""
+        gnuplot_send(strcat("set title '",config.title,"' "))
+    end
+    # xlabel
+    if config.xlabel != ""
+        gnuplot_send(strcat("set xlabel '",config.xlabel,"' "))
+    end
+    # ylabel
+    if config.ylabel != ""
+        gnuplot_send(strcat("set ylabel '",config.ylabel,"' "))
+    end
+    # zlabel
+    if config.zlabel != ""
+        gnuplot_send(strcat("set zlabel '",config.zlabel,"' "))
+    end
+    # axis log scale
+    if config.axis != "" || config.axis != "normal"
+        if config.axis == "semilogx"
+            gnuplot_send("set logscale x")
+        end
+        if config.axis == "semilogy"
+            gnuplot_send("set logscale y")
+        end
+        if config.axis == "loglog"
+            gnuplot_send("set logscale xy")
+        end
+    end
 end
 
 # Validation functions.

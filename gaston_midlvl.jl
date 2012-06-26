@@ -227,43 +227,8 @@ function llplot()
         return
     end
 
-    # send figure configuration to gnuplot
-    gnuplot_send("set autoscale")
-    # legend box
-    if config.box != ""
-        gnuplot_send(strcat("set key ",config.box))
-    end
-    # plot title
-    if config.title != ""
-        gnuplot_send(strcat("set title '",config.title,"' "))
-    end
-    # xlabel
-    if config.xlabel != ""
-        gnuplot_send(strcat("set xlabel '",config.xlabel,"' "))
-    end
-    # ylabel
-    if config.ylabel != ""
-        gnuplot_send(strcat("set ylabel '",config.ylabel,"' "))
-    end
-    # zlabel
-    if config.zlabel != ""
-        gnuplot_send(strcat("set zlabel '",config.zlabel,"' "))
-    end
-    # axis log scale
-    if config.axis != "" || config.axis != "normal"
-        if config.axis == "semilogx"
-            gnuplot_send("set logscale x")
-        end
-        if config.axis == "semilogy"
-            gnuplot_send("set logscale y")
-        end
-        if config.axis == "loglog"
-            gnuplot_send("set logscale xy")
-        end
-    end
-
     # datafile filename
-    filename = strcat(string(gnuplot_state.tmpdir),"figure",string(c),".dat")
+    filename = "$(gnuplot_state.tmpdir)figure$(gnuplot_state.current).dat"
 
     # Send appropriate coordinates and data to gnuplot, depending on
     # whether we are doing 2-d, 3-d or image plots.
@@ -309,8 +274,11 @@ function llplot()
             end
             write(f,"\n\n")
         end
+        flush(f)
         close(f)
-        # send command to gnuplot
+        # send figure configuration to gnuplot
+        gnuplot_send_fig_config(config)
+        # send plot command to gnuplot
         gnuplot_send(linestr(figs[c].curves, "plot", filename))
 
     # 3-d plot: Z is not empty and plotstyle is not {,rgb}image
@@ -329,6 +297,8 @@ function llplot()
             write(f,"\n\n")
         end
         close(f)
+        # send figure configuration to gnuplot
+        gnuplot_send_fig_config(config)
         # send command to gnuplot
         gnuplot_send(linestr(figs[c].curves, "splot",filename))
     end
