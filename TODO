@@ -9,14 +9,15 @@ v 0.6:
 * add support for parametric plots
 * add support for set view
 * add support for curve smoothing
+* add support for setting ranges
 
 v 0.7 and later:
 
-* decide if we'll support grid, ticks, ranges
+* find a definitive way to fix races between Gaston and gnuplot
+* decide if we'll support grid, ticks
 * decide if we need to support more terminals
 * review need to add a way to set screen terminal properties
 * add debug options: print gnuplot command line, etc
-* review the new 'optional arguments' framework and see if we can use it
 * allow user setting gnuplot command
 * look into the mmap interface to avoid creating files
 * create script and data files besides plotting -- useful as a starting point
