@@ -1,5 +1,7 @@
 \documentclass[11pt]{article}
 
+\usepackage[toc]{multitoc}
+
 \usepackage{booktabs}
 \usepackage{multirow}
 
@@ -24,7 +26,7 @@
 
 \newcommand{\cm}{$\checkmark$}
 
-\title{Gaston \\[0.8cm] \large A plotting utility for Julia \\[0.8cm] v. 0.5}
+\title{Gaston \\[0.8cm] \large A plotting utility for Julia \\[0.8cm] v. 0.5.3}
 \author{M. Bazdresch}
 \date{\today}
 
@@ -33,10 +35,13 @@
 \begin{document}
 \maketitle
 
-\textbf{Please note:} Gaston is currently under development, and all functions
-and definitions are subject to change from one version to the next, as we
-figure out the best way to organize the code. Gaston has been tested on Linux
-(Ubuntu 10.04 and Arch), with gnuplot 4.6.
+\textbf{Please note:} Gaston is currently under heavy development, and all
+functions and definitions are subject to change from one version to the next,
+as we figure out the best way to organize the code. Gaston has been tested on
+Linux (Ubuntu 10.04 and Arch), with gnuplot 4.6, and Julia 38ec7cfa0d (built on
+2012-06-26).
+
+\tableofcontents
 
 \section{Introduction}
 
@@ -155,11 +160,18 @@ This function always returns the handle of the current figure.
 \subsection{Terminals}
 
 Gaston supports plotting to the screen as well as printing the plots to files.
-Two screen terminals are supported: \cmd{wxt} and \cmd{x11}. The \cmd{x11}
-terminal is provided for use in systems that don't support WxWindows.
+Three screen terminals are supported: \cmd{wxt}, \cmd{x11} and
+\cmd{aqua}\footnote{Gnuplot provides the \cmd{aqua} terminal on Mac OS X
+systems only. It is included in Gaston for convenience of users of that system.
+However, the author does not have access to any Mac computers and, in
+consequence, this terminal should be considered as unsupported. Bug reports,
+patches and comments are welcome, as always.}. The \cmd{x11} terminal is faster
+than \cmd{wxt}, but it offers lower plot quality; it is provided for use in
+systems with lower performance or that don't support WxWindows.
 
-For printing to files, terminals \cmd{svg}, \cmd{pdf}, \cmd{png} and \cmd{gif}
-are supported. For more details on printing, see section \ref{s:print} below.
+For printing to files, terminals \cmd{svg}, \cmd{pdf}, \cmd{png}, \cmd{eps} and
+\cmd{gif} are supported. For more details on printing, see section
+\ref{s:print} below.
 
 To set the terminal type, use the command
 \begin{juliacode}
@@ -573,11 +585,11 @@ The following table provides more details on each function.
 	\cmd{set\_print\_fontsize} & Positive number & 12 & All \\
 	\cmd{set\_print\_fontscale} & Positive number & 0.5 & PDF, PNG, GIF \\
 	\cmd{set\_print\_linewidth} & Positive number & 1 & All \\
-	\cmd{set\_print\_size()} & For GIF, SVG, PNG and PDF: \cmd{"X,Y"} specifies
-	a plot of
-	\cmd{X} times \cmd{Y} pixels. In addition, for PNG and PDF, dimensions may
-	be specified as \cmd{"Xin,Yin"} or \cmd{"Xcm,Ycm"} & \cmd{"5in,3in"} & All
-	\\
+	\cmd{set\_print\_size()} & For GIF, SVG, PNG, EPS and PDF: \cmd{"X,Y"}
+	specifies a plot of
+	\cmd{X} times \cmd{Y} pixels. In addition, for PNG, EPS and PDF, dimensions
+	may be specified as \cmd{"Xin,Yin"} or \cmd{"Xcm,Ycm"} & \cmd{"5in,3in"} &
+	All \\
 	\bottomrule
 \end{tabular}
 \end{center}
@@ -846,6 +858,33 @@ Gaston defines several new types. All types are defined in file
 		\bottomrule
 	\end{tabular}
 \end{center}
+
+\section{Notes to the user}
+
+This section gathers some notes that may be useful to Gaston users and don't
+fit anywhere else on this document.
+
+\subsection{Scripting}
+When including Gaston plotting commands in a script, it is necessary to take
+steps to avoid race conditions between Gaston and Gnuplot. These race
+conditions arise for the following reasons.
+
+Gaston writes the data to be plotted to a file, and then issues plot commands
+that point Gnuplot to the correct file. However, communication between Gaston
+and Gnuplot occurs asynchronously. This means that, when Gaston communicates a
+command to Gnuplot, it writes the command to a pipe and then continues with its
+normal execution.  If two consecutive (or near) plot commands write plot data
+to the same file, it is possible that the file will be overwritten while
+Gnuplot was still reading it.
+
+When this happens, the plot command will apparently succeed, but no plot will
+be produced, and Gnuplot will issue error messages that appear on the screen.
+If this happens, it may be necessary to insert \cmd{sleep(x)} commands between
+the plotting commands. Here, \cmd{x} is the number of seconds to wait; this
+number will change depending on the particular system's speed. A value
+of 0.1 could be more than enough on modern machines.
+
+A solution to this problem is under investigation.
 
 \section{Testing}
 \label{tests}
