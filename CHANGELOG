@@ -1,3 +1,15 @@
+version 0.5.3:
+
+	User visible:
+
+	* New terminals: aqua (OS X only) and EPS.
+	* Improved documentation.
+	* Compatibility with latest Julia syntax changes.
+
+	Under the hood:
+
+	* A few bug fixes and performance improvements.
+
 version 0.5:
 
 	User visible:
