@@ -158,7 +158,7 @@ function run_tests_error(ini)
     @test_error addcoords(1:2,1:3,[[1 2 3 4],[1 2 3 4]])
     # set_terminal
     @test_error set_terminal("none")
-    if CURRENT_OS != "OSX" || CURRENT_OS != "Darwin"
+    if !(CURRENT_OS == :OSX || CURRENT_OS == :Darwin)
         @test_error set_terminal("aqua")
     end
     ## tests that should fail, but (still) don't
@@ -306,8 +306,8 @@ function run_tests_success(ini)
     # setting terminal
     set_terminal("x11")
     set_terminal("wxt")
-    if CURRENT_OS == "OSX" || CURRENT_OS == "Darwin"
-        @test_error set_terminal("aqua")
+    if CURRENT_OS == :OSX || CURRENT_OS == :Darwin
+        @test_success set_terminal("aqua")
     end
 
     return testsrun, testspassed
