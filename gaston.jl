@@ -23,10 +23,13 @@
 # gnuplot instance, all executable code in this file is wrapped by calls to
 # isinteractive().
 
-# before doing anything else, verify gnuplot is present on this system
 if isinteractive()
+    # before doing anything else, verify gnuplot is present on this system
     if system("which gnuplot > /dev/null") != 0
         error("Gaston cannot be loaded: gnuplot is not available on this system.")
+    end
+    if readchomp(`gnuplot --version`)[1:11] != "gnuplot 4.6"
+        error("Gaston requires gnuplot version 4.6")
     end
 
     # load files
