@@ -43,16 +43,16 @@
 macro test_error(ex)
     quote
         system("sleep 0.3")
-        testnumber = testnumber + 1
-        testsrun = testsrun + 1
-        s = strcat("Test number ", string(testnumber), ". Error expected. Result: ")
+        $esc(:testnumber) = $esc(:testnumber) + 1
+        $esc(:testsrun) = $esc(:testsrun) + 1
+        s = strcat("Test number ", string($esc(:testnumber)), ". Error expected. Result: ")
         try
             eval($ex)
             println(strcat(s, "Success (Test failed.)"))
             println($string(ex))
         catch
             println(strcat(s, "Error (Test passed.)"))
-            testspassed = testspassed + 1
+            $esc(:testspassed) = $esc(:testspassed) + 1
         end
     end
 end
@@ -60,13 +60,13 @@ end
 macro test_success(ex)
     quote
         system("sleep 0.4")
-        testnumber = testnumber + 1
-        testsrun = testsrun + 1
-        s = strcat("Test number ", string(testnumber), ". Success expected. Result: ")
+        $esc(:testnumber) = $esc(:testnumber) + 1
+        $esc(:testsrun) = $esc(:testsrun) + 1
+        s = strcat("Test number ", string($esc(:testnumber)), ". Success expected. Result: ")
         try
             eval($ex)
             println(strcat(s, "Success (Test passed.)"))
-            testspassed = testspassed + 1
+            $esc(:testspassed) = $esc(:testspassed) + 1
         catch
             println(strcat(s, "Error (Test failed.)"))
             println($string(ex))
