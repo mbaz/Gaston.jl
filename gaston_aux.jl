@@ -51,15 +51,6 @@ function gnuplot_exit(x...)
     return 0
 end
 
-# return a random string (for filenames)
-function randstring(len::Int)
-    const cset = char([0x30:0x39,0x41:0x5a,0x61:0x7a])
-    const strset = convert(String,strcat(cset...))
-    index = int(ceil(strlen(strset)*rand(len)))
-    s = strset[index]
-    return s
-end
-
 # Return index to figure with handle 'c'. If no such figure exists, returns 0.
 function findfigure(c)
     global gnuplot_state
