@@ -24,7 +24,7 @@
 # pipe from Julia, so we have to use libc's 'popen' call.
 function gnuplot_init()
     global gnuplot_state
-    f = ccall(:popen, Ptr, (Ptr{Uint8},Ptr{Uint8}), "gnuplot" ,"w")
+    f = ccall(:popen, Ptr{Int}, (Ptr{Uint8},Ptr{Uint8}), "gnuplot" ,"w")
     if f == C_NULL
         error("There was a problem starting up gnuplot.")
     end
@@ -37,7 +37,7 @@ function gnuplot_exit(x...)
     global gnuplot_state
     if gnuplot_state.running
         # close pipe
-        err = ccall(:pclose, Int, (Ptr,), gnuplot_state.fid)
+        err = ccall(:pclose, Int, (Ptr{Int},), gnuplot_state.fid)
         # err should be zero
         if err != 0
             println("Gnuplot may not have closed correctly.");
