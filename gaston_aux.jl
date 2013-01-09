@@ -282,7 +282,7 @@ end
 # Validate terminal type.
 function validate_terminal(s::String)
     supp_terms = ["wxt", "x11", "svg", "gif", "png", "pdf", "aqua", "eps"]
-    if s == "aqua" && !(CURRENT_OS == :OSX || CURRENT_OS == :Darwin)
+    if s == "aqua" && OS_NAME != :Darwin
         return false
     end
     if contains(supp_terms, s)
