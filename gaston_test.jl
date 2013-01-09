@@ -39,37 +39,48 @@
 #
 # In all cases, when a test fails, the expression under test is echoed to
 # the screen to help identify it.
+#
+# Note: the test macros are specific to Gaston and are not meant to be used
+# for testing other programs. Specifically, since the macros are not
+# hygienic (as far as I understand), the expression passed to them could
+# mess with the test statistics.
 
 macro test_error(ex)
     quote
+        global testnumber
+        global testsrun
+        global testspassed
         system("sleep 0.3")
-        $esc(:testnumber) = $esc(:testnumber) + 1
-        $esc(:testsrun) = $esc(:testsrun) + 1
-        s = strcat("Test number ", string($esc(:testnumber)), ". Error expected. Result: ")
+        testnumber = testnumber + 1
+        testsrun = testsrun + 1
+        s = strcat("Test number ", testnumber, ". Error expected. Result: ")
         try
-            eval($ex)
+            $ex
             println(strcat(s, "Success (Test failed.)"))
-            println($string(ex))
+            println($(string(ex)))
         catch
             println(strcat(s, "Error (Test passed.)"))
-            $esc(:testspassed) = $esc(:testspassed) + 1
+            testspassed = testspassed + 1
         end
     end
 end
 
 macro test_success(ex)
     quote
+        global testnumber
+        global testsrun
+        global testspassed
         system("sleep 0.4")
-        $esc(:testnumber) = $esc(:testnumber) + 1
-        $esc(:testsrun) = $esc(:testsrun) + 1
-        s = strcat("Test number ", string($esc(:testnumber)), ". Success expected. Result: ")
+        testnumber = testnumber + 1
+        testsrun = testsrun + 1
+        s = strcat("Test number ", testnumber, ". Success expected. Result: ")
         try
-            eval($ex)
+            $ex
             println(strcat(s, "Success (Test passed.)"))
-            $esc(:testspassed) = $esc(:testspassed) + 1
+            testspassed = testspassed + 1
         catch
             println(strcat(s, "Error (Test failed.)"))
-            println($string(ex))
+            println($(string(ex)))
         end
     end
 end
@@ -158,9 +169,7 @@ function run_tests_error(ini)
     @test_error addcoords(1:2,1:3,[[1 2 3 4],[1 2 3 4]])
     # set_terminal
     @test_error set_terminal("none")
-    if !(CURRENT_OS == :OSX || CURRENT_OS == :Darwin)
-        @test_error set_terminal("aqua")
-    end
+    @osx_only @test_error set_terminal("aqua")
     ## tests that should fail, but (still) don't
     ## commented out because gnuplot barfs all over the screen
     #@test_error plot(0:10,"color","nonexistant")
@@ -306,9 +315,7 @@ function run_tests_success(ini)
     # setting terminal
     set_terminal("x11")
     set_terminal("wxt")
-    if CURRENT_OS == :OSX || CURRENT_OS == :Darwin
-        @test_success set_terminal("aqua")
-    end
+    @osx_only @test_success set_terminal("aqua")
 
     return testsrun, testspassed
 end
