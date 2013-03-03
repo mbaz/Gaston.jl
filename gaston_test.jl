@@ -50,16 +50,16 @@ macro test_error(ex)
         global testnumber
         global testsrun
         global testspassed
-        system("sleep 0.3")
+        run(`sleep 0.3`)
         testnumber = testnumber + 1
         testsrun = testsrun + 1
-        s = strcat("Test number ", testnumber, ". Error expected. Result: ")
+        s = string("Test number ", testnumber, ". Error expected. Result: ")
         try
             $ex
-            println(strcat(s, "Success (Test failed.)"))
+            println(string(s, "Success (Test failed.)"))
             println($(string(ex)))
         catch
-            println(strcat(s, "Error (Test passed.)"))
+            println(string(s, "Error (Test passed.)"))
             testspassed = testspassed + 1
         end
     end
@@ -70,16 +70,16 @@ macro test_success(ex)
         global testnumber
         global testsrun
         global testspassed
-        system("sleep 0.4")
+        run(`sleep 0.4`)
         testnumber = testnumber + 1
         testsrun = testsrun + 1
-        s = strcat("Test number ", testnumber, ". Success expected. Result: ")
+        s = string("Test number ", testnumber, ". Success expected. Result: ")
         try
             $ex
-            println(strcat(s, "Success (Test passed.)"))
+            println(string(s, "Success (Test passed.)"))
             testspassed = testspassed + 1
         catch
-            println(strcat(s, "Error (Test failed.)"))
+            println(string(s, "Error (Test failed.)"))
             println($(string(ex)))
         end
     end
@@ -324,6 +324,6 @@ function run_tests()
     println("Running tests...")
     (total,passed) = run_tests_error(0)
     (total1,passed1) = run_tests_success(total)
-    s = println(strcat("Tests run: ", string(total+total1)))
-    s = println(strcat("Tests passed: ", string(passed+passed1)))
+    s = println(string("Tests run: ", string(total+total1)))
+    s = println(string("Tests passed: ", string(passed+passed1)))
 end

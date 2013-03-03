@@ -100,23 +100,23 @@ end
 function linestr_single(conf::CurveConf)
     s = ""
     if conf.legend != ""
-        s = strcat(s, " title '", conf.legend, "' ")
+        s = string(s, " title '", conf.legend, "' ")
     else
-        s = strcat(s, "notitle ")
+        s = string(s, "notitle ")
     end
-    s = strcat(s, " with ", conf.plotstyle, " ")
+    s = string(s, " with ", conf.plotstyle, " ")
     if conf.color != ""
-        s = strcat(s, "linecolor rgb '", conf.color, "' ")
+        s = string(s, "linecolor rgb '", conf.color, "' ")
     end
-    s = strcat(s, "lw ", string(conf.linewidth), " ")
+    s = string(s, "lw ", string(conf.linewidth), " ")
     # some plotstyles don't allow point specifiers
     cp = conf.plotstyle
     if cp != "lines" && cp != "impulses" && cp != "pm3d" && cp != "image" &&
         cp != "rgbimage" && cp != "boxes" && cp != "dots"
         if conf.marker != ""
-            s = strcat(s, "pt ", string(pointtype(conf.marker)), " ")
+            s = string(s, "pt ", string(pointtype(conf.marker)), " ")
         end
-        s = strcat(s, "ps ", string(conf.pointsize), " ")
+        s = string(s, "ps ", string(conf.pointsize), " ")
     end
     return s
 end
@@ -127,11 +127,11 @@ function linestr(curves::Vector{CurveData}, cmd::String, file::String)
     # is create the first plot command, then the rest
     # We also need to keep track of the current index (starts at zero)
     index = 0
-    s = strcat(cmd, " '", file, "' ", " i 0 ", linestr_single(curves[1].conf))
+    s = string(cmd, " '", file, "' ", " i 0 ", linestr_single(curves[1].conf))
     if length(curves) > 1
         for i in curves[2:end]
             index += 1
-            s = strcat(s, ", '", file, "' ", " i ", string(index)," ",
+            s = string(s, ", '", file, "' ", " i ", string(index)," ",
                 linestr_single(i.conf))
         end
     end
@@ -160,8 +160,8 @@ function histdata(s,bins)
     Ms = max(s)
     delta = (Ms-ms)/bins
     x = ms:delta:Ms
-    y = zeros(numel(x))
-    for i in 1:numel(x)-1
+    y = zeros(length(x))
+    for i in 1:length(x)-1
         y[i] = sum(x[i] .< s .<= x[i+1])
     end
     # We want the left bin to start at ms and the right bin to end at Ms
@@ -243,23 +243,23 @@ function gnuplot_send_fig_config(config)
     gnuplot_send("set autoscale")
     # legend box
     if config.box != ""
-        gnuplot_send(strcat("set key ",config.box))
+        gnuplot_send(string("set key ",config.box))
     end
     # plot title
     if config.title != ""
-        gnuplot_send(strcat("set title '",config.title,"' "))
+        gnuplot_send(string("set title '",config.title,"' "))
     end
     # xlabel
     if config.xlabel != ""
-        gnuplot_send(strcat("set xlabel '",config.xlabel,"' "))
+        gnuplot_send(string("set xlabel '",config.xlabel,"' "))
     end
     # ylabel
     if config.ylabel != ""
-        gnuplot_send(strcat("set ylabel '",config.ylabel,"' "))
+        gnuplot_send(string("set ylabel '",config.ylabel,"' "))
     end
     # zlabel
     if config.zlabel != ""
-        gnuplot_send(strcat("set zlabel '",config.zlabel,"' "))
+        gnuplot_send(string("set zlabel '",config.zlabel,"' "))
     end
     # axis log scale
     if config.axis != "" || config.axis != "normal"

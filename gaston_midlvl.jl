@@ -72,11 +72,11 @@ function addcoords(x::Coord,y::Coord,Z::Array,conf::CurveConf)
     # check number of elements
     if neZ
         if conf.plotstyle == "image" || conf.plotstyle == "rgbimage"
-            assert(size(Z,2) == numel(x), "Wrong number of columns in Z")
-            assert(size(Z,1) == numel(y), "Wrong number of rows in Z")
+            assert(size(Z,2) == length(x), "Wrong number of columns in Z")
+            assert(size(Z,1) == length(y), "Wrong number of rows in Z")
         else
-            assert(size(Z,1) == numel(x), "Wrong number of columns in Z")
-            assert(size(Z,2) == numel(y), "Wrong number of rows in Z")
+            assert(size(Z,1) == length(x), "Wrong number of columns in Z")
+            assert(size(Z,2) == length(y), "Wrong number of rows in Z")
         end
     else
         assert(length(x) == length(y),
@@ -244,33 +244,33 @@ function llplot()
             if ps == "errorbars" || ps == "errorlines"
                 if isempty(i.yhigh)
                     # ydelta (single error coordinate)
-                    dlmwrite(f,[i.x i.y i.ylow],' ')
+                    writedlm(f,[i.x i.y i.ylow],' ')
                 else
                     # ylow, yhigh (double error coordinate)
-                    dlmwrite(f,[i.x i.y i.ylow i.yhigh],' ')
+                    writedlm(f,[i.x i.y i.ylow i.yhigh],' ')
                 end
             elseif ps == "image"
                 # output matrix
-                for col = 1:numel(i.x)
-                    y = numel(i.y)
-                    for row = 1:numel(i.y)
-                        dlmwrite(f,[i.x[col] i.y[row] i.Z[y,col]],' ')
+                for col = 1:length(i.x)
+                    y = length(i.y)
+                    for row = 1:length(i.y)
+                        writedlm(f,[i.x[col] i.y[row] i.Z[y,col]],' ')
                         y = y-1
                     end
                 end
             elseif ps == "rgbimage"
                 # output matrix
-                for col = 1:numel(i.x)
-                    y = numel(i.y)
-                    for row = 1:numel(i.y)
-                        dlmwrite(f,
+                for col = 1:length(i.x)
+                    y = length(i.y)
+                    for row = 1:length(i.y)
+                        writedlm(f,
                         [i.x[col] i.y[row] i.Z[y,col,1] i.Z[y,col,2] i.Z[y,col,3]],
                         ' ')
                         y = y-1
                     end
                 end
             else
-                dlmwrite(f,[i.x i.y],' ')
+                writedlm(f,[i.x i.y],' ')
             end
             write(f,"\n\n")
         end
@@ -288,9 +288,9 @@ function llplot()
         # create data file
         f = open(filename,"w")
         for i in figs[c].curves
-            for row in 1:numel(i.x)
-                for col in 1:numel(i.y)
-                    dlmwrite(f,[i.x[row] i.y[col] i.Z[row,col]],' ')
+            for row in 1:length(i.x)
+                for col in 1:length(i.y)
+                    writedlm(f,[i.x[row] i.y[col] i.Z[row,col]],' ')
                 end
                 write(f,"\n")
             end

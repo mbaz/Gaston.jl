@@ -28,7 +28,7 @@ function set_terminal(term::String)
     if validate_terminal(term)
         gaston_config.terminal = term
     else
-        error(strcat("Terminal type ", term, " not supported."))
+        error(string("Terminal type ", term, " not supported."))
     end
     return term
 end
@@ -55,7 +55,7 @@ function set_default_plotstyle(s::String)
         validate_image_plotstyle(s)
         gaston_config.plotstyle = s
     else
-        error(strcat("Plotstyle ", s, " not supported."))
+        error(string("Plotstyle ", s, " not supported."))
     end
 end
 
@@ -72,7 +72,7 @@ function set_default_marker(s::String)
     if validate_marker(s)
         gaston_config.marker = s
     else
-        error(strcat("Marker ", s, " not supported."))
+        error(string("Marker ", s, " not supported."))
     end
 end
 
@@ -125,7 +125,7 @@ function set_default_axis(s::String)
     if validate_axis(s)
         gaston_config.marker = s
     else
-        error(strcat("Axis ", s, " not supported."))
+        error(string("Axis ", s, " not supported."))
     end
 end
 

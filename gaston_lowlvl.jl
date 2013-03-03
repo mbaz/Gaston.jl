@@ -21,7 +21,7 @@
 # write commands to gnuplot's pipe
 function gnuplot_send(s::String)
     fid = gnuplot_state.fid
-    err = ccall(:fputs, Int, (Ptr{Uint8},Ptr{Int}), strcat(s,"\n"), fid)
+    err = ccall(:fputs, Int, (Ptr{Uint8},Ptr{Int}), string(s,"\n"), fid)
     # fputs returns a positive number if everything worked all right
     if err < 0
         println("Something went wrong writing to the gnuplot pipe.")
