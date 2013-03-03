@@ -31,11 +31,12 @@ type GnuplotState
     function GnuplotState(running::Bool,current::Int,fid,tmpdir::String,
         figs::Array)
         # Check to see if tmpdir exists, and create it if not
+        # TODO: there has to be a simpler way to do this
         try
             f = open(tmpdir)
             close(f)
         catch
-            system(strcat("mkdir ",tmpdir))
+            run(`mkdir $tmpdir`)
         end
         new(running,current,fid,tmpdir,figs)
     end
