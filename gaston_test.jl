@@ -320,7 +320,7 @@ function run_tests_success(ini)
     return testsrun, testspassed
 end
 
-function run_tests()
+function gaston_tests()
     println("Running tests...")
     (total,passed) = run_tests_error(0)
     (total1,passed1) = run_tests_success(total)

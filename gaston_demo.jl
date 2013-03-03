@@ -18,7 +18,7 @@
 ## FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 ## DEALINGS IN THE SOFTWARE.
 
-function demo()
+function gaston_demo()
     closeall()
 
     t = -2:0.01:2

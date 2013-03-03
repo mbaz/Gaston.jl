@@ -18,6 +18,11 @@
 ## FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 ## DEALINGS IN THE SOFTWARE.
 
+module Gaston
+
+export closefigure, closeall, clearfigure, figure, plot, histogram, imagesc,
+    surf, printfigure, gaston_demo, gaston_tests
+
 # before doing anything else, verify gnuplot is present on this system
 if !success(`which gnuplot`)
     error("Gaston cannot be loaded: gnuplot is not available on this system.")
@@ -27,12 +32,14 @@ if readchomp(`gnuplot --version`)[1:11] != "gnuplot 4.6"
 end
 
 # load files
-require("gaston_types.jl")
-require("gaston_aux.jl")
-require("gaston_lowlvl.jl")
-require("gaston_midlvl.jl")
-require("gaston_hilvl.jl")
-require("gaston_config.jl")
+include("gaston_types.jl")
+include("gaston_aux.jl")
+include("gaston_lowlvl.jl")
+include("gaston_midlvl.jl")
+include("gaston_hilvl.jl")
+include("gaston_config.jl")
+include("gaston_demo.jl")
+include("gaston_test.jl")
 
 # set up global variables
 # global variable that stores gnuplot's state
@@ -43,3 +50,5 @@ finalizer(gnuplot_state,gnuplot_exit)
 
 # global variable that stores Gaston's configuration
 gaston_config = GastonConfig()
+
+end
