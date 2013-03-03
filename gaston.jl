@@ -33,12 +33,12 @@ if isinteractive()
     end
 
     # load files
-    load("gaston_types.jl")
-    load("gaston_aux.jl")
-    load("gaston_lowlvl.jl")
-    load("gaston_midlvl.jl")
-    load("gaston_hilvl.jl")
-    load("gaston_config.jl")
+    require("gaston_types.jl")
+    require("gaston_aux.jl")
+    require("gaston_lowlvl.jl")
+    require("gaston_midlvl.jl")
+    require("gaston_hilvl.jl")
+    require("gaston_config.jl")
 
     # set up global variables
     # global variable that stores gnuplot's state
