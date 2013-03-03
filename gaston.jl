@@ -25,7 +25,7 @@
 
 if isinteractive()
     # before doing anything else, verify gnuplot is present on this system
-    if system("which gnuplot > /dev/null") != 0
+    if !success(`which gnuplot`)
         error("Gaston cannot be loaded: gnuplot is not available on this system.")
     end
     if readchomp(`gnuplot --version`)[1:11] != "gnuplot 4.6"
