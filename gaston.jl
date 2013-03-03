@@ -29,7 +29,7 @@ if isinteractive()
         error("Gaston cannot be loaded: gnuplot is not available on this system.")
     end
     if readchomp(`gnuplot --version`)[1:11] != "gnuplot 4.6"
-        error("Gaston requires gnuplot version 4.6")
+        println("Warning: Gaston has only been tested on gnuplot version 4.6")
     end
 
     # load files
