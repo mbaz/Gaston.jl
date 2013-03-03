@@ -18,35 +18,28 @@
 ## FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 ## DEALINGS IN THE SOFTWARE.
 
-# When Julia loads a file, its contents are executed on each available
-# processor. In order to avoid having each Julia process try to create a
-# gnuplot instance, all executable code in this file is wrapped by calls to
-# isinteractive().
-
-if isinteractive()
-    # before doing anything else, verify gnuplot is present on this system
-    if !success(`which gnuplot`)
-        error("Gaston cannot be loaded: gnuplot is not available on this system.")
-    end
-    if readchomp(`gnuplot --version`)[1:11] != "gnuplot 4.6"
-        println("Warning: Gaston has only been tested on gnuplot version 4.6")
-    end
-
-    # load files
-    require("gaston_types.jl")
-    require("gaston_aux.jl")
-    require("gaston_lowlvl.jl")
-    require("gaston_midlvl.jl")
-    require("gaston_hilvl.jl")
-    require("gaston_config.jl")
-
-    # set up global variables
-    # global variable that stores gnuplot's state
-    gnuplot_state = GnuplotState(false,0,0,string("/tmp/gaston-",ENV["USER"],
-    "-",randstring(5),"/"),[])
-    # when gnuplot_state goes out of scope, close the pipe
-    finalizer(gnuplot_state,gnuplot_exit)
-
-    # global variable that stores Gaston's configuration
-    gaston_config = GastonConfig()
+# before doing anything else, verify gnuplot is present on this system
+if !success(`which gnuplot`)
+    error("Gaston cannot be loaded: gnuplot is not available on this system.")
 end
+if readchomp(`gnuplot --version`)[1:11] != "gnuplot 4.6"
+    println("Warning: Gaston has only been tested on gnuplot version 4.6")
+end
+
+# load files
+require("gaston_types.jl")
+require("gaston_aux.jl")
+require("gaston_lowlvl.jl")
+require("gaston_midlvl.jl")
+require("gaston_hilvl.jl")
+require("gaston_config.jl")
+
+# set up global variables
+# global variable that stores gnuplot's state
+gnuplot_state = GnuplotState(false,0,0,string("/tmp/gaston-",ENV["USER"],
+"-",randstring(5),"/"),[])
+# when gnuplot_state goes out of scope, close the pipe
+finalizer(gnuplot_state,gnuplot_exit)
+
+# global variable that stores Gaston's configuration
+gaston_config = GastonConfig()
