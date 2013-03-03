@@ -4,7 +4,7 @@ A gnuplot interface for the julia language.
 
 1. Setup
 
-Put gaston.jl and all gaston-*.jl files somewhere convinient. Then, you may cd
+Put gaston.jl and all gaston-*.jl files somewhere convenient. Then, you may cd
 to that directory and start julia there, or do
 
 push(LOAD_PATH, "/path/to/gaston/jl")
