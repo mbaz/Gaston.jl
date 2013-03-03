@@ -4,27 +4,37 @@ A gnuplot interface for the julia language.
 
 1. Setup
 
-Put the files gaston.jl, gastonini.jl, gastonaux.jl and gastondemo.jl
-somewhere convinient. Then, you may cd to that directory and start julia there,
-or do
+Put gaston.jl and all gaston-*.jl files somewhere convinient. Then, you may cd
+to that directory and start julia there, or do
 
 push(LOAD_PATH, "/path/to/gaston/jl")
 
 Then, load the program with
 
-	load("gaston.jl")
+	require("gaston.jl")
 
 2. Tests/Demo
 
 To run a demo (which also tests all of Gaston's capabilites), do
 
-	load("gastondemo.jl")
+	require("gaston_demo.jl")
 	demo()
 
 This will create a series of figures that illustrate the current capabilites
-of the program. The same file may also show how to create different types
+of the program. The same file also shows how to create different types
 of plots.
+
+To run the tests, do
+
+	require("gaston_test.jl")
+	run_tests()
+
+A series of tests will run. On the console, each test is reported as passed or
+failed, and a summary is printed at the end. All tests should pass; otherwise,
+please file an issue.
 
 3. Documentation
 
-For a more detailed description of the program, see doc/gastondoc.pdf
+Detailed documentation is included in a LaTeX file. To build it, cd into the
+gaston/doc directory and run 'make'. You need to have XeLaTeX installed. A PDF
+file called 'gastondoc.tex' will be created.
