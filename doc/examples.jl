@@ -1,5 +1,4 @@
-push(LOAD_PATH, "..")
-load("gaston.jl")
+using Gaston
 
 # plot example
 t = 0:0.0001:.15

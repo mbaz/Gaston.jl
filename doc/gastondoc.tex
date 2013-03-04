@@ -26,7 +26,7 @@
 
 \newcommand{\cm}{$\checkmark$}
 
-\title{Gaston \\[0.8cm] \large A plotting utility for Julia \\[0.8cm] v. 0.5.4}
+\title{Gaston \\[0.8cm] \large A plotting utility for Julia \\[0.8cm] v. 0.5.5}
 \author{M. Bazdresch}
 \date{\today}
 
@@ -38,8 +38,7 @@
 \textbf{Please note:} Gaston is currently under heavy development, and all
 functions and definitions are subject to change from one version to the next,
 as we figure out the best way to organize the code. Gaston has been tested on
-Linux (Ubuntu 10.04 and Arch), with gnuplot 4.6, and Julia 38ec7cfa0d (built on
-2012-06-26).
+Linux, with gnuplot 4.6, and Julia v0.1.
 
 \tableofcontents
 
@@ -82,27 +81,23 @@ and sent to gnuplot using \cmd{gnuplot\_send()}.
 
 \section{Installation}
 
-To use Gaston, follow this procedure:
+To use Gaston, install the package from Julia's command prompt:
 
-\begin{enumerate}
-
-\item Save all files \cmd{gaston*.jl} somewhere convenient. Then,
-	you may \cmd{cd} to that directory and start julia there, or do
 
 \begin{juliacode}
-push(LOAD_PATH, "/path/to/gaston/jl")
+	Pkg.add("Gaston")
 \end{juliacode}
 
-Then, load the program with
+Then, load the package with
 
 \begin{juliacode}
-load("gaston.jl")
+	using Gaston
 \end{juliacode}
 
 \item To run a demo, do
 
 \begin{juliacode}
-load("gaston_demo.jl")
+	gaston_demo()
 demo()
 \end{juliacode}
 
@@ -113,8 +108,7 @@ different types of plots.
 \item To run the tests (see section \ref{tests}), do
 
 \begin{juliacode}
-load("gaston_test.jl")
-run_tests()
+	gaston_tests()
 \end{juliacode}
 
 All tests should pass.
