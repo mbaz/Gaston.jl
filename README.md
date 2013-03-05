@@ -1,6 +1,4 @@
-Gaston: Julia plotting using gnuplot
-====================================
-
+Gaston: Julia plotting using gnuplot ==================================== 
     using Gaston
     
     gaston_demos()
@@ -10,7 +8,7 @@ Installation
 ------------
 
 Gaston requires gnuplot to be installed in your system. It has been tested
-With version 4.6.
+with version 4.6
 
 To install Gaston, run
 
@@ -19,4 +17,6 @@ To install Gaston, run
 Documentation
 -------------
 
-See the doc/ subdirectory.
+To build the PDF documentation, cd into the doc/ subdirectory and type
+'make help'. You can download the pre-build documentation from
+https://bitbucket.org/mbaz/gaston/downloads
