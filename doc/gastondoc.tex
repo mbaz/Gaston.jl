@@ -83,7 +83,6 @@ and sent to gnuplot using \cmd{gnuplot\_send()}.
 
 To use Gaston, install the package from Julia's command prompt:
 
-
 \begin{juliacode}
 Pkg.add("Gaston")
 \end{juliacode}
@@ -98,7 +97,6 @@ To run a demo, do
 
 \begin{juliacode}
 gaston_demo()
-demo()
 \end{juliacode}
 
 This will create a series of figures that illustrate the current capabilities
@@ -812,23 +810,6 @@ Any other combination of coordinates and plotstyle produces undefined behavior
 not guaranteed. Please note that mixing 2-d and 3-d plots on the same figure
 also produces undefined behavior.
 
-\subsection{Global variables}
-
-Gaston introduces two global variables to the namespace. All global variables
-are defined in file \cmd{gaston.jl}.
-
-\begin{center}
-	\begin{tabular}{llp{7cm}}
-		\toprule
-		\textbf{Name} & \textbf{Type} & \textbf{Purpose} \\
-		\midrule
-		gnuplot\_state & GnuplotState & Store the state of the current gnuplot
-		process and information needed to interact with it. \\
-		gaston\_config & GastonConfig & Stores Gaston's configuration.\\
-		\bottomrule
-	\end{tabular}
-\end{center}
-
 \subsection{Types}
 
 Gaston defines several new types. All types are defined in file
@@ -882,13 +863,9 @@ A solution to this problem is under investigation.
 \label{tests}
 
 Gaston includes a unit test framework that verifies the program's
-functionality. To use it, issue
+functionality. To run all tests, run:
 \begin{juliacode}
-load("gaston_test.jl")
-\end{juliacode}
-To run all tests, run:
-\begin{juliacode}
-run_tests()
+gaston_tests()
 \end{juliacode}
 This function will run all tests and print a summary to the screen.
 
