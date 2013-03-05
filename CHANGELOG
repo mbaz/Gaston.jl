@@ -1,3 +1,11 @@
+version 0.5.5
+
+Update syntax again. Convert into a Julia package.
+
+version 0.5.4
+
+Update syntax to keep up with Julia.
+
 version 0.5.3:
 
 	User visible:
