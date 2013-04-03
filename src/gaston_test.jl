@@ -313,8 +313,8 @@ function run_tests_success(ini)
     # type instantiation
     @test_success CurveConf()
     # setting terminal
-    set_terminal("x11")
-    set_terminal("wxt")
+    @test_success set_terminal("x11")
+    @test_success set_terminal("wxt")
     #@osx_only @test_success set_terminal("aqua") # no support on recent OSX
 
     return testsrun, testspassed
