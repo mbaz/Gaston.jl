@@ -169,7 +169,7 @@ function run_tests_error(ini)
     @test_error addcoords(1:2,1:3,[[1 2 3 4],[1 2 3 4]])
     # set_terminal
     @test_error set_terminal("none")
-    @osx_only @test_error set_terminal("aqua")
+    # @osx_only @test_error set_terminal("aqua") # no support on recent OSX
     ## tests that should fail, but (still) don't
     ## commented out because gnuplot barfs all over the screen
     #@test_error plot(0:10,"color","nonexistant")
@@ -315,7 +315,7 @@ function run_tests_success(ini)
     # setting terminal
     set_terminal("x11")
     set_terminal("wxt")
-    @osx_only @test_success set_terminal("aqua")
+    #@osx_only @test_success set_terminal("aqua") # no support on recent OSX
 
     return testsrun, testspassed
 end
