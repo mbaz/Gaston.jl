@@ -22,14 +22,16 @@ To install using Julia's packaging system, follow these instructions:
 To install bypassing Julia's packaging system, follow these instructions:
 
 1. Download the latest source, located at
-https://bitbucket.org/mbaz/gaston/downloads/gaston.zip. For example:
+[https://bitbucket.org/mbaz/gaston/downloads/gaston.zip](https://bitbucket.org/mbaz/gaston/downloads/gaston.zip). For example:
 
     $ cd ~/downloads
+
     $ wget https://bitbucket.org/mbaz/gaston/downloads/gaston.zip
 
 2. Unzip the source files somewhere convenient. For example,
 
     $ cd ~/source
+
     $ unzip ~/downloads/gaston.zip
 
 3. Add gaston to Julia's LOAD_PATH:
