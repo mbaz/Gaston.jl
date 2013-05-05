@@ -9,11 +9,34 @@ Installation
 Gaston requires gnuplot to be installed in your system. It has been tested
 with version 4.6
 
-To install Gaston, run
+To install using Julia's packaging system, follow these instructions:
+
+1. To install Gaston itself, run
 
     julia> Pkg.add("Gaston")
 
-Then, load the module:
+2. Then, load the module:
+
+    julia> using Gaston
+
+To install bypassing Julia's packaging system, follow these instructions:
+
+1. Download the latest source, located at
+https://bitbucket.org/mbaz/gaston/downloads/gaston.zip. For example:
+
+    $ cd ~/downloads
+    $ wget https://bitbucket.org/mbaz/gaston/downloads/gaston.zip
+
+2. Unzip the source files somewhere convenient. For example,
+
+    $ cd ~/source
+    $ unzip ~/downloads/gaston.zip
+
+3. Add gaston to Julia's LOAD_PATH:
+
+    julia> push!(LOAD_PATH,expanduser("~/source/gaston/src"))
+
+4. Now you can use gaston by issuing
 
     julia> using Gaston
 
