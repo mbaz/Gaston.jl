@@ -273,7 +273,7 @@ function histogram(args...)
                 end
                 (x,y) = histdata(y,bins)
                 if norm != 0
-                    delta = x[2] - x[1]
+                    delta = step(x)
                     y = norm*y/(delta*sum(y))
                 end
                 addcoords(x,y,cc)
