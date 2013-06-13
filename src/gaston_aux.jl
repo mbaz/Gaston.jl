@@ -202,6 +202,9 @@ function copy(conf::AxesConf)
     new.zlabel = conf.zlabel
     new.box = conf.box
     new.axis = conf.axis
+    new.xrange = conf.xrange
+    new.yrange = conf.yrange
+    new.zrange = conf.zrange
     return new
 end
 
@@ -252,7 +255,6 @@ end
 
 # send gnuplot the current figure's configuration
 function gnuplot_send_fig_config(config)
-    gnuplot_send("set autoscale")
     # legend box
     if config.box != ""
         gnuplot_send(string("set key ",config.box))
@@ -284,6 +286,17 @@ function gnuplot_send_fig_config(config)
         if config.axis == "loglog"
             gnuplot_send("set logscale xy")
         end
+    end
+    # ranges
+    gnuplot_send("set autoscale")
+    if config.xrange != ""
+        gnuplot_send(string("set xrange ",config.xrange))
+    end
+    if config.yrange != ""
+        gnuplot_send(string("set yrange ",config.yrange))
+    end
+    if config.zrange != ""
+        gnuplot_send(string("set zrange ",config.zrange))
     end
 end
 
@@ -354,6 +367,35 @@ function validate_marker(s::String)
     valid = ["", "+", "x", "*", "esquare", "fsquare", "ecircle", "fcircle",
     "etrianup", "ftrianup", "etriandn", "ftriandn", "edmd", "fdmd"]
     if in(s, valid)
+        return true
+    end
+    return false
+end
+
+function validate_range(s::String)
+
+    # floating point, starting with a dot
+    f1 = "[-+]?\\.\\d+([eE][-+]?\\d+)?"
+    # floating point, starting with a digit
+    f2 = "[-+]?\\d+(\\.\\d*)?([eE][-+]?\\d+)?"
+    # floating point
+    f = "($f1|$f2)"
+    # autoscale directive (i.e. `*` surrounded by
+    # optional bounds lb < * < ub)
+    as = "(($f\\s*<\\s*)?\\*(\\s*<\\s*$f)?)"
+    # full range item: a floating point, or an
+    # autoscale directive, or nothing
+    it = "(\\s*($as|$f)?\\s*)"
+
+    # empty range
+    er = "\\[\\s*\\]"
+    # full range: two colon-separated items
+    fr = "\\[$it:$it\\]"
+
+    # range regex
+    rx = Regex("^\\s*($er|$fr)\\s*\$")
+
+    if isempty(s) || ismatch(rx, s)
         return true
     end
     return false

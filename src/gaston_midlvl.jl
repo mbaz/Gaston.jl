@@ -180,6 +180,10 @@ function addconf(conf::AxesConf)
     # TODO: find a way to validate the box argument
     # validate axis type
     @assert(validate_axis(conf.axis),"Invalid axis type specified")
+    # validate ranges
+    @assert(validate_range(conf.xrange),"Invalid xrange specified")
+    @assert(validate_range(conf.yrange),"Invalid yrange specified")
+    @assert(validate_range(conf.zrange),"Invalid zrange specified")
 
     conf = copy(conf)
     # select current plot

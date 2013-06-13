@@ -65,6 +65,9 @@ type GastonConfig
     zlabel::String
     box::String
     axis::String
+    xrange::String
+    yrange::String
+    zrange::String
     # default terminal type
     terminal::String
     # for terminals that support filenames
@@ -81,7 +84,7 @@ GastonConfig() = GastonConfig(
     # CurveConf
     "","lines","","",1,0.5,
     # AxesConf
-    "Untitled","x","y","z","inside vertical right top","",
+    "Untitled","x","y","z","inside vertical right top","","[*:*]","[*:*]","[*:*]",
     # terminal
     "wxt",
     # output file name
@@ -118,6 +121,9 @@ type AxesConf
     zlabel::String     # zlabel for 3-d plots
     box::String        # legend box (used with 'set key')
     axis::String       # normal, semilog{x,y}, loglog
+    xrange::String     # xrange
+    yrange::String     # yrange
+    zrange::String     # zrange
 end
 AxesConf() = AxesConf(
     gaston_config.title,
@@ -125,7 +131,10 @@ AxesConf() = AxesConf(
     gaston_config.ylabel,
     gaston_config.zlabel,
     gaston_config.box,
-    gaston_config.axis)
+    gaston_config.axis,
+    gaston_config.xrange,
+    gaston_config.yrange,
+    gaston_config.zrange)
 
 # coordinates and configuration for a single curve
 type CurveData

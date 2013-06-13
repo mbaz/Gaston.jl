@@ -215,6 +215,10 @@ function plot(args...)
                 ac.box = ai1
             elseif ai == "axis"
                 ac.axis = ai1
+            elseif ai == "xrange"
+                ac.xrange = ai1
+            elseif ai == "yrange"
+                ac.yrange = ai1
             else
                 error("Invalid property specified")
             end
@@ -305,6 +309,10 @@ function histogram(args...)
                 ac.ylabel = ai1
             elseif ai == "box"
                 ac.box = ai1
+            elseif ai == "xrange"
+                ac.xrange = ai1
+            elseif ai == "yrange"
+                ac.yrange = ai1
             else
                 error("Invalid property specified")
             end
@@ -572,6 +580,12 @@ function surf(args...)
                     cc.pointsize = ai1
                 elseif ai == "box"
                     ac.box = ai1
+                elseif ai == "xrange"
+                    ac.xrange = ai1
+                elseif ai == "yrange"
+                    ac.yrange = ai1
+                elseif ai == "zrange"
+                    ac.zrange = ai1
                 else
                     error("Invalid property specified")
                 end
