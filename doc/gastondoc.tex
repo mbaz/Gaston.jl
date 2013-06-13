@@ -213,7 +213,8 @@ format:
 	\item Properties may take the following values: \cmd{plotstyle},
 		\cmd{legend}, \cmd{color},
 		\cmd{marker}, \cmd{linewidth}, \cmd{pointsize}, \cmd{title},
-		\cmd{xlabel}, \cmd{ylabel}, \cmd{box}, \cmd{axis}.
+		\cmd{xlabel}, \cmd{ylabel}, \cmd{box}, \cmd{axis},
+		\cmd{xrange}, \cmd{yrange}.
 	\item Supported plotstyles are \cmd{lines}, \cmd{linespoints},
 		\cmd{points}, \cmd{impulses}, \cmd{dots} and \cmd{boxes}.
 	\item plot() returns the handle of the figure that was plotted.
@@ -454,7 +455,8 @@ A figure (axis) configuration is created as follows:
 	\item Create a default configuration with \cmd{a = AxesConf()}
 	\item Just as in the case of a curve configuration, \cmd{a} is a structure
 		whose fields may be modified. Available fields are: \cmd{title},
-		\cmd{xlabel}, \cmd{ylabel}, \cmd{zlabel}, \cmd{box}, \cmd{axis}.
+		\cmd{xlabel}, \cmd{ylabel}, \cmd{zlabel}, \cmd{box}, \cmd{axis},
+		\cmd{xrange}, \cmd{yrange}, \cmd{zrange}.
 \end{enumerate}
 
 Several rules apply:
@@ -703,6 +705,9 @@ a structure of type \cmd{AxesConf}, which has the following fields:
 	\cmd{zlabel} & Z-axis label & Argument to \cmd{set zlabel} \\
 	\cmd{box} & Legend box configuration & Argument to \cmd{set key} \\
 	\cmd{axis} & Axis scale & Argument to \cmd{set logscale} \\
+	\cmd{xrange} & Abscissa's range & Argument to \cmd{set xrange} \\
+	\cmd{yrange} & Ordinate's range & Argument to \cmd{set yrange} \\
+	\cmd{zrange} & Z-axis range & Argument to \cmd{set zrange} \\
 	\bottomrule
 \end{tabular}
 \end{center}}
@@ -724,6 +729,9 @@ table.
 	string \\
 	\cmd{axis} & \cmd{String} & \cmd{""} & \cmd{""}, \cmd{normal},
 	\cmd{semilogx}, \cmd{semilogy}, \cmd{loglog}  \\
+	\cmd{xrange} & \cmd{String} & \cmd{"[*:*]"} & See gnuplot's documentation \\
+	\cmd{yrange} & \cmd{String} & \cmd{"[*:*]"} & See gnuplot's documentation \\
+	\cmd{zrange} & \cmd{String} & \cmd{"[*:*]"} & See gnuplot's documentation \\
 	\bottomrule
 \end{tabular}
 \end{center}}
