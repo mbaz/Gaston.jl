@@ -58,8 +58,8 @@ function addcoords(x::Coord,y::Coord,Z::Array,conf::CurveConf)
             assert(size(Z,2) == length(x), "Wrong number of columns in Z")
             assert(size(Z,1) == length(y), "Wrong number of rows in Z")
         else
-            assert(size(Z,1) == length(x), "Wrong number of columns in Z")
-            assert(size(Z,2) == length(y), "Wrong number of rows in Z")
+            assert(size(Z,2) == length(x), "Wrong number of columns in Z")
+            assert(size(Z,1) == length(y), "Wrong number of rows in Z")
         end
     else
         assert(length(x) == length(y),
