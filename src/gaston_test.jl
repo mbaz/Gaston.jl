@@ -33,7 +33,7 @@ macro test_error(ex)
         global testnumber
         global testsrun
         global testspassed
-        run(`sleep 0.3`)
+        sleep(0.3)
         testnumber = testnumber + 1
         testsrun = testsrun + 1
         s = string("Test number ", testnumber, ". Error expected. Result: ")
@@ -53,7 +53,7 @@ macro test_success(ex)
         global testnumber
         global testsrun
         global testspassed
-        run(`sleep 0.4`)
+        sleep (0.4)
         testnumber = testnumber + 1
         testsrun = testsrun + 1
         s = string("Test number ", testnumber, ". Success expected. Result: ")
@@ -162,6 +162,9 @@ function run_tests_error(ini)
 end
 
 function run_tests_success(ini)
+    global gnuplot_state
+    tmp_filename = string(gnuplot_state.tmpdir, gnuplot_state.tmpdir[end]=='/'?"null":"/null")
+
     testnumber = ini
     testspassed = 0
     testsrun = 0
@@ -247,7 +250,7 @@ function run_tests_success(ini)
         closeall()
         plot(1,sin(-3:0.1:3))
         sleep(0.1)
-        set_filename("/dev/null")
+        set_filename(tmp_filename)
         printfigure()
         closeall()
     end
@@ -255,7 +258,7 @@ function run_tests_success(ini)
         closeall()
         plot(2,sin(-3:0.1:3))
         sleep(0.1)
-        set_filename("/dev/null")
+        set_filename(tmp_filename)
         printfigure(2,"png")
         closeall()
     end
@@ -263,7 +266,7 @@ function run_tests_success(ini)
         closeall()
         plot(3,sin(-3:0.1:3))
         sleep(0.1)
-        set_filename("/dev/null")
+        set_filename(tmp_filename)
         printfigure(3,"eps")
         closeall()
     end
@@ -271,7 +274,7 @@ function run_tests_success(ini)
         closeall()
         plot(4,sin(-3:0.1:3))
         sleep(0.1)
-        set_filename("/dev/null")
+        set_filename(tmp_filename)
         printfigure(4,"pdf")
         closeall()
     end
@@ -279,7 +282,7 @@ function run_tests_success(ini)
         closeall()
         plot(5,sin(-3:0.1:3))
         sleep(0.1)
-        set_filename("/dev/null")
+        set_filename(tmp_filename)
         set_print_size("640,480")
         printfigure("svg")
         closeall()
@@ -288,7 +291,7 @@ function run_tests_success(ini)
         closeall()
         plot(6,sin(-3:0.1:3))
         sleep(0.1)
-        set_filename("/dev/null")
+        set_filename(tmp_filename)
         set_print_size("640,480")
         printfigure("gif")
         closeall()

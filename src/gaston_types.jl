@@ -16,11 +16,34 @@ type GnuplotState
         figs::Array)
         # Check to see if tmpdir exists, and create it if not
         # TODO: there has to be a simpler way to do this
+        mkd = true
         try
-            f = open(tmpdir)
-            close(f)
+            readdir(tmpdir)
+            mkd = false
         catch
-            run(`mkdir $tmpdir`)
+        end
+        if mkd
+            # Linux
+            try
+                mkdir(tmpdir)
+                mkd = false
+            catch
+            end
+        end
+        if mkd
+            # Windows
+            # TODO: there has to be a simpler way to do this
+            ttdir = ""
+            for x in split(tmpdir,'/')
+                if x != ""
+                    try
+                        mkdir(string(ttdir,x))
+                    catch
+                    end
+                    ttdir = string(ttdir, x, '\\')
+                end
+            end
+            mkd = false
         end
         new(running,current,fid,tmpdir,figs)
     end
