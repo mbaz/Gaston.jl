@@ -291,8 +291,10 @@ plotting surfaces. Its format is as follows:
 		\cmd{plot()}.
 	\item The \cmd{x} and \cmd{y} arguments have the same meaning as in
 		\cmd{plot()}.
-	\item The argument \cmd{f|Z} may be either a 2-D matrix \cmd{Z} or a
-		function of \cmd{(x,y)}. If \cmd{Z} is provided, then its element
+	\item The argument \cmd{f|Z} may be a 1-D vector or 2-D matrix \cmd{Z}, or a 
+		function \cmd{f} of \cmd{(x,y)}. If \cmd{Z} is provided as a 1-D vector,
+		then its element \cmd{i} is assumed to be the z-coordinate associated with
+		\cmd{(x[i], x[i])}, while if it is provided as a 2-D matrix, then its element
 		\cmd{i,j} is assumed to be the z-coordinate associated with
 		\cmd{(x[i],y[j])}. If \cmd{f} is provided, then \cmd{x} and \cmd{y} must
 		be provided too, and the function \cmd{meshgrid()} will be used to

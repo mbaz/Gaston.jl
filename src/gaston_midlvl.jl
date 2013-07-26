@@ -22,7 +22,7 @@ function addcoords(x::Coord,y::Coord,Z::Array,conf::CurveConf)
     end
     if neZ
         assert(eltype(Z)<:Real,"Invalid coordinates")
-        assert(1 < ndims(Z) < 4,"Invalid coordinates")
+        assert(1 <= ndims(Z) < 4,"Invalid coordinates")
     end
     # fill missing x, y coordinates when Z is not empty
     if neZ && !nex
@@ -57,9 +57,16 @@ function addcoords(x::Coord,y::Coord,Z::Array,conf::CurveConf)
         if conf.plotstyle == "image" || conf.plotstyle == "rgbimage"
             assert(size(Z,2) == length(x), "Wrong number of columns in Z")
             assert(size(Z,1) == length(y), "Wrong number of rows in Z")
-        else
-            assert(size(Z,1) == length(x), "Wrong number of columns in Z")
-            assert(size(Z,2) == length(y), "Wrong number of rows in Z")
+        elseif 1 == size(Z,2)
+	  #Assume that we have x = list of x coordinates, y = list of
+	  #y coordinates, z = list of z coordinates. This is ambiguous
+	  #in the case in which we only plot one point, but in that
+	  #case both interpretations give the same result.
+	    assert(size(Z,1) == length(x), "Z and x must have same number of elements")
+	    assert(size(Z,1) == length(y), "Z and y must have same number of elements")
+	else
+            assert(size(Z,2) == length(x), "Wrong number of columns in Z")
+            assert(size(Z,1) == length(y), "Wrong number of rows in Z")
         end
     else
         assert(length(x) == length(y),
@@ -92,6 +99,7 @@ function addcoords(x::Coord,y::Coord,Z::Array,conf::CurveConf)
     end
     gnuplot_state.figs[c] = fig
 end
+
 addcoords(y) = addcoords(1:length(y),y,[],CurveConf())
 addcoords(y,c::CurveConf) = addcoords(1:length(y),y,[],c)
 addcoords(x,y) = addcoords(x,y,[],CurveConf())
@@ -271,13 +279,19 @@ function llplot()
         # create data file
         f = open(filename,"w")
         for i in figs[c].curves
+          if size(i.Z,2) == 1 #lists of coordinates
+	    for j in 1:length(i.x)
+	      writedlm(f,[i.x[j] i.y[j] i.Z[j]],' ')
+	    end
+	  else
             for row in 1:length(i.x)
                 for col in 1:length(i.y)
                     writedlm(f,[i.x[row] i.y[col] i.Z[row,col]],' ')
                 end
                 write(f,"\n")
             end
-            write(f,"\n\n")
+	  end
+          write(f,"\n\n")
         end
         close(f)
         # send figure configuration to gnuplot
