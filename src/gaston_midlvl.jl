@@ -201,6 +201,9 @@ function llplot()
     figs = gnuplot_state.figs
     config = figs[c].conf
 
+    # setup grid
+    ts = gridstring(gaston_config.grid)
+    gnuplot_send(ts)
     # Build terminal setup string and send it to gnuplot
     ts = termstring(gaston_config.terminal)
     gnuplot_send(ts)
