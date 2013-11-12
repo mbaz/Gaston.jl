@@ -42,8 +42,6 @@ type GastonConfig
     zlabel::String
     box::String
     axis::String
-    # default grid type
-    grid::String
     # default terminal type
     terminal::String
     # for terminals that support filenames
@@ -61,8 +59,6 @@ GastonConfig() = GastonConfig(
     "","lines","","",1,0.5,
     # AxesConf
     "Untitled","x","y","z","inside vertical right top","",
-    # grid
-    "off",
     # terminal
     "wxt",
     # output file name

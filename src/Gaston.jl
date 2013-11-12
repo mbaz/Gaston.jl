@@ -11,7 +11,7 @@ export closefigure, closeall, clearfigure, figure, plot, histogram, imagesc,
     set_default_title, set_default_xlabel, set_default_ylabel,
     set_default_zlabel, set_default_box, set_default_axis, set_print_color,
     set_print_fontface, set_print_fontsize, set_print_fontscale,
-    set_print_linewidth, set_print_size, gnuplot_send, set_grid
+    set_print_linewidth, set_print_size, gnuplot_send
 
 # before doing anything else, verify gnuplot is present on this system
 if !success(`which gnuplot`)

@@ -145,13 +145,3 @@ function set_print_size(s::String)
 
     gaston_config.print_size = s
 end
-
-function set_default_grid(s::String)
-    global gaston_config
-    
-    if s=="on" || s=="off"
-        gaston_config.grid=s
-    else
-        error(string("grid ", s, " not supported."))
-    end
-end

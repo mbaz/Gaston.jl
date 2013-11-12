@@ -641,13 +641,3 @@ function printfigure(args...)
     return h
 end
 
-function set_grid(s::String)
-    global gaston_config;
-    if s=="on"
-        gaston_config.grid="on"
-    elseif s=="off"
-        gaston_config.grid="off"
-    else
-        error("Invalid arguments")
-    end
-end
