@@ -191,6 +191,23 @@ function copy(conf::AxesConf)
     return new
 end
 
+# set grid
+function gridstring(grid::String)
+    global gnuplot_state
+    global gaston_config
+
+    gc=gaston_config
+    
+    if grid=="on"
+        ts="set grid"
+    elseif grid=="off"
+        ts="unset grid"
+    else
+        ts=""
+    end
+    return ts
+end
+
 # Build a "set term" string appropriate for the terminal type
 function termstring(term::String)
     global gnuplot_state
