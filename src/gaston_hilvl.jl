@@ -25,7 +25,7 @@ function closefigure(x...)
             handles = [handles, i.handle]
         end
     end
-    if contains(handles,h)
+    if in(h, handles)
         # only care about closing windows if term type is screen
         if is_term_screen(term)
             if gnuplot_state.running
@@ -107,7 +107,7 @@ function figure(h::Int,redraw::Bool)
         if h == 0
             # use lowest numbered handle available
             for i = 1:max(handles)+1
-                if !contains(handles,i)
+                if !in(i, handles)
                     h = i
                     break
                 end
@@ -116,7 +116,7 @@ function figure(h::Int,redraw::Bool)
     end
     # if figure with handle h exists, replot it; otherwise create it
     gnuplot_state.current = h
-    if !contains(handles,h)
+    if !in(h, handles)
         gnuplot_state.figs = [gnuplot_state.figs, Figure(h)]
     else
         if redraw

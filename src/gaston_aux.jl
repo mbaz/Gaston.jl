@@ -265,7 +265,7 @@ function validate_terminal(s::String)
     if s == "aqua" && OS_NAME != :Darwin
         return false
     end
-    if contains(supp_terms, s)
+    if in(s, supp_terms)
         return true
     end
     return false
@@ -274,7 +274,7 @@ end
 # Identify terminal by type: file or screen
 function is_term_screen(s::String)
     screenterms = ["wxt", "x11", "aqua"]
-    if contains(screenterms, s)
+    if in(s, screenterms)
         return true
     end
     return false
@@ -282,7 +282,7 @@ end
 
 function is_term_file(s::String)
     screenterms = ["svg", "gif", "png", "pdf", "eps"]
-    if contains(screenterms, s)
+    if in(s, screenterms)
         return true
     end
     return false
@@ -292,7 +292,7 @@ end
 function validate_2d_plotstyle(s::String)
     valid = ["lines", "linespoints", "points", "impulses", "boxes",
         "errorlines", "errorbars", "dots"]
-    if contains(valid, s)
+    if in(s, valid)
         return true
     end
     return false
@@ -302,7 +302,7 @@ end
 function validate_3d_plotstyle(s::String)
     valid = ["lines", "linespoints", "points", "impulses", "pm3d",
             "image", "rgbimage", "dots"]
-    if contains(valid, s)
+    if in(s, valid)
         return true
     end
     return false
@@ -311,7 +311,7 @@ end
 # Valid axis types
 function validate_axis(s::String)
     valid = ["", "normal", "semilogx", "semilogy", "loglog"]
-    if contains(valid,s)
+    if in(s, valid)
         return true
     end
     return false
@@ -321,7 +321,7 @@ end
 function validate_marker(s::String)
     valid = ["", "+", "x", "*", "esquare", "fsquare", "ecircle", "fcircle",
     "etrianup", "ftrianup", "etriandn", "ftriandn", "edmd", "fdmd"]
-    if contains(valid, s)
+    if in(s, valid)
         return true
     end
     return false
