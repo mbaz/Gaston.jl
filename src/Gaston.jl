@@ -14,7 +14,7 @@ export closefigure, closeall, clearfigure, figure, plot, histogram, imagesc,
     set_print_linewidth, set_print_size, gnuplot_send
 
 # before doing anything else, verify gnuplot is present on this system
-if !success(`which gnuplot`)
+if !success(`gnuplot --version`)
     error("Gaston cannot be loaded: gnuplot is not available on this system.")
 end
 if readchomp(`gnuplot --version`)[1:11] != "gnuplot 4.6"
@@ -33,8 +33,17 @@ include("gaston_test.jl")
 
 # set up global variables
 # global variable that stores gnuplot's state
-gnuplot_state = GnuplotState(false,0,0,string("/tmp/gaston-",ENV["USER"],
-"-",randstring(5),"/"),[])
+gnuplot_state = None
+try
+    # linux
+    gnuplot_state = GnuplotState(false,0,0,string("/tmp/gaston-",ENV["USER"],
+    "-",randstring(5),"/"),[])
+catch
+    # windows
+    gnuplot_state = GnuplotState(false,0,0,string(replace(ENV["TMP"],"\\","/"),
+    "/gaston-",ENV["USERNAME"],"-",randstring(5)),[])
+end
+
 # when gnuplot_state goes out of scope, close the pipe
 finalizer(gnuplot_state,gnuplot_exit)
 
