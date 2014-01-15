@@ -15,14 +15,14 @@ function addcoords(x::Coord,y::Coord,Z::Array,conf::CurveConf)
     nex = !isempty(x); ney = !isempty(y); neZ = !isempty(Z)
     # check types
     if nex
-        assert(eltype(x)<:Real,"Invalid coordinates")
+        @assert(eltype(x)<:Real,"Invalid coordinates")
     end
     if ney
-        assert(eltype(y)<:Real,"Invalid coordinates")
+        @assert(eltype(y)<:Real,"Invalid coordinates")
     end
     if neZ
-        assert(eltype(Z)<:Real,"Invalid coordinates")
-        assert(1 < ndims(Z) < 4,"Invalid coordinates")
+        @assert(eltype(Z)<:Real,"Invalid coordinates")
+        @assert(1 < ndims(Z) < 4,"Invalid coordinates")
     end
     # fill missing x, y coordinates when Z is not empty
     if neZ && !nex
@@ -55,14 +55,14 @@ function addcoords(x::Coord,y::Coord,Z::Array,conf::CurveConf)
     # check number of elements
     if neZ
         if conf.plotstyle == "image" || conf.plotstyle == "rgbimage"
-            assert(size(Z,2) == length(x), "Wrong number of columns in Z")
-            assert(size(Z,1) == length(y), "Wrong number of rows in Z")
+            @assert(size(Z,2) == length(x), "Wrong number of columns in Z")
+            @assert(size(Z,1) == length(y), "Wrong number of rows in Z")
         else
-            assert(size(Z,1) == length(x), "Wrong number of columns in Z")
-            assert(size(Z,2) == length(y), "Wrong number of rows in Z")
+            @assert(size(Z,1) == length(x), "Wrong number of columns in Z")
+            @assert(size(Z,2) == length(y), "Wrong number of rows in Z")
         end
     else
-        assert(length(x) == length(y),
+        @assert(length(x) == length(y),
         "Abscissa and ordinate must have the same number of elements")
     end
 
@@ -70,13 +70,13 @@ function addcoords(x::Coord,y::Coord,Z::Array,conf::CurveConf)
     # TODO: figure out how to check valid color names -- gnuplot supports
     #  112 different color names.
     # check valid values of marker
-    assert(validate_marker(conf.marker), "Invalid mark name specified")
+    @assert(validate_marker(conf.marker), "Invalid mark name specified")
     if nex && !neZ ## 2-d plot
         # check valid values of plotstyle
-        assert(validate_2d_plotstyle(conf.plotstyle),
+        @assert(validate_2d_plotstyle(conf.plotstyle),
             "Invalid plotstyle specified")
     elseif nex && neZ ## 3-d plot or image
-        assert(validate_3d_plotstyle(conf.plotstyle),
+        @assert(validate_3d_plotstyle(conf.plotstyle),
             "Invalid plotstyle specified")
     end
 
@@ -127,7 +127,7 @@ function adderror(yl::Coord,yh::Coord)
     if isempty(yl)
         error("Invalid error data")
     else
-        assert(eltype(yl)<:Real,"Invalid error data")
+        @assert(eltype(yl)<:Real,"Invalid error data")
         if isa(yl,Matrix)
             s = size(yl)
             if s[1] == 1 || s[2] == 1
@@ -140,7 +140,7 @@ function adderror(yl::Coord,yh::Coord)
         end
     end
     if !isempty(yh)
-        assert(eltype(yh)<:Real,"Invalid error data")
+        @assert(eltype(yh)<:Real,"Invalid error data")
         if isa(yl,Matrix)
             s = size(yh)
             if s[1] == 1 || s[2] == 1
@@ -154,10 +154,10 @@ function adderror(yl::Coord,yh::Coord)
     end
     # verify vector sizes -- this also implies that x,y coordinates must be
     # added to figure, before error data can be attached to it
-    assert(length(gnuplot_state.figs[c].curves[end].x) == length(yl),
+    @assert(length(gnuplot_state.figs[c].curves[end].x) == length(yl),
         "Error data vector must be of same size as abscissa")
     if !isempty(yh)
-        assert(length(yh) == length(yl),
+        @assert(length(yh) == length(yl),
             "Error data vectors must be of same size")
     end
 
@@ -179,7 +179,7 @@ function addconf(conf::AxesConf)
     # Perform argument validation
     # TODO: find a way to validate the box argument
     # validate axis type
-    assert(validate_axis(conf.axis),"Invalid axis type specified")
+    @assert(validate_axis(conf.axis),"Invalid axis type specified")
 
     conf = copy(conf)
     # select current plot

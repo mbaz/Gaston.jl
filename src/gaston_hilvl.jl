@@ -87,7 +87,7 @@ function figure(h::Int,redraw::Bool)
     term = gaston_config.terminal
 
     # assert h is non-negative
-    assert(h >= 0, "Figure handle must not be negative.")
+    @assert(h >= 0, "Figure handle must not be negative.")
 
     # see if we need to set up gnuplot
     if gnuplot_state.running == false
