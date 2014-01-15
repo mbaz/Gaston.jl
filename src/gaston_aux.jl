@@ -133,8 +133,8 @@ function histdata(s,bins)
     # When adding an element s to a bin, we use an iequality m < s <= M.
     # In order to account for elements s==m, we need to special-case
     # the computation for the first bin
-    ms = min(s)
-    Ms = max(s)
+    ms = minimum(s)
+    Ms = maximum(s)
     bins = max(bins, 1)
     if Ms == ms
         # compute a "natural" scale
