@@ -109,6 +109,36 @@ function set_default_axis(s::String)
     end
 end
 
+function set_default_xrange(s::String)
+    global gaston_config
+
+    if validate_range(s)
+        gaston_config.xrange = s
+    else
+        error(string("Range ", s, " not supported."))
+    end
+end
+
+function set_default_yrange(s::String)
+    global gaston_config
+
+    if validate_range(s)
+        gaston_config.yrange = s
+    else
+        error(string("Range ", s, " not supported."))
+    end
+end
+
+function set_default_zrange(s::String)
+    global gaston_config
+
+    if validate_range(s)
+        gaston_config.zrange = s
+    else
+        error(string("Range ", s, " not supported."))
+    end
+end
+
 # functions to set print parameters
 function set_print_color(s::String)
     global gaston_config
