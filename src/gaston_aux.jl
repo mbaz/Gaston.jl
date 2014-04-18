@@ -156,7 +156,11 @@ function histdata(s,bins)
         ms, Ms = ms - g, ms + g
     end
     delta = (Ms-ms)/bins
-    x = Range(float(ms), delta, bins+1) # like ms:delta:Ms but less error-prone
+    if VERSION < v"0.3-"
+        x = Range(float(ms), delta, bins+1) # like ms:delta:Ms but less error-prone
+    else
+        x = ms:delta:Ms
+    end
     y = zeros(bins)
 
     # this is special-cased because we want to include the minimum in the
@@ -171,10 +175,18 @@ function histdata(s,bins)
 
     if bins != 1
         # We want the left bin to start at ms and the right bin to end at Ms
-        x = Range(ms+delta/2, delta, bins)
+        if VERSION < v"0.3-"
+            x = Range(ms+delta/2, delta, bins)
+        else
+            x = (ms+delta/2):delta:Ms
+        end
     else
         # add two empty bins on the sides to provide a scale to gnuplot
-        x = Range(ms-delta/2, delta, 3)
+        if VERSION < v"0.3-"
+            x = Range(ms-delta/2, delta, 3)
+        else
+            x = (ms-delta/2):delta:(ms+delta/2)
+        end
         y = [0.0, y[1], 0.0]
     end
 
