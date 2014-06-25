@@ -106,7 +106,7 @@ function figure(h::Int,redraw::Bool)
     else
         if h == 0
             # use lowest numbered handle available
-            for i = 1:max(handles)+1
+            for i = 1:maximum(handles)+1
                 if !in(i, handles)
                     h = i
                     break
