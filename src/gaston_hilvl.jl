@@ -106,7 +106,8 @@ function figure(h::Int,redraw::Bool)
     else
         if h == 0
             # use lowest numbered handle available
-            for i = 1:max(handles)+1
+            mh = VERSION < v"0.3-" ? max(handles) : maximum(handles)
+            for i = 1:mh+1
                 if !in(i, handles)
                     h = i
                     break
