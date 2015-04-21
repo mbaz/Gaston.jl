@@ -212,7 +212,8 @@ format:
 		\cmd{xlabel}, \cmd{ylabel}, \cmd{box}, \cmd{axis},
 		\cmd{xrange}, \cmd{yrange}.
 	\item Supported plotstyles are \cmd{lines}, \cmd{linespoints},
-		\cmd{points}, \cmd{impulses}, \cmd{dots} and \cmd{boxes}.
+		\cmd{points}, \cmd{impulses}, \cmd{dots}, \cmd{boxes}, \cmd{steps} and
+		\cmd{fsteps}.
 	\item plot() returns the handle of the figure that was plotted.
 \end{itemize}
 
@@ -640,6 +641,7 @@ table.
 	\cmd{legend} & \cmd{String} & \cmd{""} & Any string. \\
 	\cmd{plotstyle} & \cmd{String} & \cmd{lines} & \cmd{lines}, \cmd{linespoints},
 	\cmd{points}, \cmd{impulses}, \cmd{errorbars}, \cmd{errorlines},
+  \cmd{steps}, \cmd{fsteps},
 	\cmd{pm3d}, \cmd{boxes}, \cmd{image}, \cmd{rgbimage}. \\
 	\cmd{color} & \cmd{String} & \cmd{""} & \cmd{""}, any gnuplot color name,
 	or a color specified in a string in the format \cmd{"\#RRGGBB"}. \\
@@ -781,6 +783,12 @@ in the following table. The same applies to \cmd{yhigh}).
 	\multirow{2}{*}{\cmd{points}}
 	& \cm &     &  & \cmd{plot with points} \\
 	& \cm & \cm &  & \cmd{splot with points} \\
+	\cmidrule(r){2-5}
+	\multirow{2}{*}{\cmd{steps}}
+	& \cm &     &  & \cmd{plot with steps} \\
+	\cmidrule(r){2-5}
+	\multirow{2}{*}{\cmd{fsteps}}
+	& \cm &     &  & \cmd{plot with fsteps} \\
 	\cmidrule(r){2-5}
 	\multirow{2}{*}{\cmd{impulses}}
 	& \cm &     &  & \cmd{plot with impulses} \\
