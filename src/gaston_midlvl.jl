@@ -39,7 +39,7 @@ function addcoords(x::Coord,y::Coord,Z::Array,conf::CurveConf)
         else
             error("Invalid abscissa coordinates")
         end
-    elseif isa(x,Range1) || isa(x,Range)
+    elseif isa(x,UnitRange) || isa(x,Range)
         x = [x]
     end
     if isa(y,Matrix)
@@ -49,7 +49,7 @@ function addcoords(x::Coord,y::Coord,Z::Array,conf::CurveConf)
         else
             error("Invalid abscissa coordinates")
         end
-    elseif isa(y,Range1) || isa(y,Range)
+    elseif isa(y,UnitRange) || isa(y,Range)
         y = [y]
     end
     # check number of elements
@@ -135,7 +135,7 @@ function adderror(yl::Coord,yh::Coord)
             else
                 error("Invalid error data")
             end
-        elseif isa(yl,Range1) || isa(yl,Range)
+        elseif isa(yl,UnitRange) || isa(yl,Range)
             yl = [yl]
         end
     end
@@ -148,7 +148,7 @@ function adderror(yl::Coord,yh::Coord)
             else
                 error("Invalid error data")
             end
-        elseif isa(yh,Range1) || isa(yh,Range)
+        elseif isa(yh,UnitRange) || isa(yh,Range)
             yh = [yh]
         end
     end

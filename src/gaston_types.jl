@@ -4,6 +4,10 @@
 
 # types and constructors
 
+if VERSION < v"0.3-"
+    typealias UnitRange{T} Range1{T}
+end
+
 # We need a global variable to keep track of gnuplot's state
 type GnuplotState
     running::Bool               # true when gnuplot is already running
@@ -158,4 +162,4 @@ end
 Figure(handle) = Figure(handle,[CurveData()],AxesConf(),true)
 
 # coordinate type
-Coord = Union(Range1,Range,Matrix,Vector)
+Coord = Union(UnitRange,Range,Matrix,Vector)
