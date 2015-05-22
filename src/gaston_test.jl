@@ -149,7 +149,7 @@ function run_tests_error(ini)
     @test_error addcoords(["a" "b"])
     @test_error addcoords(1:10,1:10,1:10)
     @test_error addcoords(1:10,1:11)
-    @test_error addcoords(1:2,1:3,[[1 2 3 4],[1 2 3 4]])
+    @test_error addcoords(1:2,1:3,[[1 2 3 4];[1 2 3 4]])
     # set_terminal
     @test_error set_terminal("none")
     # @osx_only @test_error set_terminal("aqua") # no support on recent OSX

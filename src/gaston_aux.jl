@@ -41,7 +41,7 @@ function gnuplot_exit(x...)
     gnuplot_state.running = false
     gnuplot_state.current = 0
     gnuplot_state.fid = 0
-    gnuplot_state.figs = []
+    gnuplot_state.figs = Any[]
     return 0
 end
 

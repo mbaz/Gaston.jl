@@ -19,10 +19,10 @@ function closefigure(x...)
 
     term = gaston_config.terminal
     # create vector of handles
-    handles = []
+    handles = Any[]
     if gnuplot_state.current != 0
         for i in gnuplot_state.figs
-            handles = [handles, i.handle]
+            push!(handles, i.handle)
         end
     end
     if in(h, handles)
@@ -33,10 +33,10 @@ function closefigure(x...)
             end
         end
         # delete all data related to this figure
-        _figs = []
+        _figs = Any[]
         for i in gnuplot_state.figs
             if i.handle != h
-                _figs = [_figs, i]
+                push!(_figs, i)
             end
         end
         gnuplot_state.figs = _figs
@@ -94,9 +94,9 @@ function figure(h::Int,redraw::Bool)
         gnuplot_init();
     end
     # create vector of handles, needed later
-    handles = []
+    handles = Any[]
     for i in gnuplot_state.figs
-        handles = [handles, i.handle]
+        push!(handles, i.handle)
     end
     # determine figure handle
     if gnuplot_state.current == 0
@@ -118,7 +118,7 @@ function figure(h::Int,redraw::Bool)
     # if figure with handle h exists, replot it; otherwise create it
     gnuplot_state.current = h
     if !in(h, handles)
-        gnuplot_state.figs = [gnuplot_state.figs, Figure(h)]
+        push!(gnuplot_state.figs, Figure(h))
     else
         if redraw
             llplot()

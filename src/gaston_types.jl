@@ -149,8 +149,8 @@ type CurveData
     yhigh::Vector      # error data
     conf::CurveConf    # curve configuration
 end
-CurveData() = CurveData([],[],[],[],[],CurveConf())
-CurveData(x,y,Z,conf::CurveConf) = CurveData(x,y,Z,[],[],conf)
+CurveData() = CurveData(Any[],Any[],Any[],Any[],Any[],CurveConf())
+CurveData(x,y,Z,conf::CurveConf) = CurveData(x,y,Z,Any[],Any[],conf)
 
 # curves and configuration for a single figure
 type Figure
@@ -159,7 +159,7 @@ type Figure
     conf::AxesConf               # figure configuration
     isempty::Bool                # a flag to indicate if figure is empty
 end
-Figure(handle) = Figure(handle,[CurveData()],AxesConf(),true)
+Figure(handle) = Figure(handle,CurveData[CurveData()],AxesConf(),true)
 
 # coordinate type
 Coord = Union(UnitRange,Range,Matrix,Vector)

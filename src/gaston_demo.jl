@@ -194,7 +194,7 @@ function gaston_demo()
     Z[:,:,1] = R
     Z[:,:,2] = G
     Z[:,:,3] = B
-    addcoords([],[],Z,c)
+    addcoords(Any[],Any[],Z,c)
     a = AxesConf()
     a.title = "RGB Image"
     addconf(a)
@@ -249,7 +249,7 @@ function gaston_demo()
     c = CurveConf()
     c.plotstyle = "image"
     Z = [5 4 3 1 0; 2 2 0 0 1; 0 0 0 1 0; 0 1 2 4 3]
-    addcoords([],[],Z,c)
+    addcoords(Any[],Any[],Z,c)
     c = CurveConf()
     c.plotstyle = "lines"
     c.color = "blue"

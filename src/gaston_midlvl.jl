@@ -40,7 +40,7 @@ function addcoords(x::Coord,y::Coord,Z::Array,conf::CurveConf)
             error("Invalid abscissa coordinates")
         end
     elseif isa(x,UnitRange) || isa(x,Range)
-        x = [x]
+        x = collect(x)
     end
     if isa(y,Matrix)
         s = size(y)
@@ -50,7 +50,7 @@ function addcoords(x::Coord,y::Coord,Z::Array,conf::CurveConf)
             error("Invalid abscissa coordinates")
         end
     elseif isa(y,UnitRange) || isa(y,Range)
-        y = [y]
+        y = collect(y)
     end
     # check number of elements
     if neZ
@@ -88,19 +88,19 @@ function addcoords(x::Coord,y::Coord,Z::Array,conf::CurveConf)
         fig.curves[1] = CurveData(x,y,Z,conf)
         fig.isempty = false
     else
-        fig.curves = [fig.curves, CurveData(x,y,Z,conf)]
+        push!(fig.curves, CurveData(x,y,Z,conf))
     end
     gnuplot_state.figs[c] = fig
 end
-addcoords(y) = addcoords(1:length(y),y,[],CurveConf())
-addcoords(y,c::CurveConf) = addcoords(1:length(y),y,[],c)
-addcoords(x,y) = addcoords(x,y,[],CurveConf())
-addcoords(x,y,c::CurveConf) = addcoords(x,y,[],c)
+addcoords(y) = addcoords(1:length(y),y,Any[],CurveConf())
+addcoords(y,c::CurveConf) = addcoords(1:length(y),y,Any[],c)
+addcoords(x,y) = addcoords(x,y,Any[],CurveConf())
+addcoords(x,y,c::CurveConf) = addcoords(x,y,Any[],c)
 addcoords(x,y,Z) = addcoords(x,y,Z,CurveConf())
 # X, Y data in matrix columns
 function addcoords(X::Matrix,Y::Matrix,conf::CurveConf)
     for i = 1:size(X,2)
-        addcoords(X[:,i],Y[:,i],[],conf)
+        addcoords(X[:,i],Y[:,i],Any[],conf)
     end
 end
 function addcoords(Y::Matrix,conf::CurveConf)
@@ -136,7 +136,7 @@ function adderror(yl::Coord,yh::Coord)
                 error("Invalid error data")
             end
         elseif isa(yl,UnitRange) || isa(yl,Range)
-            yl = [yl]
+            yl = collect(yl)
         end
     end
     if !isempty(yh)
@@ -149,7 +149,7 @@ function adderror(yl::Coord,yh::Coord)
                 error("Invalid error data")
             end
         elseif isa(yh,UnitRange) || isa(yh,Range)
-            yh = [yh]
+            yh = collect(yh)
         end
     end
     # verify vector sizes -- this also implies that x,y coordinates must be
@@ -166,7 +166,7 @@ function adderror(yl::Coord,yh::Coord)
     gnuplot_state.figs[c].curves[end].yhigh = yh
 
 end
-adderror(ydelta) = adderror(ydelta,[])
+adderror(ydelta) = adderror(ydelta,Any[])
 
 # add axes configuration to current figure
 function addconf(conf::AxesConf)

@@ -38,11 +38,11 @@ gnuplot_state = None
 try
     # linux
     gnuplot_state = GnuplotState(false,0,0,string("/tmp/gaston-",ENV["USER"],
-    "-",randstring(5),"/"),[])
+    "-",randstring(5),"/"),Any[])
 catch
     # windows
     gnuplot_state = GnuplotState(false,0,0,string(replace(ENV["TMP"],"\\","/"),
-    "/gaston-",ENV["USERNAME"],"-",randstring(5)),[])
+    "/gaston-",ENV["USERNAME"],"-",randstring(5)),Any[])
 end
 
 # when gnuplot_state goes out of scope, close the pipe
