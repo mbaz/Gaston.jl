@@ -318,7 +318,7 @@ end
 
 # Validate terminal type.
 function validate_terminal(s::String)
-    supp_terms = ["wxt", "x11", "svg", "gif", "png", "pdf", "aqua", "eps"]
+    supp_terms = ["qt", "wxt", "x11", "svg", "gif", "png", "pdf", "aqua", "eps"]
     if s == "aqua" && OS_NAME != :Darwin
         return false
     end
@@ -330,7 +330,7 @@ end
 
 # Identify terminal by type: file or screen
 function is_term_screen(s::String)
-    screenterms = ["wxt", "x11", "aqua"]
+    screenterms = ["qt", "wxt", "x11", "aqua"]
     if in(s, screenterms)
         return true
     end

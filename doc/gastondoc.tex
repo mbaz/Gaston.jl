@@ -146,14 +146,14 @@ This function always returns the handle of the current figure.
 \subsection{Terminals}
 
 Gaston supports plotting to the screen as well as printing the plots to files.
-Three screen terminals are supported: \cmd{wxt}, \cmd{x11} and
+Three screen terminals are supported: \cmd{wxt}, \cmd{qt}, \cmd{x11} and
 \cmd{aqua}\footnote{Gnuplot provides the \cmd{aqua} terminal on Mac OS X
 systems only. It is included in Gaston for convenience of users of that system.
 However, the author does not have access to any Mac computers and, in
 consequence, this terminal should be considered as unsupported. Bug reports,
 patches and comments are welcome, as always.}. The \cmd{x11} terminal is faster
-than \cmd{wxt}, but it offers lower plot quality; it is provided for use in
-systems with lower performance or that don't support WxWindows.
+than \cmd{wxt} or \cmd{qt}, but it offers lower plot quality; it is provided for
+use in systems with lower performance or that don't support WxWindows.
 
 For printing to files, terminals \cmd{svg}, \cmd{pdf}, \cmd{png}, \cmd{eps} and
 \cmd{gif} are supported. For more details on printing, see section
