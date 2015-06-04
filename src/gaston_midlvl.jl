@@ -289,9 +289,15 @@ function llplot()
         # create data file
         f = open(filename,"w")
         for i in figs[c].curves
+			# data is written to tmparr, which is then written to disk
+			tmparr = zeros(1, 3)
+			tmparr_row_index = 1
             for row in 1:length(i.x)
                 for col in 1:length(i.y)
-                    writedlm(f,[i.x[row] i.y[col] i.Z[row,col]],' ')
+					tmparr[1,1] = i.x[row]
+					tmparr[1,2] = i.y[col]
+					tmparr[1,3] = i.Z[row,col]
+					writedlm(f,tmparr,' ')
                 end
                 write(f,"\n")
             end
