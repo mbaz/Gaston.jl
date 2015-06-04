@@ -237,25 +237,39 @@ function llplot()
                     writedlm(f,[i.x i.y i.ylow i.yhigh],' ')
                 end
             elseif ps == "image"
+            	# data is written to tmparr, which is then written to disk
+            	tmparr = zeros(length(i.x)*length(i.y),3)
+                tmparr_row_index = 1  # index into tmparr row
                 # output matrix
                 for col = 1:length(i.x)
                     y = length(i.y)
                     for row = 1:length(i.y)
-                        writedlm(f,[i.x[col] i.y[row] i.Z[y,col]],' ')
+                    	tmparr[tmparr_row_index,1] = i.x[col]
+                    	tmparr[tmparr_row_index,2] = i.y[row]
+                    	tmparr[tmparr_row_index,3] = i.Z[y,col]
+                    	tmparr_row_index = tmparr_row_index+1
                         y = y-1
                     end
                 end
+				writedlm(f,tmparr,' ')
             elseif ps == "rgbimage"
+            	# data is written to tmparr, which is then written to disk
+            	tmparr = zeros(length(i.x)*length(i.y), 5)
+            	tmparr_row_index = 1
                 # output matrix
                 for col = 1:length(i.x)
                     y = length(i.y)
                     for row = 1:length(i.y)
-                        writedlm(f,
-                        [i.x[col] i.y[row] i.Z[y,col,1] i.Z[y,col,2] i.Z[y,col,3]],
-                        ' ')
+                    	tmparr[tmparr_row_index,1] = i.x[col]
+                    	tmparr[tmparr_row_index,2] = i.y[row]
+                    	tmparr[tmparr_row_index,3] = i.Z[y,col,1]
+                    	tmparr[tmparr_row_index,4] = i.Z[y,col,2]
+                    	tmparr[tmparr_row_index,5] = i.Z[y,col,3]
+                    	tmparr_row_index = tmparr_row_index+1
                         y = y-1
                     end
                 end
+                writedlm(f,tmparr,' ')
             else
                 writedlm(f,[i.x i.y],' ')
             end
