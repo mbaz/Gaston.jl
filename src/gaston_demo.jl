@@ -109,8 +109,26 @@ function gaston_demo()
     addconf(a)
     llplot()
 
-    # plotting columns of matrices
+    # finance bars
     figure(9)
+    c = CurveConf()
+    c.legend = "Market"
+    c.plotstyle = "financebars"
+    addcoords(1:3,c)
+    open=[10,20,30];
+    close=[20,30,40];
+    low=[5,15,25];
+    high=[25,35,45];
+    addfinancial(open,low,high,close)
+    a = AxesConf()
+    a.title = "Financial Bars"
+    a.xrange = "[0:4]"  # gnuplot plots first and last bars against axis
+    a.yrange = "[0:50]"
+    addconf(a)
+    llplot()
+
+    # plotting columns of matrices
+    figure(10)
     Y = hcat(st, ct, et)
     X = hcat(t, t, t)
     addcoords(X,Y)
@@ -120,7 +138,7 @@ function gaston_demo()
     llplot()
 
     # dots plotstyle
-    figure(10)
+    figure(11)
     x = 1 + 0.1*randn(200)
     y = 1 + 0.1*randn(200)
     c = CurveConf()
@@ -139,7 +157,7 @@ function gaston_demo()
     llplot()
 
     # simple 3-D plot with default config
-    figure(11)
+    figure(12)
     x=[0,1,2,3]
     y=[0,1,2]
     Z=[10 10 10; 10 5 10;10 1 10; 10 0 10]
@@ -150,7 +168,7 @@ function gaston_demo()
     llplot()
 
     # same plot with colored surfaces
-    figure(12)
+    figure(13)
     c = CurveConf()
     c.plotstyle = "pm3d"
     addcoords(x,y,Z,c)
@@ -160,7 +178,7 @@ function gaston_demo()
     llplot()
 
     # sombrero
-    figure(13)
+    figure(14)
     c = CurveConf()
     c.plotstyle = "pm3d"
     x = -15:0.33:15
@@ -173,7 +191,7 @@ function gaston_demo()
     llplot()
 
     # simple image
-    figure(14)
+    figure(15)
     c = CurveConf()
     c.plotstyle = "image"
     Z = [5 4 3 1 0; 2 2 0 0 1; 0 0 0 1 0; 0 1 2 4 3]
@@ -184,7 +202,7 @@ function gaston_demo()
     llplot()
 
     # rgb image
-    figure(15)
+    figure(16)
     c = CurveConf()
     c.plotstyle = "rgbimage"
     R = [ x+y for x=0:5:120, y=0:5:120]
@@ -201,7 +219,7 @@ function gaston_demo()
     llplot()
 
     # image with x,y coordinates
-    figure(16)
+    figure(17)
     c = CurveConf()
     c.plotstyle = "rgbimage"
     addcoords(linspace(-2.0,5.0,25),linspace(4.0,6.0,25),Z,c)
@@ -211,7 +229,7 @@ function gaston_demo()
     llplot()
 
     # histograms
-    figure(17)
+    figure(18)
     c = CurveConf()
     c.plotstyle = "boxes"
     c.color = "blue"
@@ -223,7 +241,7 @@ function gaston_demo()
     addconf(a)
     llplot()
 
-    figure(18)
+    figure(19)
     c = CurveConf()
     c.plotstyle = "boxes"
     c.color = "blue"
@@ -245,7 +263,7 @@ function gaston_demo()
     llplot()
 
     # image and curve on the same figure
-    figure(19)
+    figure(20)
     c = CurveConf()
     c.plotstyle = "image"
     Z = [5 4 3 1 0; 2 2 0 0 1; 0 0 0 1 0; 0 1 2 4 3]
@@ -262,7 +280,7 @@ function gaston_demo()
 
     # Two surfaces in one figure, plus low-level use of gnuplot_send
     # for final tweaking
-    figure(20)
+    figure(21)
     gnuplot_send("set view 69,20")
     c = CurveConf()
     c.plotstyle = "pm3d"

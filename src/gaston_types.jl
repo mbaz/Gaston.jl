@@ -140,6 +140,14 @@ AxesConf() = AxesConf(
     gaston_config.yrange,
     gaston_config.zrange)
 
+type Financial
+    open::Vector
+    low::Vector
+    high::Vector
+    close::Vector
+end
+Financial() = Financial(Any[],Any[],Any[],Any[])
+
 # coordinates and configuration for a single curve
 type CurveData
     x::Vector          # abscissa
@@ -147,10 +155,11 @@ type CurveData
     Z::Array           # 3-d plots and images
     ylow::Vector       # error data
     yhigh::Vector      # error data
+    finance::Financial # financial data
     conf::CurveConf    # curve configuration
 end
-CurveData() = CurveData(Any[],Any[],Any[],Any[],Any[],CurveConf())
-CurveData(x,y,Z,conf::CurveConf) = CurveData(x,y,Z,Any[],Any[],conf)
+CurveData() = CurveData(Any[],Any[],Any[],Any[],Any[],Financial(),CurveConf())
+CurveData(x,y,Z,conf::CurveConf) = CurveData(x,y,Z,Any[],Any[],Financial(),conf)
 
 # curves and configuration for a single figure
 type Figure

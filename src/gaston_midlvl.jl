@@ -168,6 +168,37 @@ function adderror(yl::Coord,yh::Coord)
 end
 adderror(ydelta) = adderror(ydelta,Any[])
 
+# add financial data to current set of coordinates
+# input order is: open, low, high, close
+function addfinancial(args...)
+	global gnuplot_state
+	    # check that at least one figure has been setup
+    if gnuplot_state.current == 0
+        figure(1)
+    end
+    c = findfigure(gnuplot_state.current)
+
+    # check arguments and convert to vectors
+    if length(args) != 4
+        error("Invalid financial data")
+	end
+	for a in args
+		@assert(!isempty(a),"Invalid financial data")
+        @assert(eltype(a)<:Real,"Invalid financial data")
+        @assert(typeof(a)<:Array,"Invalid financial data")
+		@assert(length(gnuplot_state.figs[c].curves[end].x) == length(a),
+			"Financial data vector must be of same size as abscissa")
+	end
+
+    # set fields in current curve
+    gnuplot_state.figs[c].curves[end].finance.open = args[1]
+    gnuplot_state.figs[c].curves[end].finance.low = args[2]
+    gnuplot_state.figs[c].curves[end].finance.high = args[3]
+    gnuplot_state.figs[c].curves[end].finance.close = args[4]
+
+end
+
+
 # add axes configuration to current figure
 function addconf(conf::AxesConf)
     global gnuplot_state
@@ -236,6 +267,18 @@ function llplot()
                     # ylow, yhigh (double error coordinate)
                     writedlm(f,[i.x i.y i.ylow i.yhigh],' ')
                 end
+			elseif ps == "financebars"
+            	# data is written to tmparr, which is then written to disk
+            	tmparr = zeros(length(i.x),5)
+                # output matrix
+                for col = 1:length(i.x)
+					tmparr[col,1] = i.x[col]
+					tmparr[col,2] = i.finance.open[col]
+					tmparr[col,3] = i.finance.low[col]
+					tmparr[col,4] = i.finance.high[col]
+					tmparr[col,5] = i.finance.close[col]
+                end
+				writedlm(f,tmparr,' ')
             elseif ps == "image"
             	# data is written to tmparr, which is then written to disk
             	tmparr = zeros(length(i.x)*length(i.y),3)
