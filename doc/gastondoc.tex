@@ -488,6 +488,13 @@ and \cmd{yhigh} (following gnuplot's terminology). If only one is provided, it
 is interpreted as \cmd{ydelta}. Remember to configure the plotstyle
 accordingly.
 
+\textbf{Financial bars.} Gaston also supports gnuplot's \cmd{financebars}
+plot style. To use financial bars, first specify the \cmd{x} coordinates with
+\cmd{addcoords()}. Then, call \cmd{addfinancial} with four vector, each with
+the same number of elements as the \cmd{x} coordinate. These vectors specify
+the open, low, high, and close values, respectively. Finally, configure the
+plotstyle to ``financebars''.
+
 \textbf{Histograms.} To plot the histogram of a data vector \cmd{data} with
 \cmd{b} bins, first use the auxiliary function \cmd{(x,y) = histdata(data,b)}
 to create \cmd{x} and \cmd{y} coordinates that may be plotted with the
@@ -763,56 +770,58 @@ style.
 In the following table, a check mark (\cm) means that the coordinate has been
 specified by the user in either a mid-level or high-level command (\cmd{x}
 coordinates, if not specified, are calculated by Gaston, and are not included
-in the following table. The same applies to \cmd{yhigh}).
+in the following table. The same applies to \cmd{yhigh}). Column \textbf{Fb}
+stands for financial data.
 
 {\small
 \begin{center}
-	\begin{tabular}{lcccl}
+	\begin{tabular}{lccccl}
 	\toprule
-	\textbf{plotstyle} & \textbf{y} & \textbf{Z} & \textbf{ylow} &
-	\textbf{Gnuplot command} \\
+	\textbf{plotstyle} & \textbf{y} & \textbf{Z} & \textbf{ylow} & \textbf{Fb}
+	& \textbf{Gnuplot command} \\
 	\midrule
 	\multirow{2}{*}{\cmd{lines}}
-	& \cm &     &  & \cmd{plot with lines} \\
-	& \cm & \cm &  & \cmd{splot with lines} \\
+	& \cm &     &  & & \cmd{plot with lines} \\
+	& \cm & \cm &  & & \cmd{splot with lines} \\
 	\cmidrule(r){2-5}
 	\multirow{2}{*}{\cmd{linespoints}}
-	& \cm &     &  & \cmd{plot with linespoints} \\
-	& \cm & \cm &  & \cmd{splot with linespoints} \\
+	& \cm &     &  & & \cmd{plot with linespoints} \\
+	& \cm & \cm &  & & \cmd{splot with linespoints} \\
 	\cmidrule(r){2-5}
 	\multirow{2}{*}{\cmd{points}}
-	& \cm &     &  & \cmd{plot with points} \\
-	& \cm & \cm &  & \cmd{splot with points} \\
+	& \cm &     &  & & \cmd{plot with points} \\
+	& \cm & \cm &  & & \cmd{splot with points} \\
 	\cmidrule(r){2-5}
 	\multirow{2}{*}{\cmd{steps}}
-	& \cm &     &  & \cmd{plot with steps} \\
+	& \cm &     &  & & \cmd{plot with steps} \\
 	\cmidrule(r){2-5}
 	\multirow{2}{*}{\cmd{fsteps}}
-	& \cm &     &  & \cmd{plot with fsteps} \\
+	& \cm &     &  & & \cmd{plot with fsteps} \\
 	\cmidrule(r){2-5}
 	\multirow{2}{*}{\cmd{impulses}}
-	& \cm &     &  & \cmd{plot with impulses} \\
-	& \cm & \cm &  & \cmd{splot with impulses} \\
+	& \cm &     &  & & \cmd{plot with impulses} \\
+	& \cm & \cm &  & & \cmd{splot with impulses} \\
 	\cmidrule(r){2-5}
 	\multirow{2}{*}{\cmd{dots}}
-	& \cm &     &  & \cmd{plot with dots} \\
-	& \cm & \cm &  & \cmd{splot with dots} \\
+	& \cm &     &  & & \cmd{plot with dots} \\
+	& \cm & \cm &  & & \cmd{splot with dots} \\
 	\cmidrule(r){2-5}
-	\cmd{boxes}       & \cm &  &     & \cmd{plot with boxes} \\
-	\cmd{errorbars}   & \cm &  & \cm & \cmd{plot with errorbars} \\
-	\cmd{errorlines}  & \cm &  & \cm & \cmd{plot with errorlines} \\
+	\cmd{boxes}         & \cm &  &     & & \cmd{plot with boxes} \\
+	\cmd{errorbars}     & \cm &  & \cm & & \cmd{plot with errorbars} \\
+	\cmd{errorlines}    & \cm &  & \cm & & \cmd{plot with errorlines} \\
+	\cmd{financialbars} & \cm &  & & \cm & \cmd{plot with financebars} \\
 	\cmidrule(r){2-5}
 	\multirow{2}{*}{\cmd{pm3d}}
-	&     & \cm &  & \cmd{splot with pm3d} \\
-	& \cm & \cm &  & \cmd{splot with pm3d} \\
+	&     & \cm &  & & \cmd{splot with pm3d} \\
+	& \cm & \cm &  & & \cmd{splot with pm3d} \\
 	\cmidrule(r){2-5}
 	\multirow{2}{*}{\cmd{image}}
-	&     & \cm &  & \cmd{plot with image} \\
-	& \cm & \cm &  & \cmd{plot with image} \\
+	&     & \cm &  & & \cmd{plot with image} \\
+	& \cm & \cm &  & & \cmd{plot with image} \\
 	\cmidrule(r){2-5}
 	\multirow{2}{*}{\cmd{rgbimage}}
-	&     & \cm &  & \cmd{plot with rgbimage} \\
-	& \cm & \cm &  & \cmd{plot with rgbimage} \\
+	&     & \cm &  & & \cmd{plot with rgbimage} \\
+	& \cm & \cm &  & & \cmd{plot with rgbimage} \\
 	\bottomrule
 \end{tabular}
 \end{center}}
