@@ -5,14 +5,15 @@
 module Gaston
 
 export closefigure, closeall, clearfigure, figure, plot, histogram, imagesc,
-    surf, printfigure, gaston_demo, gaston_tests, set_terminal, set_filename,
-    set_default_legend, set_default_plotstyle, set_default_color,
-    set_default_marker, set_default_linewidth, set_default_pointsize,
-    set_default_title, set_default_xlabel, set_default_ylabel,
-    set_default_zlabel, set_default_box, set_default_axis, set_default_xrange,
-    set_default_yrange, set_default_zrange, set_print_color, set_print_fontface,
-    set_print_fontsize, set_print_fontscale, set_print_linewidth, set_print_size,
-    gnuplot_send
+surf, printfigure, gaston_demo, gaston_tests, set_terminal, set_filename,
+set_default_legend, set_default_plotstyle, set_default_color,
+set_default_marker, set_default_linewidth, set_default_pointsize,
+set_default_title, set_default_xlabel, set_default_ylabel, set_default_zlabel,
+set_default_box, set_default_axis, set_default_xrange, set_default_yrange,
+set_default_zrange, set_print_color, set_print_fontface, set_print_fontsize,
+set_print_fontscale, set_print_linewidth, set_print_size, gnuplot_send,
+addconf, addcoords, adderror, addfinancial, histdata, CurveConf, AxesConf,
+llplot, meshgrid, gnuplot_exit
 
 # before doing anything else, verify gnuplot is present on this system
 if !success(`gnuplot --version`)
