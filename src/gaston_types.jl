@@ -115,6 +115,7 @@ function GastonConfig()
 	    "color", "Sans", 12, 0.5, 1, "5in,3in"
 	    )
 	end
+end
 
 # Structs to configure a plot
 # Two types of configuration are needed: one to configure a single curve, and

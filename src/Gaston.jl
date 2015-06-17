@@ -15,7 +15,7 @@ set_print_fontscale, set_print_linewidth, set_print_size, gnuplot_send,
 addconf, addcoords, adderror, addfinancial, histdata, CurveConf, AxesConf,
 llplot, meshgrid, gnuplot_exit
 
-import Base.writemimo
+import Base.writemime
 
 # before doing anything else, verify gnuplot is present on this system
 if !success(`gnuplot --version`)
