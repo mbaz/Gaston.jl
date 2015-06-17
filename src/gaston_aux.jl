@@ -417,6 +417,6 @@ end
 function writemime(io::IO, ::MIME"image/png", x::Figure)
 	# The plot is written to /tmp/gaston-ijula.png. Read the file and
 	# write it to io.
-	f = open(read, "/tmp/gaston-ijulia.png")
-	write(io,f)
+	data = open(readbytes, "/tmp/gaston-ijulia.png","r")
+	write(io,data)
 end
