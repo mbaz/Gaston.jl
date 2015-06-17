@@ -353,4 +353,9 @@ function llplot()
         gnuplot_send(linestr(figs[c].curves, "splot",filename))
     end
     gnuplot_send("reset")
+
+    # If the environment is IJulia, redisplay the figure.
+    if displayable("image/png")
+    	redisplay(figs[c])
+	end
 end
