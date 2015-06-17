@@ -413,3 +413,10 @@ function validate_range(s::String)
     end
     return false
 end
+
+function writemimo(io::IO, ::@MIME("image/png"), x::Figure)
+	# The plot is written to /tmp/gaston-ijula.png. Read the file and
+	# write it to io.
+	f = open(readall, "/tmp/gaston-ijulia.tmp")
+	write(f,io)
+end

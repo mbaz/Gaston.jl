@@ -95,9 +95,9 @@ function GastonConfig()
     	# AxesConf
 	    "Untitled","x","y","z","inside vertical right top","","[*:*]","[*:*]","[*:*]",
     	# terminal
-	    "wxt",
+	    "png",
     	# output file name
-	    "",
+	    "/tmp/gaston-ijulia.png",
 	    # print parameters
 	    "color", "Sans", 12, 0.5, 1, "5in,3in"
     	)
@@ -108,9 +108,9 @@ function GastonConfig()
     	# AxesConf
 	    "Untitled","x","y","z","inside vertical right top","","[*:*]","[*:*]","[*:*]",
     	# terminal
-	    "png",
+	    "wxt",
     	# output file name
-	    "/tmp/gaston-ijulia.png",
+	    "",
 	    # print parameters
 	    "color", "Sans", 12, 0.5, 1, "5in,3in"
 	    )
