@@ -84,18 +84,37 @@ type GastonConfig
     print_linewidth::Real
     print_size::String
 end
-GastonConfig() = GastonConfig(
-    # CurveConf
-    "","lines","","",1,0.5,
-    # AxesConf
-    "Untitled","x","y","z","inside vertical right top","","[*:*]","[*:*]","[*:*]",
-    # terminal
-    "wxt",
-    # output file name
-    "",
-    # print parameters
-    "color", "Sans", 12, 0.5, 1, "5in,3in"
-    )
+function GastonConfig()
+	# Determine if current display supports PNG, and set defaults
+	# accordingly. This allows IJulia support.
+
+	if displayable("image/png")
+		GastonConfig(
+    	# CurveConf
+	    "","lines","","",1,0.5,
+    	# AxesConf
+	    "Untitled","x","y","z","inside vertical right top","","[*:*]","[*:*]","[*:*]",
+    	# terminal
+	    "wxt",
+    	# output file name
+	    "",
+	    # print parameters
+	    "color", "Sans", 12, 0.5, 1, "5in,3in"
+    	)
+	else
+		GastonConfig(
+    	# CurveConf
+	    "","lines","","",1,0.5,
+    	# AxesConf
+	    "Untitled","x","y","z","inside vertical right top","","[*:*]","[*:*]","[*:*]",
+    	# terminal
+	    "png",
+    	# output file name
+	    "/tmp/gaston-ijulia.png",
+	    # print parameters
+	    "color", "Sans", 12, 0.5, 1, "5in,3in"
+	    )
+	end
 
 # Structs to configure a plot
 # Two types of configuration are needed: one to configure a single curve, and
