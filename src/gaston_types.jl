@@ -97,7 +97,7 @@ function GastonConfig()
     	# terminal
 	    "png",
     	# output file name
-	    "/tmp/gaston-ijulia.png",
+	    "$(gnuplot_state.tmpdir)gaston-ijulia.png",
 	    # print parameters
 	    "color", "Sans", 10, 1, 1, "640,480"
     	)
