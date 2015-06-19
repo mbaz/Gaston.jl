@@ -99,7 +99,7 @@ function GastonConfig()
     	# output file name
 	    "/tmp/gaston-ijulia.png",
 	    # print parameters
-	    "color", "Sans", 12, 0.5, 1, "5in,3in"
+	    "color", "Sans", 10, 1, 1, "640,480"
     	)
 	else
 		GastonConfig(
@@ -112,7 +112,7 @@ function GastonConfig()
     	# output file name
 	    "",
 	    # print parameters
-	    "color", "Sans", 12, 0.5, 1, "5in,3in"
+	    "color", "Sans", 12, 0.5, 1, "640,480"
 	    )
 	end
 end
