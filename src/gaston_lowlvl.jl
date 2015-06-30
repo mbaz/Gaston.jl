@@ -4,17 +4,12 @@
 
 # write commands to gnuplot's pipe
 function gnuplot_send(s::String)
-    fid = gnuplot_state.fid
-    err = ccall(:fputs, Int, (Ptr{Uint8},Ptr{Int}), string(s,"\n"), fid)
-    # fputs returns a positive number if everything worked all right
-    if err < 0
-        println("Something went wrong writing to the gnuplot pipe.")
+    gin = gnuplot_state.fid[1] # gnuplot STDIN
+    w = write(gin, string(s,"\n"))
+    # check that data was accepted by the pipe
+    if !(w > 0)
+        println("Something went wrong writing to gnuplot STDIN.")
         return
     end
-    err = ccall(:fflush, Int, (Ptr{Int},), fid)
-    ## fflush returns 0 if everything worked all right
-    if err != 0
-        println("Something went wrong writing to the gnuplot pipe.")
-        return
-    end
+    flush(gin)
 end

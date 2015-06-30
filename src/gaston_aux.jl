@@ -4,43 +4,36 @@
 
 function gnuplot_init()
     global gnuplot_state
-    f = C_NULL
+
+	gin, gout, gerr, proc = 0, 0, 0, 0
     try
-        # Linux
-        f = ccall(:popen, Ptr{Int}, (Ptr{Uint8},Ptr{Uint8}), "gnuplot" ,"w")
+		gin, gout, gerr, proc = popen3(`gnuplot`)
     catch
-        # Windows
-        f = ccall(:_popen, Ptr{Int}, (Ptr{Uint8},Ptr{Uint8}), "gnuplot" ,"w")
-    end
-    if f == C_NULL
         error("There was a problem starting up gnuplot.")
     end
-    gnuplot_state.running = true
-    gnuplot_state.fid = f
+    # It's possible that `popen3` runs successfully, but gnuplot exits
+    # immediately. Double-check that gnuplot is running at this point.
+    if Base.process_running(proc)
+	    gnuplot_state.running = true
+	    gnuplot_state.fid = (gin, gout, gerr, proc)
+	else
+        error("There was a problem starting up gnuplot.")
+	end
 end
 
 # close gnuplot pipe
 function gnuplot_exit(x...)
     global gnuplot_state
+
     if gnuplot_state.running
         # close pipe
-        err = 1
-        try
-            # Linux
-            err = ccall(:pclose, Int, (Ptr{Int},), gnuplot_state.fid)
-        catch
-            # Windows
-            err = ccall(:_pclose, Int, (Ptr{Int},), gnuplot_state.fid)
-        end
-        # err should be zero
-        if err != 0
-            println("Gnuplot may not have closed correctly.");
-        end
+        close(gnuplot_state.fid[1])
+        close(gnuplot_state.fid[2])
+        close(gnuplot_state.fid[3])
     end
     # reset gnuplot_state
     gnuplot_state.running = false
     gnuplot_state.current = 0
-    gnuplot_state.fid = 0
     gnuplot_state.figs = Any[]
     return 0
 end
@@ -419,4 +412,33 @@ function writemime(io::IO, ::MIME"image/png", x::Figure)
 	# write it to io.
 	data = open(readbytes, "$(gnuplot_state.tmpdir)gaston-ijulia.png","r")
 	write(io,data)
+end
+
+# Execute command `cmd`, and return a tuple `(in, out, err, r)`, where
+# `in`, `out`, `err` are pipes to the process' STDIN, STDOUT, and STDERR, and
+# `r` is a process descriptor.
+function popen3(cmd::Cmd)
+    pin = Base.Pipe(C_NULL)
+    cmd_pin = Base.Pipe(C_NULL)
+
+    out = Base.Pipe(C_NULL)
+    cmd_out = Base.Pipe(C_NULL)
+
+    err = Base.Pipe(C_NULL)
+    cmd_err = Base.Pipe(C_NULL)
+
+    Base.link_pipe(pin, false, cmd_pin, true)
+    Base.link_pipe(out, true, cmd_out, false)
+    Base.link_pipe(err, true, cmd_err, false)
+
+    r = spawn(false, cmd, (pin, cmd_out, cmd_err))
+
+    Base.close_pipe_sync(cmd_out)
+    Base.close_pipe_sync(cmd_err)
+    Base.close_pipe_sync(pin)
+
+    Base.start_reading(out)
+    Base.start_reading(err)
+
+    return (cmd_pin, out, err, r)
 end

@@ -12,7 +12,7 @@ end
 type GnuplotState
     running::Bool               # true when gnuplot is already running
     current::Int                # current figure
-    fid                         # pipe stream id
+    fid                         # pipe streams id
     tmpdir::String              # where to store data files
     figs::Array                 # storage for all figures
 
