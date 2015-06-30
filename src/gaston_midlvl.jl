@@ -361,6 +361,14 @@ function llplot()
     # empty gnuplot's STDOUT pipe
     readbytes(gout,nb_available(gout))
 
+    # Read and print any gnuplot errors/warnings
+    gerr = gnuplot_state.fid[3]  # gnuplot STDERR
+    if nb_available(gerr) > 0
+    	msg = readbytes(gerr, nb_available(gerr))
+    	println("Warning: gnuplot produced unexpected output:")
+    	println(utf8(msg))
+    end
+
     # Reset gnuplot settable options.
     gnuplot_send("reset")
 
