@@ -33,7 +33,6 @@ macro test_error(ex)
         global testnumber
         global testsrun
         global testspassed
-        sleep(0.3)
         testnumber = testnumber + 1
         testsrun = testsrun + 1
         s = string("Test number ", testnumber, ". Error expected. Result: ")
@@ -53,7 +52,6 @@ macro test_success(ex)
         global testnumber
         global testsrun
         global testspassed
-        sleep (0.4)
         testnumber = testnumber + 1
         testsrun = testsrun + 1
         s = string("Test number ", testnumber, ". Success expected. Result: ")
