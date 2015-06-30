@@ -352,6 +352,17 @@ function llplot()
         # send command to gnuplot
         gnuplot_send(linestr(figs[c].curves, "splot",filename))
     end
+    # Wait until gnuplot is finished plotting before returning.
+    gout = gnuplot_state.fid[2]  # gnuplot STDOUT
+    gnuplot_send("set print \"-\"\n")
+    gnuplot_send("print \"Done\n\"")
+    while nb_available(gout) < 1
+        sleep(.001)
+    end
+    # empty gnuplot's STDOUT pipe
+    readbytes(gout,nb_available(gout))
+
+    # Reset gnuplot settable options.
     gnuplot_send("reset")
 
     # If the environment is IJulia, redisplay the figure.
