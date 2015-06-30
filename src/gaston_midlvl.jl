@@ -354,7 +354,7 @@ function llplot()
     end
     # Wait until gnuplot is finished plotting before returning.
     gout = gnuplot_state.fid[2]  # gnuplot STDOUT
-    gnuplot_send("set print \"-\"\nprint \"Done\n\"")
+    gnuplot_send("set print \"-\"\nprint \"Done\"")
     while nb_available(gout) < 1
         sleep(.001)
     end
