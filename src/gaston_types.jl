@@ -13,10 +13,10 @@ type GnuplotState
     running::Bool               # true when gnuplot is already running
     current::Int                # current figure
     fid                         # pipe streams id
-    tmpdir::String              # where to store data files
+    tmpdir::AbstractString              # where to store data files
     figs::Array                 # storage for all figures
 
-    function GnuplotState(running::Bool,current::Int,fid,tmpdir::String,
+    function GnuplotState(running::Bool,current::Int,fid,tmpdir::AbstractString,
         figs::Array)
         # Check to see if tmpdir exists, and create it if not
         # TODO: there has to be a simpler way to do this
@@ -56,33 +56,33 @@ end
 # Structure to keep Gaston's configuration
 type GastonConfig
     # default CurveConf values
-    legend::String
-    plotstyle::String
-    color::String
-    marker::String
+    legend::AbstractString
+    plotstyle::AbstractString
+    color::AbstractString
+    marker::AbstractString
     linewidth::Real
     pointsize::Real
     # default AxesConf values
-    title::String
-    xlabel::String
-    ylabel::String
-    zlabel::String
-    box::String
-    axis::String
-    xrange::String
-    yrange::String
-    zrange::String
+    title::AbstractString
+    xlabel::AbstractString
+    ylabel::AbstractString
+    zlabel::AbstractString
+    box::AbstractString
+    axis::AbstractString
+    xrange::AbstractString
+    yrange::AbstractString
+    zrange::AbstractString
     # default terminal type
-    terminal::String
+    terminal::AbstractString
     # for terminals that support filenames
-    outputfile::String
+    outputfile::AbstractString
     # for printing to file
-    print_color::String
-    print_fontface::String
+    print_color::AbstractString
+    print_fontface::AbstractString
     print_fontsize::Real
     print_fontscale::Real
     print_linewidth::Real
-    print_size::String
+    print_size::AbstractString
 end
 function GastonConfig()
 	# Determine if current display supports PNG, and set defaults
@@ -108,7 +108,7 @@ function GastonConfig()
     	# AxesConf
 	    "Untitled","x","y","z","inside vertical right top","","[*:*]","[*:*]","[*:*]",
     	# terminal
-	    "wxt",
+	    "qt",
     	# output file name
 	    "",
 	    # print parameters
@@ -121,11 +121,11 @@ end
 # Two types of configuration are needed: one to configure a single curve, and
 # another to configure a set of curves (the 'axes').
 type CurveConf
-    legend::String          # legend text
-    plotstyle::String
-    color::String           # one of gnuplot's builtin colors --
+    legend::AbstractString          # legend text
+    plotstyle::AbstractString
+    color::AbstractString           # one of gnuplot's builtin colors --
                             # run 'show colornames' inside gnuplot
-    marker::String          # point type
+    marker::AbstractString          # point type
     linewidth::Real
     pointsize::Real
 
@@ -139,15 +139,15 @@ CurveConf() = CurveConf(
     gaston_config.pointsize)
 
 type AxesConf
-    title::String      # plot title
-    xlabel::String     # xlabel
-    ylabel::String     # ylabel
-    zlabel::String     # zlabel for 3-d plots
-    box::String        # legend box (used with 'set key')
-    axis::String       # normal, semilog{x,y}, loglog
-    xrange::String     # xrange
-    yrange::String     # yrange
-    zrange::String     # zrange
+    title::AbstractString      # plot title
+    xlabel::AbstractString     # xlabel
+    ylabel::AbstractString     # ylabel
+    zlabel::AbstractString     # zlabel for 3-d plots
+    box::AbstractString        # legend box (used with 'set key')
+    axis::AbstractString       # normal, semilog{x,y}, loglog
+    xrange::AbstractString     # xrange
+    yrange::AbstractString     # yrange
+    zrange::AbstractString     # zrange
 end
 AxesConf() = AxesConf(
     gaston_config.title,
@@ -191,4 +191,4 @@ end
 Figure(handle) = Figure(handle,CurveData[CurveData()],AxesConf(),true)
 
 # coordinate type
-Coord = Union(UnitRange,Range,Matrix,Vector)
+Coord = Union{UnitRange,Range,Matrix,Vector}

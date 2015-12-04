@@ -233,7 +233,8 @@ function gaston_demo()
     c = CurveConf()
     c.plotstyle = "boxes"
     c.color = "blue"
-    y = [1 2 3 4 5 6 7 8 9 10]
+    #y = [1 2 3 4 5 6 7 8 9 10] => gnuplot: Warning: empty y range [1:1], adjusting to [0.99:1.01]
+    y=10*rand(40)
     (x,y) = histdata(y,10)
     addcoords(x,y,c)
     a = AxesConf()

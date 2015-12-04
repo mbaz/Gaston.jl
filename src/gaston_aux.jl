@@ -52,7 +52,7 @@ function findfigure(c)
 end
 
 # convert marker string description to gnuplot's expected number
-function pointtype(x::String)
+function pointtype(x::AbstractString)
     if x == "+"
         return 1
     elseif x == "x"
@@ -110,7 +110,7 @@ function linestr_single(conf::CurveConf)
 end
 
 # build a string with plot commands according to configuration
-function linestr(curves::Vector{CurveData}, cmd::String, file::String)
+function linestr(curves::Vector{CurveData}, cmd::AbstractString, file::AbstractString)
     # We have to insert "," between plot commands. One easy way to do this
     # is create the first plot command, then the rest
     # We also need to keep track of the current index (starts at zero)
@@ -215,7 +215,7 @@ function copy(conf::AxesConf)
 end
 
 # Build a "set term" string appropriate for the terminal type
-function termstring(term::String)
+function termstring(term::AbstractString)
     global gnuplot_state
     global gaston_config
 
@@ -311,7 +311,7 @@ end
 # supported. They return true iff the argument validates.
 
 # Validate terminal type.
-function validate_terminal(s::String)
+function validate_terminal(s::AbstractString)
     supp_terms = ["qt", "wxt", "x11", "svg", "gif", "png", "pdf", "aqua", "eps"]
     if s == "aqua" && OS_NAME != :Darwin
         return false
@@ -323,7 +323,7 @@ function validate_terminal(s::String)
 end
 
 # Identify terminal by type: file or screen
-function is_term_screen(s::String)
+function is_term_screen(s::AbstractString)
     screenterms = ["qt", "wxt", "x11", "aqua"]
     if in(s, screenterms)
         return true
@@ -331,7 +331,7 @@ function is_term_screen(s::String)
     return false
 end
 
-function is_term_file(s::String)
+function is_term_file(s::AbstractString)
     screenterms = ["svg", "gif", "png", "pdf", "eps"]
     if in(s, screenterms)
         return true
@@ -340,7 +340,7 @@ function is_term_file(s::String)
 end
 
 # Valid plotstyles supported by gnuplot's plot
-function validate_2d_plotstyle(s::String)
+function validate_2d_plotstyle(s::AbstractString)
     valid = ["lines", "linespoints", "points", "impulses", "boxes",
         "errorlines", "errorbars", "dots", "steps", "fsteps", "financebars"]
     if in(s, valid)
@@ -350,7 +350,7 @@ function validate_2d_plotstyle(s::String)
 end
 
 # Valid plotstyles supported by gnuplot's splot
-function validate_3d_plotstyle(s::String)
+function validate_3d_plotstyle(s::AbstractString)
     valid = ["lines", "linespoints", "points", "impulses", "pm3d",
             "image", "rgbimage", "dots"]
     if in(s, valid)
@@ -360,7 +360,7 @@ function validate_3d_plotstyle(s::String)
 end
 
 # Valid axis types
-function validate_axis(s::String)
+function validate_axis(s::AbstractString)
     valid = ["", "normal", "semilogx", "semilogy", "loglog"]
     if in(s, valid)
         return true
@@ -369,7 +369,7 @@ function validate_axis(s::String)
 end
 
 # Valid markers supported by Gaston
-function validate_marker(s::String)
+function validate_marker(s::AbstractString)
     valid = ["", "+", "x", "*", "esquare", "fsquare", "ecircle", "fcircle",
     "etrianup", "ftrianup", "etriandn", "ftriandn", "edmd", "fdmd"]
     if in(s, valid)
@@ -378,7 +378,7 @@ function validate_marker(s::String)
     return false
 end
 
-function validate_range(s::String)
+function validate_range(s::AbstractString)
 
     # floating point, starting with a dot
     f1 = "[-+]?\\.\\d+([eE][-+]?\\d+)?"
@@ -418,27 +418,22 @@ end
 # `in`, `out`, `err` are pipes to the process' STDIN, STDOUT, and STDERR, and
 # `r` is a process descriptor.
 function popen3(cmd::Cmd)
-    pin = Base.Pipe(C_NULL)
-    cmd_pin = Base.Pipe(C_NULL)
+    pin = Base.Pipe()
+    out = Base.Pipe()
+    err = Base.Pipe()
 
-    out = Base.Pipe(C_NULL)
-    cmd_out = Base.Pipe(C_NULL)
+#    Base.link_pipe(pin.out, false, pin.in, true)
+#    Base.link_pipe(out.out, true, out.in, false)
+#    Base.link_pipe(err.out, true, err.in, false)
 
-    err = Base.Pipe(C_NULL)
-    cmd_err = Base.Pipe(C_NULL)
+    r = spawn(cmd, (pin, out, err))
 
-    Base.link_pipe(pin, false, cmd_pin, true)
-    Base.link_pipe(out, true, cmd_out, false)
-    Base.link_pipe(err, true, cmd_err, false)
+    Base.close_pipe_sync(out.in)
+    Base.close_pipe_sync(err.in)
+    Base.close_pipe_sync(pin.out)
+    
+    Base.start_reading(out.out)
+    Base.start_reading(err.out)
 
-    r = spawn(false, cmd, (pin, cmd_out, cmd_err))
-
-    Base.close_pipe_sync(cmd_out)
-    Base.close_pipe_sync(cmd_err)
-    Base.close_pipe_sync(pin)
-
-    Base.start_reading(out)
-    Base.start_reading(err)
-
-    return (cmd_pin, out, err, r)
+    return (pin.in, out.out, err.out, r)
 end

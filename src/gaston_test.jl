@@ -298,7 +298,7 @@ function run_tests_success(ini)
     @test_success CurveConf()
     # setting terminal
     @test_success set_terminal("x11")
-    @test_success set_terminal("wxt")
+    @test_success set_terminal("qt")
     #@osx_only @test_success set_terminal("aqua") # no support on recent OSX
 
     return testsrun, testspassed

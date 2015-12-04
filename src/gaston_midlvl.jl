@@ -352,17 +352,29 @@ function llplot()
         # send command to gnuplot
         gnuplot_send(linestr(figs[c].curves, "splot",filename))
     end
-    # Wait until gnuplot is finished plotting before returning.
     gout = gnuplot_state.fid[2]  # gnuplot STDOUT
-    gnuplot_send("set print \"-\"\nprint \"Done\"")
-    while nb_available(gout) < 1
-        sleep(.001)
-    end
+    gerr = gnuplot_state.fid[3]  # gnuplot STDERR
+    
+    #@async while true
+    #    s=readavailable(gout)
+    #    print("out: ",utf8(s),"\n")
+    #end
+        
+    #@async while true
+    #    s=readavailable(gerr)
+    #    print("Gnuplot error messsage: ",utf8(s),"\n")
+    #end
+
+    # Wait until gnuplot is finished plotting before returning.
+    #gnuplot_send("set print \"-\"\nprint \"Done\"")
+    #while nb_available(gout) < 1
+    #    sleep(.001)
+    #end
+    #sleep(0.05)
     # empty gnuplot's STDOUT pipe
-    readbytes(gout,nb_available(gout))
+    #readbytes(gout,nb_available(gout))
 
     # Read and print any gnuplot errors/warnings
-    gerr = gnuplot_state.fid[3]  # gnuplot STDERR
     if nb_available(gerr) > 0
     	msg = readbytes(gerr, nb_available(gerr))
     	println("Warning: gnuplot produced unexpected output:")
@@ -370,7 +382,7 @@ function llplot()
     end
 
     # Reset gnuplot settable options.
-    gnuplot_send("reset")
+    gnuplot_send("\nreset\n")
 
     # If the environment is IJulia, redisplay the figure.
     if displayable("image/png")
