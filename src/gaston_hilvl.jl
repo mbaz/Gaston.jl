@@ -164,7 +164,7 @@ function plot(args...)
                 state = "SEND"
                 continue
             end
-            if isa(args[i], String)
+            if isa(args[i], AbstractString)
                 x = 1:length(y)
                 state = "S4"
             else
@@ -179,7 +179,7 @@ function plot(args...)
                 state = "SEND"
                 continue
             end
-            if isa(args[i], String)
+            if isa(args[i], AbstractString)
                 state = "S4"
             else
                 addcoords(x,y,cc)
@@ -372,7 +372,7 @@ function imagesc(args...)
                     state = "SERROR"
                 end
             else
-                if isa(args[i],String)
+                if isa(args[i],AbstractString)
                     Z = tmp
                     if isa(Z,Array) && 2 <= ndims(Z) <= 3
                         y = 1:size(Z)[1]
@@ -402,7 +402,7 @@ function imagesc(args...)
                 x = 1:size(Z)[2]
                 state = "S3"
             else
-                if isa(args[i],String)
+                if isa(args[i],AbstractString)
                     Z = tmp
                     x = 1:size(Z)[2]
                     state = "S6"
@@ -500,7 +500,7 @@ function surf(args...)
                     state = "SERROR"
                 end
             else
-                if isa(args[i],String)
+                if isa(args[i],AbstractString)
                     Z = tmp
                     if isa(Z,Array) && ndims(Z) == 2
                         y = 1:size(Z)[1]
@@ -532,7 +532,7 @@ function surf(args...)
                     state = "SERROR"
                 end
             else
-                if isa(args[i],String)
+                if isa(args[i],AbstractString)
                     Z = tmp
                     if isa(Z,Array) && ndims(Z) == 2
                         x = 1:size(Z)[2]
@@ -619,7 +619,7 @@ function printfigure(args...)
         if isa(a, Int)
             # if a is an integer, it's the figure handle.
             h = a
-        elseif isa(a, String)
+        elseif isa(a, AbstractString)
             # if a is a string, it's the term type
             h = gnuplot_state.current
             term = a

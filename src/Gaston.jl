@@ -13,7 +13,7 @@ set_default_box, set_default_axis, set_default_xrange, set_default_yrange,
 set_default_zrange, set_print_color, set_print_fontface, set_print_fontsize,
 set_print_fontscale, set_print_linewidth, set_print_size, gnuplot_send,
 addconf, addcoords, adderror, addfinancial, histdata, CurveConf, AxesConf,
-llplot, meshgrid, gnuplot_exit
+llplot, meshgrid, gnuplot_exit, gnuplot_init
 
 import Base.writemime
 
@@ -37,7 +37,7 @@ include("gaston_test.jl")
 
 # set up global variables
 # global variable that stores gnuplot's state
-gnuplot_state = None
+gnuplot_state = Union{}
 try
     # linux
     gnuplot_state = GnuplotState(false,0,0,string("/tmp/gaston-",ENV["USER"],
