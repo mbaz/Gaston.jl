@@ -191,4 +191,4 @@ end
 Figure(handle) = Figure(handle,CurveData[CurveData()],AxesConf(),true)
 
 # coordinate type
-Coord = Union(UnitRange,Range,Matrix,Vector)
+Coord = Union{UnitRange,Range,Matrix,Vector}
