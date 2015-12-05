@@ -2,7 +2,7 @@
 ##
 ## This file is distributed under the 2-clause BSD License.
 
-function set_terminal(term::String)
+function set_terminal(term::AbstractString)
     global gaston_config
 
     if validate_terminal(term)
@@ -14,7 +14,7 @@ function set_terminal(term::String)
 end
 
 # For terminals that support file output, set the file name
-function set_filename(s::String)
+function set_filename(s::AbstractString)
     global gaston_config
 
     gaston_config.outputfile = s
@@ -22,13 +22,13 @@ end
 
 # Set default values for CurveConf and AxesConf. Return set value upon
 # success, error out otherwise.
-function set_default_legend(s::String)
+function set_default_legend(s::AbstractString)
     global gaston_config
 
     gaston_config.legend = s
 end
 
-function set_default_plotstyle(s::String)
+function set_default_plotstyle(s::AbstractString)
     global gaston_config
 
     if validate_2d_plotstyle(s) || validate_3d_plotstyle(s) ||
@@ -39,14 +39,14 @@ function set_default_plotstyle(s::String)
     end
 end
 
-function set_default_color(s::String)
+function set_default_color(s::AbstractString)
     global gaston_config
 
     # We can't validate colors yet
     gaston_config.color = s
 end
 
-function set_default_marker(s::String)
+function set_default_marker(s::AbstractString)
     global gaston_config
 
     if validate_marker(s)
@@ -68,38 +68,38 @@ function set_default_pointsize(i::Real)
     gaston_config.pointsize = i
 end
 
-function set_default_title(s::String)
+function set_default_title(s::AbstractString)
     global gaston_config
 
     gaston_config.title = s
 end
 
-function set_default_xlabel(s::String)
+function set_default_xlabel(s::AbstractString)
     global gaston_config
 
     gaston_config.xlabel = s
 end
 
-function set_default_ylabel(s::String)
+function set_default_ylabel(s::AbstractString)
     global gaston_config
 
     gaston_config.ylabel = s
 end
 
-function set_default_zlabel(s::String)
+function set_default_zlabel(s::AbstractString)
     global gaston_config
 
     gaston_config.zlabel = s
 end
 
-function set_default_box(s::String)
+function set_default_box(s::AbstractString)
     global gaston_config
 
     # We can't validate box yet
     gaston_config.box = s
 end
 
-function set_default_axis(s::String)
+function set_default_axis(s::AbstractString)
     global gaston_config
 
     if validate_axis(s)
@@ -109,7 +109,7 @@ function set_default_axis(s::String)
     end
 end
 
-function set_default_xrange(s::String)
+function set_default_xrange(s::AbstractString)
     global gaston_config
 
     if validate_range(s)
@@ -119,7 +119,7 @@ function set_default_xrange(s::String)
     end
 end
 
-function set_default_yrange(s::String)
+function set_default_yrange(s::AbstractString)
     global gaston_config
 
     if validate_range(s)
@@ -129,7 +129,7 @@ function set_default_yrange(s::String)
     end
 end
 
-function set_default_zrange(s::String)
+function set_default_zrange(s::AbstractString)
     global gaston_config
 
     if validate_range(s)
@@ -140,13 +140,13 @@ function set_default_zrange(s::String)
 end
 
 # functions to set print parameters
-function set_print_color(s::String)
+function set_print_color(s::AbstractString)
     global gaston_config
 
     gaston_config.print_color = b
 end
 
-function set_print_fontface(s::String)
+function set_print_fontface(s::AbstractString)
     global gaston_config
 
     gaston_config.print_fontface = s
@@ -170,7 +170,7 @@ function set_print_linewidth(r::Real)
     gaston_config.print_linewidth = r
 end
 
-function set_print_size(s::String)
+function set_print_size(s::AbstractString)
     global gaston_config
 
     gaston_config.print_size = s

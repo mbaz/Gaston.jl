@@ -3,7 +3,7 @@
 ## This file is distributed under the 2-clause BSD License.
 
 # write commands to gnuplot's pipe
-function gnuplot_send(s::String)
+function gnuplot_send(s::AbstractString)
     gin = gnuplot_state.fid[1] # gnuplot STDIN
     w = write(gin, string(s,"\n"))
     # check that data was accepted by the pipe
