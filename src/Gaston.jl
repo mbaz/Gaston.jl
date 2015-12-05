@@ -37,15 +37,13 @@ include("gaston_test.jl")
 
 # set up global variables
 # global variable that stores gnuplot's state
-gnuplot_state = None
-try
-    # linux
-    gnuplot_state = GnuplotState(false,0,0,string("/tmp/gaston-",ENV["USER"],
-    "-",randstring(5),"/"),Any[])
-catch
-    # windows
-    gnuplot_state = GnuplotState(false,0,0,string(replace(ENV["TMP"],"\\","/"),
-    "/gaston-",ENV["USERNAME"],"-",randstring(5)),Any[])
+isunix = @unix ? true : false
+if isunix
+	gnuplot_state = GnuplotState(false,0,0,string("/tmp/gaston-",
+	ENV["USER"],"-",randstring(5),"/"),Any[])
+else
+	GnuplotState(false,0,0,string(replace(ENV["TMP"],"\\","/"),
+	"/gaston-",ENV["USERNAME"],"-",randstring(5)),Any[])
 end
 
 # when gnuplot_state goes out of scope, close the pipe
