@@ -353,24 +353,27 @@ function llplot()
         gnuplot_send(linestr(figs[c].curves, "splot",filename))
     end
     # Wait until gnuplot is finished plotting before returning.
-    gout = gnuplot_state.fid[2]  # gnuplot STDOUT
-    gnuplot_send("set print \"-\"\nprint \"Done\"")
-    while nb_available(gout) < 1
-        sleep(.001)
-    end
+    # TODO: This is unreliable: the pipe stays empty after a few tries.
+    #       Figure out why and fix it.
+    #gout = gnuplot_state.fid[2]  # gnuplot STDOUT
+    #gnuplot_send("set print \"-\"\n")
+    #gnuplot_send("print \"Done\"\n")
+    #while nb_available(gout) < 1
+    #    sleep(.001)
+    #end
     # empty gnuplot's STDOUT pipe
-    readbytes(gout,nb_available(gout))
+    #readbytes(gout,nb_available(gout))
 
     # Read and print any gnuplot errors/warnings
     gerr = gnuplot_state.fid[3]  # gnuplot STDERR
     if nb_available(gerr) > 0
-    	msg = readbytes(gerr, nb_available(gerr))
-    	println("Warning: gnuplot produced unexpected output:")
-    	println(utf8(msg))
+        msg = readbytes(gerr, nb_available(gerr))
+        println("Warning: gnuplot produced unexpected output:")
+        println(utf8(msg))
     end
 
     # Reset gnuplot settable options.
-    gnuplot_send("reset")
+    gnuplot_send("\nreset\n")
 
     # If the environment is IJulia, redisplay the figure.
     if displayable("image/png")
