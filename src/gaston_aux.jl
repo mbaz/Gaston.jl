@@ -418,27 +418,14 @@ end
 # `in`, `out`, `err` are pipes to the process' STDIN, STDOUT, and STDERR, and
 # `r` is a process descriptor.
 function popen3(cmd::Cmd)
-    pin = Base.Pipe(C_NULL)
-    cmd_pin = Base.Pipe(C_NULL)
-
-    out = Base.Pipe(C_NULL)
-    cmd_out = Base.Pipe(C_NULL)
-
-    err = Base.Pipe(C_NULL)
-    cmd_err = Base.Pipe(C_NULL)
-
-    Base.link_pipe(pin, false, cmd_pin, true)
-    Base.link_pipe(out, true, cmd_out, false)
-    Base.link_pipe(err, true, cmd_err, false)
-
-    r = spawn(false, cmd, (pin, cmd_out, cmd_err))
-
-    Base.close_pipe_sync(cmd_out)
-    Base.close_pipe_sync(cmd_err)
-    Base.close_pipe_sync(pin)
-
-    Base.start_reading(out)
-    Base.start_reading(err)
-
-    return (cmd_pin, out, err, r)
+    pin = Base.Pipe()
+    out = Base.Pipe()
+    err = Base.Pipe()
+    r = spawn(cmd, (pin, out, err))
+    Base.close_pipe_sync(out.in)
+    Base.close_pipe_sync(err.in)
+    Base.close_pipe_sync(pin.out)
+    Base.start_reading(out.out)
+    Base.start_reading(err.out)
+    return (pin.in, out.out, err.out, r)
 end
