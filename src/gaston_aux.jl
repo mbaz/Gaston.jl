@@ -5,17 +5,17 @@
 function gnuplot_init()
     global gnuplot_state
 
-	gin, gout, gerr, proc = 0, 0, 0, 0
+    pr = (0,0,0,0) # stdin, stdout, stderr, pid
     try
-		gin, gout, gerr, proc = popen3(`gnuplot`)
+		pr = popen3(`gnuplot`)
     catch
         error("There was a problem starting up gnuplot.")
     end
     # It's possible that `popen3` runs successfully, but gnuplot exits
     # immediately. Double-check that gnuplot is running at this point.
-    if Base.process_running(proc)
+    if Base.process_running(pr[4])
 	    gnuplot_state.running = true
-	    gnuplot_state.fid = (gin, gout, gerr, proc)
+	    gnuplot_state.fid = pr
 	else
         error("There was a problem starting up gnuplot.")
 	end
