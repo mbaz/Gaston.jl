@@ -352,25 +352,31 @@ function llplot()
         # send command to gnuplot
         gnuplot_send(linestr(figs[c].curves, "splot",filename))
     end
-    # Wait until gnuplot is finished plotting before returning.
-    # TODO: This is unreliable: the pipe stays empty after a few tries.
-    #       Figure out why and fix it.
-    #gout = gnuplot_state.fid[2]  # gnuplot STDOUT
-    #gnuplot_send("set print \"-\"\n")
-    #gnuplot_send("print \"Done\"\n")
-    #while nb_available(gout) < 1
-    #    sleep(.001)
-    #end
-    # empty gnuplot's STDOUT pipe
-    #readbytes(gout,nb_available(gout))
+    # Wait until gnuplot is finished plotting before returning. To do this,
+    # we make gnuplot output "X\n" in its stdout. Gnuplot will only get to
+    # do this when the plot is finished. Otherwise, gnuplot will output
+    # something in its stderr. In either case, we know that the plot is
+    # finished and can carry on.
+    gnuplot_send("set print \"-\"\n")
+    gnuplot_send("print \"X\"\n")
 
-    # Read and print any gnuplot errors/warnings
-    gerr = gnuplot_state.fid[3]  # gnuplot STDERR
-    if nb_available(gerr) > 0
-        msg = readbytes(gerr, nb_available(gerr))
-        println("Warning: gnuplot produced unexpected output:")
-        println(utf8(msg))
-    end
+	# Loop until we read data from either gnuplot's stdout or stdin
+	while true
+		yield()  # let async tasks run
+		if !isempty(gnuplot_state.gp_stdout)
+			# We got data from stdin, meaning the plot went well.
+			gnuplot_state.gp_stdout = ""
+			gnuplot_state.gp_error = false
+			break
+		end
+		if !isempty(gnuplot_state.gp_stderr)
+			# Gnuplot met trouble while plotting.
+			gnuplot_state.gp_lasterror = gnuplot_state.gp_stderr
+			gnuplot_state.gp_stderr = ""
+			gnuplot_state.gp_error = true
+			break
+		end
+	end
 
     # Reset gnuplot settable options.
     gnuplot_send("\nreset\n")

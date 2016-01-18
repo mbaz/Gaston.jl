@@ -10,14 +10,25 @@ end
 
 # We need a global variable to keep track of gnuplot's state
 type GnuplotState
-    running::Bool               # true when gnuplot is already running
-    current::Int                # current figure
-    fid                         # pipe streams id
-    tmpdir::AbstractString              # where to store data files
-    figs::Array                 # storage for all figures
+    running::Bool                # true when gnuplot is already running
+    current::Int                 # current figure
+    fid                          # pipe streams id
+    tmpdir::AbstractString       # where to store data files
+	gp_stdout::AbstractString    # store gnuplot's stdout
+	gp_stderr::AbstractString    # store gnuplot's stderr
+	gp_lasterror::AbstractString # store gnuplot's last error output
+	gp_error::Bool               # true if last command resulted in gp error
+    figs::Array                  # storage for all figures
 
-    function GnuplotState(running::Bool,current::Int,fid,tmpdir::AbstractString,
-        figs::Array)
+    function GnuplotState(running,
+    	current,
+    	fid,
+    	tmpdir,
+		gp_stdout,
+		gp_stderr,
+		gp_lasterror,
+		gp_error,
+        figs)
         # Check to see if tmpdir exists, and create it if not
         # TODO: there has to be a simpler way to do this
         mkd = true
@@ -49,7 +60,8 @@ type GnuplotState
             end
             mkd = false
         end
-        new(running,current,fid,tmpdir,figs)
+        new(running,current,fid,tmpdir,
+        gp_stdout,gp_stderr,gp_lasterror,gp_error,figs)
     end
 end
 

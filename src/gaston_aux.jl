@@ -16,8 +16,38 @@ function gnuplot_init()
     if Base.process_running(pr[4])
 	    gnuplot_state.running = true
 	    gnuplot_state.fid = pr
+		# Start tasks to read and write gnuplot's pipes
+		yield()  # get async tasks started (code blocks without this line)
+		notify(StartPipes)
 	else
         error("There was a problem starting up gnuplot.")
+	end
+end
+
+# Async tasks to read/write to gnuplot's pipes.
+const StartPipes = Condition()  # signal to start reading pipes
+
+# This task reads all characters available from gnuplot's stdout.
+@async while true
+	wait(StartPipes)
+	pout = gnuplot_state.fid[2]
+	while true
+		if !isopen(pout)
+			break
+		end
+		gnuplot_state.gp_stdout = ascii(readavailable(pout))
+	end
+end
+
+# This task reads all characters available from gnuplot's stderr.
+@async while true
+	wait(StartPipes)
+	perr = gnuplot_state.fid[3]
+	while true
+		if !isopen(perr)
+			break
+		end
+		gnuplot_state.gp_stderr = ascii(readavailable(perr))
 	end
 end
 

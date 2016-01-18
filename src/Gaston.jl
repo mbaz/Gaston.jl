@@ -40,10 +40,10 @@ include("gaston_test.jl")
 isunix = @unix ? true : false
 if isunix
 	gnuplot_state = GnuplotState(false,0,0,string("/tmp/gaston-",
-	ENV["USER"],"-",randstring(5),"/"),Any[])
+	ENV["USER"],"-",randstring(5),"/"),"","","",false,Any[])
 else
 	GnuplotState(false,0,0,string(replace(ENV["TMP"],"\\","/"),
-	"/gaston-",ENV["USERNAME"],"-",randstring(5)),Any[])
+	"/gaston-",ENV["USERNAME"],"-",randstring(5)),"","","",false,Any[])
 end
 
 # when gnuplot_state goes out of scope, close the pipe
