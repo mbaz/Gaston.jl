@@ -233,8 +233,9 @@ function gaston_demo()
     c = CurveConf()
     c.plotstyle = "boxes"
     c.color = "blue"
-    y = [1 2 3 4 5 6 7 8 9 10]
-    (x,y) = histdata(y,10)
+    y = 1:10
+    (x,y) = hist(y,10)
+    x = midpoints(x)
     addcoords(x,y,c)
     a = AxesConf()
     a.title = "Simple histogram test"
@@ -246,7 +247,8 @@ function gaston_demo()
     c.plotstyle = "boxes"
     c.color = "blue"
     c.legend = "1000 samples"
-    (x,y) = histdata(randn(1000),25)
+    (x,y) = hist(randn(1000),25)
+    x = midpoints(x)
     delta = x[2]-x[1]
     y = y/(delta*sum(y))  # normalization
     addcoords(x,y,c)

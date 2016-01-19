@@ -276,7 +276,8 @@ function histogram(args...)
                     state = "SERROR"
                     continue
                 end
-                (x,y) = histdata(y,bins)
+                x, y = hist(y,bins)
+                x = midpoints(x)
                 if norm != 0
                     delta = step(x)
                     y = norm*y/(delta*sum(y))

@@ -165,58 +165,6 @@ function meshgrid(x,y,f)
     return Z
 end
 
-# create x,y coordinates for a histogram, from a sample vector, using a number
-# of bins
-function histdata(s,bins)
-    # When adding an element s to a bin, we use an iequality m < s <= M.
-    # In order to account for elements s==m, we need to special-case
-    # the computation for the first bin
-    ms = minimum(s)
-    Ms = maximum(s)
-    bins = max(bins, 1)
-    if Ms == ms
-        # compute a "natural" scale
-        g = (10.0^floor(log10(abs(ms)+eps()))) / 2
-        ms, Ms = ms - g, ms + g
-    end
-    delta = (Ms-ms)/bins
-    if VERSION < v"0.3-"
-        x = Range(float(ms), delta, bins+1) # like ms:delta:Ms but less error-prone
-    else
-        x = ms:delta:Ms
-    end
-    y = zeros(bins)
-
-    # this is special-cased because we want to include the minimum in the
-    # first bin
-    y[1] = sum(ms .<= s .<= x[2])
-    for i in 2:length(x)-2
-        y[i] = sum(x[i] .< s .<= x[i+1])
-    end
-    # this is special-cased because there is no guarantee that x[end] == Ms
-    # (because of how ranges work)
-    if length(y) > 1 y[end] = sum(x[end-1] .< s .<= Ms) end
-
-    if bins != 1
-        # We want the left bin to start at ms and the right bin to end at Ms
-        if VERSION < v"0.3-"
-            x = Range(ms+delta/2, delta, bins)
-        else
-            x = (ms+delta/2):delta:Ms
-        end
-    else
-        # add two empty bins on the sides to provide a scale to gnuplot
-        if VERSION < v"0.3-"
-            x = Range(ms-delta/2, delta, 3)
-        else
-            x = (ms-delta/2):delta:(ms+delta/2)
-        end
-        y = [0.0, y[1], 0.0]
-    end
-
-    return x,y
-end
-
 # dereference CurveConf, by adding a method to copy()
 function copy(conf::CurveConf)
     new = CurveConf()
