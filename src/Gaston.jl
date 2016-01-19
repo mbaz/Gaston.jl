@@ -21,9 +21,6 @@ import Base.writemime
 if !success(`gnuplot --version`)
     error("Gaston cannot be loaded: gnuplot is not available on this system.")
 end
-if readchomp(`gnuplot --version`)[1:11] != "gnuplot 4.6"
-    println("Warning: Gaston has only been tested on gnuplot version 4.6")
-end
 
 # load files
 include("gaston_types.jl")
