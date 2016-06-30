@@ -81,6 +81,12 @@ function run_tests_success_expected()
 			printfigure("svg") == 1
 		end
 		@test printfigure("gif") == 1
+		@test plot(1:10,"xrange","[2:3]") == 1
+		@test plot(1:10,"xrange","[-1.1:3.4]") == 1
+		@test plot(1:10,"xrange","[:3.4]") == 1
+		@test plot(1:10,"xrange","[3.4:]") == 1
+		@test plot(1:10,"xrange","[3.4:*]") == 1
+		@test plot(1:10,"xrange","[*:3.4]") == 1
 		closeall()
 	end
 end
@@ -116,6 +122,8 @@ function run_tests_failure_expected()
 			@test op(0:10,"zlabel","z")
 			@test op(0:10,"axis","invalid")
 		end
+		@test plot(1:10,"xrange","2:3")
+		@test plot(1:10,"xrange","ab")
 	end
 end
 
