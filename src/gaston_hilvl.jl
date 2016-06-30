@@ -212,6 +212,8 @@ function plot(args...)
                 ac.xlabel = ai1
             elseif ai == "ylabel"
                 ac.ylabel = ai1
+			elseif ai == "fillstyle"
+				ac.fill = ai1
             elseif ai == "box"
                 ac.box = ai1
             elseif ai == "axis"
@@ -309,6 +311,8 @@ function histogram(args...)
                 ac.xlabel = ai1
             elseif ai == "ylabel"
                 ac.ylabel = ai1
+			elseif ai == "fillstyle"
+				ac.fill = ai1
             elseif ai == "box"
                 ac.box = ai1
             elseif ai == "xrange"

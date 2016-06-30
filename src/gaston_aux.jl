@@ -130,7 +130,7 @@ function linestr_single(conf::CurveConf)
     cp = conf.plotstyle
     if cp != "lines" && cp != "impulses" && cp != "pm3d" && cp != "image" &&
         cp != "rgbimage" && cp != "boxes" && cp != "dots" && cp != "steps" &&
-        cp != "fsteps" && cp != "financebars"
+        cp != "fsteps" && cp != "fillsteps" && cp != "financebars"
         if conf.marker != ""
             s = string(s, "pt ", string(pointtype(conf.marker)), " ")
         end
@@ -184,6 +184,7 @@ function copy(conf::AxesConf)
     new.xlabel = conf.xlabel
     new.ylabel = conf.ylabel
     new.zlabel = conf.zlabel
+    new.fill = conf.fill
     new.box = conf.box
     new.axis = conf.axis
     new.xrange = conf.xrange
@@ -239,6 +240,10 @@ end
 
 # send gnuplot the current figure's configuration
 function gnuplot_send_fig_config(config)
+	# fill style
+	if config.fill != ""
+		gnuplot_send(string("set style fill ",config.fill))
+	end
     # legend box
     if config.box != ""
         gnuplot_send(string("set key ",config.box))
@@ -320,7 +325,8 @@ end
 # Valid plotstyles supported by gnuplot's plot
 function validate_2d_plotstyle(s::AbstractString)
     valid = ["lines", "linespoints", "points", "impulses", "boxes",
-        "errorlines", "errorbars", "dots", "steps", "fsteps", "financebars"]
+        "errorlines", "errorbars", "dots", "steps", "fsteps", "fillsteps",
+        "financebars"]
     if in(s, valid)
         return true
     end
@@ -354,6 +360,15 @@ function validate_marker(s::AbstractString)
         return true
     end
     return false
+end
+
+# Validate fill style
+function validate_fillstyle(s::AbstractString)
+	valid = ["","empty","solid","pattern"]
+	if in(s,valid)
+		return true
+	end
+	return false
 end
 
 function validate_range(s::AbstractString)

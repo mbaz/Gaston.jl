@@ -92,6 +92,16 @@ function set_default_zlabel(s::AbstractString)
     gaston_config.zlabel = s
 end
 
+function set_default_fill(s::AbstractString)
+	global gaston_config
+	
+	if validate_fillstyle(s)
+		gaston_config.fill = s
+	else
+		error(string("Fill style ", s, " not supported."))
+	end
+end
+
 function set_default_box(s::AbstractString)
     global gaston_config
 

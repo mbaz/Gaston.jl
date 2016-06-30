@@ -79,6 +79,7 @@ type GastonConfig
     xlabel::AbstractString
     ylabel::AbstractString
     zlabel::AbstractString
+    fill::AbstractString
     box::AbstractString
     axis::AbstractString
     xrange::AbstractString
@@ -105,7 +106,8 @@ function GastonConfig()
     	# CurveConf
 	    "","lines","","",1,0.5,
     	# AxesConf
-	    "Untitled","x","y","z","inside vertical right top","","[*:*]","[*:*]","[*:*]",
+	    "Untitled","x","y","z","empty","inside vertical right top","",
+	    "[*:*]","[*:*]","[*:*]",
     	# terminal
 	    "png",
     	# output file name
@@ -118,7 +120,8 @@ function GastonConfig()
     	# CurveConf
 	    "","lines","","",1,0.5,
     	# AxesConf
-	    "Untitled","x","y","z","inside vertical right top","","[*:*]","[*:*]","[*:*]",
+	    "Untitled","x","y","z","empty","inside vertical right top","",
+	    "[*:*]","[*:*]","[*:*]",
     	# terminal
 	    "wxt",
     	# output file name
@@ -155,6 +158,7 @@ type AxesConf
     xlabel::AbstractString     # xlabel
     ylabel::AbstractString     # ylabel
     zlabel::AbstractString     # zlabel for 3-d plots
+    fill::AbstractString       # fill style
     box::AbstractString        # legend box (used with 'set key')
     axis::AbstractString       # normal, semilog{x,y}, loglog
     xrange::AbstractString     # xrange
@@ -166,6 +170,7 @@ AxesConf() = AxesConf(
     gaston_config.xlabel,
     gaston_config.ylabel,
     gaston_config.zlabel,
+    gaston_config.fill,
     gaston_config.box,
     gaston_config.axis,
     gaston_config.xrange,
