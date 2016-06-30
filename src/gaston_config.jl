@@ -102,6 +102,16 @@ function set_default_fill(s::AbstractString)
 	end
 end
 
+function set_default_grid(s::AbstractString)
+	global gaston_config
+
+	if validate_grid(s)
+		gaston_config.grid = s
+	else
+		error(string("Grid style ", s, " not supported."))
+	end
+end
+
 function set_default_box(s::AbstractString)
     global gaston_config
 

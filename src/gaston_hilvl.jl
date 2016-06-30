@@ -214,6 +214,8 @@ function plot(args...)
                 ac.ylabel = ai1
 			elseif ai == "fillstyle"
 				ac.fill = ai1
+			elseif ai == "grid"
+				ac.grid = ai1
             elseif ai == "box"
                 ac.box = ai1
             elseif ai == "axis"

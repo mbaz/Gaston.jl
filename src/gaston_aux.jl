@@ -185,6 +185,7 @@ function copy(conf::AxesConf)
     new.ylabel = conf.ylabel
     new.zlabel = conf.zlabel
     new.fill = conf.fill
+    new.grid = conf.grid
     new.box = conf.box
     new.axis = conf.axis
     new.xrange = conf.xrange
@@ -243,6 +244,14 @@ function gnuplot_send_fig_config(config)
 	# fill style
 	if config.fill != ""
 		gnuplot_send(string("set style fill ",config.fill))
+	end
+	# grid
+	if config.grid != ""
+		if config.grid == "on"
+			gnuplot_send(string("set grid"))
+		else
+			gnuplot_send(string("unset grid"))
+		end
 	end
     # legend box
     if config.box != ""
@@ -365,6 +374,15 @@ end
 # Validate fill style
 function validate_fillstyle(s::AbstractString)
 	valid = ["","empty","solid","pattern"]
+	if in(s,valid)
+		return true
+	end
+	return false
+end
+
+# Validate grid styles
+function validate_grid(s::AbstractString)
+	valid = ["", "on", "off"]
 	if in(s,valid)
 		return true
 	end
