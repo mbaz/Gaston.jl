@@ -5,7 +5,7 @@
 module Gaston
 
 export closefigure, closeall, clearfigure, figure, plot, histogram, imagesc,
-surf, printfigure, gaston_demo, gaston_tests, set_terminal, set_filename,
+surf, printfigure, gaston_demo, set_terminal, set_filename,
 set_default_legend, set_default_plotstyle, set_default_color,
 set_default_marker, set_default_linewidth, set_default_pointsize,
 set_default_title, set_default_xlabel, set_default_ylabel, set_default_zlabel,
@@ -30,7 +30,6 @@ include("gaston_midlvl.jl")
 include("gaston_hilvl.jl")
 include("gaston_config.jl")
 include("gaston_demo.jl")
-include("gaston_test.jl")
 
 # set up global variables
 # global variable that stores gnuplot's state

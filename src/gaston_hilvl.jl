@@ -58,12 +58,12 @@ end
 function closeall()
     global gnuplot_state
 
-    try
-        for i in gnuplot_state.figs
-            closefigure()
-        end
-    catch
-    end
+	closed = 0
+	for i in gnuplot_state.figs
+		closefigure()
+		closed = closed + 1
+	end
+	return closed
 end
 
 # remove a figure's data without closing it
@@ -139,7 +139,7 @@ function plot(args...)
     else
         h = gnuplot_state.current
     end
-    figure(h,false) # create/select figure
+    h = figure(h,false) # create/select figure
     clearfigure(h)  # remove all figure configuration
     # parse arguments
     state = "SINI"
@@ -247,7 +247,7 @@ function histogram(args...)
     else
         h = gnuplot_state.current
     end
-    figure(h,false) # create/select figure
+    h = figure(h,false) # create/select figure
     clearfigure(h)  # remove all figure configuration
     # parse arguments
     state = "SINI"
@@ -343,7 +343,7 @@ function imagesc(args...)
     else
         h = gnuplot_state.current
     end
-    figure(h,false) # create/select figure
+    h = figure(h,false) # create/select figure
     clearfigure(h)  # remove all figure configuration
     # parse arguments
     state = "SINI"
@@ -471,7 +471,7 @@ function surf(args...)
     else
         h = gnuplot_state.current
     end
-    figure(h,false) # create/select figure
+    h = figure(h,false) # create/select figure
     clearfigure(h)  # remove all figure configuration
     # parse arguments
     state = "SINI"
