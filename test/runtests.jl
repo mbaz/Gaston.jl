@@ -13,10 +13,10 @@
 using Gaston
 using Base.Test
 
-test_success_expected(r::Test.Success) = println("Success expected; test passed.")
-test_success_expected(r) = println("Success expected; test failed: $(r.expr).")
-test_failure_expected(r::Test.Success) = println("Error expected; test failed: $(r.expr)")
-test_failure_expected(r) = println("Error expected; test passed.")
+test_success_expected(r::Test.Success) = println("Test passed.")
+test_success_expected(r) = error("Success expected; test failed: $(r.expr).")
+test_failure_expected(r::Test.Success) = error("Error expected; test failed: $(r.expr)")
+test_failure_expected(r) = println("Test passed.")
 
 function run_tests_success_expected()
 	set_filename(tempname())
