@@ -33,14 +33,7 @@ include("gaston_demo.jl")
 
 # set up global variables
 # global variable that stores gnuplot's state
-isunix = @unix ? true : false
-if isunix
-	gnuplot_state = GnuplotState(false,0,0,string("/tmp/gaston-",
-	ENV["USER"],"-",randstring(5),"/"),"","","",false,Any[])
-else
-	GnuplotState(false,0,0,string(replace(ENV["TMP"],"\\","/"),
-	"/gaston-",ENV["USERNAME"],"-",randstring(5)),"","","",false,Any[])
-end
+gnuplot_state = GnuplotState(false,0,0,mktempdir(),"","","",false,Any[])
 
 # when gnuplot_state goes out of scope, close the pipe
 finalizer(gnuplot_state,gnuplot_exit)

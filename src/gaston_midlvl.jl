@@ -246,7 +246,7 @@ function llplot()
     end
 
     # datafile filename
-    filename = "$(gnuplot_state.tmpdir)figure$(gnuplot_state.current).dat"
+    (filename,f) = mktemp(gnuplot_state.tmpdir)
 
     # Send appropriate coordinates and data to gnuplot, depending on
     # whether we are doing 2-d, 3-d or image plots.
@@ -256,7 +256,6 @@ function llplot()
         figs[c].curves[1].conf.plotstyle == "image" ||
         figs[c].curves[1].conf.plotstyle == "rgbimage"
         # create data file
-        f = open(filename,"w")
         for i in figs[c].curves
             ps = i.conf.plotstyle
             if ps == "errorbars" || ps == "errorlines"
@@ -318,7 +317,6 @@ function llplot()
             end
             write(f,"\n\n")
         end
-        flush(f)
         close(f)
         # send figure configuration to gnuplot
         gnuplot_send_fig_config(config)
@@ -330,7 +328,6 @@ function llplot()
             figs[c].curves[1].conf.plotstyle != "image" &&
             figs[c].curves[1].conf.plotstyle != "rgbimage"
         # create data file
-        f = open(filename,"w")
         for i in figs[c].curves
 			# data is written to tmparr, which is then written to disk
 			tmparr = zeros(1, 3)
