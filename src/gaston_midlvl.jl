@@ -283,14 +283,14 @@ function llplot()
             	tmparr = zeros(length(i.x)*length(i.y),3)
                 tmparr_row_index = 1  # index into tmparr row
                 # output matrix
-                for col = 1:length(i.x)
-                    y = length(i.y)
-                    for row = 1:length(i.y)
+                for row = 1:length(i.y)
+                    x = length(i.x)
+                    for col = 1:length(i.x)
                     	tmparr[tmparr_row_index,1] = i.x[col]
-                    	tmparr[tmparr_row_index,2] = i.y[row]
-                    	tmparr[tmparr_row_index,3] = i.Z[y,col]
+                    	tmparr[tmparr_row_index,2] = i.x[row]
+                    	tmparr[tmparr_row_index,3] = i.Z[row,col]
                     	tmparr_row_index = tmparr_row_index+1
-                        y = y-1
+                        x = x-1
                     end
                 end
 				writedlm(f,tmparr,' ')
