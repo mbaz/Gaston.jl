@@ -418,10 +418,10 @@ function validate_range(s::AbstractString)
     return false
 end
 
-function writemime(io::IO, ::MIME"image/png", x::Figure)
+function Base.show(io::IO, ::MIME"image/png", x::Figure)
 	# The plot is written to /tmp/gaston-ijula.png. Read the file and
 	# write it to io.
-	data = open(readbytes, "$(gnuplot_state.tmpdir)gaston-ijulia.png","r")
+	data = open(read, "$(gnuplot_state.tmpdir)gaston-ijulia.png","r")
 	write(io,data)
 end
 
