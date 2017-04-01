@@ -3,44 +3,29 @@ Gaston: Julia plotting using gnuplot
 
 Gaston provides an interface to plot using gnuplot.
 
+Why use Gaston?
+--------------
+
+The julia plotting ecosystem has improved a lot in the last couple of years. With plenty of powerful packages to choose from, why use Gaston? These are some Gaston features that may be attractive to you:
+
+1. Easy and fast plotting to the screen or inside an IJulia notebook.
+1. Multiple plots on the screen at the same time.
+1. Syntax familiar to Matlab and Octave users.
+1. No dependencies except GnuPlot itself.
+1. Focus on simplicity and speed. I use Gaston when I need to plot something quickly. If I need publication-quality plots, I use PGFPlots.
+1. Support for 3D plots, with mouse zoom, rotation, etc.
+1. Support for many of the types of plots that GnuPlot supports: histograms, images, financial bars, etc.
+1. Easy saving of plots to a file, supporting many file formats.
+
+Having said that, Gaston also shares GnuPlot's limitations. The main one is that GnuPlot is not a library; it is designed to be used interactively. Gaston simulates a user typing interactive commands in a GnuPlot session; we try to be as robust as possible, but this set up is always fragile.
+
 Installation
 ------------
 
-Gaston requires gnuplot to be installed in your system. It has been tested
-with version 4.6
+Gaston requires GnuPlot to be installed in your system. It has been tested
+with versions 4.6 and above. Gaston also requires Julia v0.5.
 
-To install using Julia's packaging system, follow these instructions:
-
-1. To install Gaston itself, run
-
-    julia> Pkg.add("Gaston")
-
-2. Then, load the module:
-
-    julia> using Gaston
-
-To install bypassing Julia's packaging system, follow these instructions:
-
-1. Download the latest source, located at
-[https://bitbucket.org/mbaz/gaston/downloads/gaston.zip](https://bitbucket.org/mbaz/gaston/downloads/gaston.zip). For example:
-
-    $ cd ~/downloads
-
-    $ wget https://bitbucket.org/mbaz/gaston/downloads/gaston.zip
-
-2. Unzip the source files somewhere convenient. For example,
-
-    $ cd ~/source
-
-    $ unzip ~/downloads/gaston.zip
-
-3. Add gaston to Julia's LOAD_PATH:
-
-    julia> push!(LOAD_PATH,expanduser("~/source/gaston/src"))
-
-4. Now you can use gaston by issuing
-
-    julia> using Gaston
+To install using Julia's packaging system, run `Pkg.add("Gaston")`.
 
 Documentation
 -------------
@@ -88,6 +73,6 @@ Tests
 Gaston includes many tests, wich you can run to make sure your installation is
 working properly. To run the tests, do
 
-    julia> gaston_tests()
+    julia> Pkg.test("Gaston")
 
 All tests should pass.
