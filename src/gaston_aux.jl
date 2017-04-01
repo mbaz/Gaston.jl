@@ -35,7 +35,7 @@ const StartPipes = Condition()  # signal to start reading pipes
 		if !isopen(pout)
 			break
 		end
-		gnuplot_state.gp_stdout = ascii(String(readavailable(pout)))
+		gnuplot_state.gp_stdout = string(readavailable(pout))
 	end
 end
 
