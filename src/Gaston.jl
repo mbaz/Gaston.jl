@@ -41,4 +41,6 @@ finalizer(gnuplot_state,gnuplot_exit)
 # global variable that stores Gaston's configuration
 gaston_config = GastonConfig()
 
+gnuplot_init()
+
 end
