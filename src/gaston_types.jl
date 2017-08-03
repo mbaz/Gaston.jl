@@ -4,10 +4,6 @@
 
 # types and constructors
 
-if VERSION < v"0.3-"
-    typealias UnitRange{T} Range1{T}
-end
-
 # We need a global variable to keep track of gnuplot's state
 type GnuplotState
     running::Bool                # true when gnuplot is already running
