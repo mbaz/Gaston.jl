@@ -27,7 +27,7 @@ using Base.Test
 	@test plot(4,1:10) == 4
 	@test closeall() == 3
 	@test begin
-		plot(sin(-3:0.01:3),
+		plot(sin.(-3:0.01:3),
 		"legend", "sine",
 		"plotstyle", "lines",
 		"color","blue",

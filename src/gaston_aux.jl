@@ -298,6 +298,44 @@ function gnuplot_send_fig_config(config)
     end
 end
 
+# create x,y coordinates for a histogram, from a sample vector, using a number
+# of bins
+function hist(s,bins)
+    # When adding an element s to a bin, we use an iequality m < s <= M.
+    # In order to account for elements s==m, we need to special-case
+    # the computation for the first bin
+    ms = minimum(s)
+    Ms = maximum(s)
+    bins = max(bins, 1)
+    if Ms == ms
+        # compute a "natural" scale
+        g = (10.0^floor(log10(abs(ms)+eps()))) / 2
+        ms, Ms = ms - g, ms + g
+    end
+    delta = (Ms-ms)/bins
+    x = ms:delta:Ms
+    y = zeros(bins)
+    # this is special-cased because we want to include the minimum in the
+    # first bin
+    y[1] = sum(ms .<= s .<= x[2])
+    for i in 2:length(x)-2
+        y[i] = sum(x[i] .< s .<= x[i+1])
+    end
+    # this is special-cased because there is no guarantee that x[end] == Ms
+    # (because of how ranges work)
+    if length(y) > 1 y[end] = sum(x[end-1] .< s .<= Ms) end
+
+    if bins != 1
+        # We want the left bin to start at ms and the right bin to end at Ms
+        x = (ms+delta/2):delta:Ms
+    else
+        # add two empty bins on the sides to provide a scale to gnuplot
+        x = (ms-delta/2):delta:(ms+delta/2)
+        y = [0.0, y[1], 0.0]
+    end
+    return x,y
+end
+
 # Validation functions.
 # These functions validate that configuration parameters are valid and
 # supported. They return true iff the argument validates.
