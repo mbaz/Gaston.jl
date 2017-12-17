@@ -17,7 +17,7 @@ mutable struct GnuplotState
 end
 
 # Structure to keep Gaston's configuration
-type GastonConfig
+mutable struct GastonConfig
     # default CurveConf values
     legend::AbstractString
     plotstyle::AbstractString
@@ -52,7 +52,6 @@ end
 function GastonConfig()
 	# Determine if current display supports PNG, and set defaults
 	# accordingly. This allows IJulia support.
-
 	if displayable("image/png")
 		GastonConfig(
     	# CurveConf

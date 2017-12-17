@@ -76,7 +76,7 @@ using Base.Test
 	end == 1
 	@test printfigure("pdf") == 1
 	@test begin
-		set_print_size("640,480")
+		set(print_size="640,480")
 		printfigure("svg")
 	end == 1
 	@test printfigure("gif") == 1

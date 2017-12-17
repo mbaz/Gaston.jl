@@ -653,9 +653,9 @@ function printfigure(args...)
     # save terminal
     saveterm = gaston_config.terminal
     # set temporary terminal and replot
-    set_terminal(term)
+    set(terminal=term)
     figure(h)
-    set_terminal(saveterm)
+    set(terminal=saveterm)
     # gnuplot is weird: this command is needed to close the output file
     gnuplot_send("set output")
 
