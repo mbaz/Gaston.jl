@@ -421,7 +421,7 @@ end
 function Base.show(io::IO, ::MIME"image/png", x::Figure)
 	# The plot is written to /tmp/gaston-ijula.png. Read the file and
 	# write it to io.
-	data = open(read, "$(gnuplot_state.tmpdir)gaston-ijulia.png","r")
+	data = open(read, "$(tempdir())/gaston-ijulia.png","r")
 	write(io,data)
 end
 

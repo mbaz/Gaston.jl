@@ -5,60 +5,15 @@
 # types and constructors
 
 # We need a global variable to keep track of gnuplot's state
-type GnuplotState
+mutable struct GnuplotState
     running::Bool                # true when gnuplot is already running
     current::Int                 # current figure
     fid                          # pipe streams id
-    tmpdir::AbstractString       # where to store data files
 	gp_stdout::AbstractString    # store gnuplot's stdout
 	gp_stderr::AbstractString    # store gnuplot's stderr
 	gp_lasterror::AbstractString # store gnuplot's last error output
 	gp_error::Bool               # true if last command resulted in gp error
     figs::Array                  # storage for all figures
-
-    function GnuplotState(running,
-    	current,
-    	fid,
-    	tmpdir,
-		gp_stdout,
-		gp_stderr,
-		gp_lasterror,
-		gp_error,
-        figs)
-        # Check to see if tmpdir exists, and create it if not
-        # TODO: there has to be a simpler way to do this
-        mkd = true
-        try
-            readdir(tmpdir)
-            mkd = false
-        catch
-        end
-        if mkd
-            # Linux
-            try
-                mkdir(tmpdir)
-                mkd = false
-            catch
-            end
-        end
-        if mkd
-            # Windows
-            # TODO: there has to be a simpler way to do this
-            ttdir = ""
-            for x in split(tmpdir,'/')
-                if x != ""
-                    try
-                        mkdir(string(ttdir,x))
-                    catch
-                    end
-                    ttdir = string(ttdir, x, '\\')
-                end
-            end
-            mkd = false
-        end
-        new(running,current,fid,tmpdir,
-        gp_stdout,gp_stderr,gp_lasterror,gp_error,figs)
-    end
 end
 
 # Structure to keep Gaston's configuration
@@ -108,7 +63,7 @@ function GastonConfig()
     	# terminal
 	    "png",
     	# output file name
-	    "$(gnuplot_state.tmpdir)gaston-ijulia.png",
+		"$(tempdir())/gaston-ijulia.png",
 	    # print parameters
 	    "color", "Sans", 10, 1, 1, "640,480"
     	)

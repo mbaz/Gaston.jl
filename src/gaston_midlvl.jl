@@ -246,7 +246,7 @@ function llplot()
     end
 
     # datafile filename
-    (filename,f) = mktemp(gnuplot_state.tmpdir)
+    (filename,f) = mktemp()
 
     # Send appropriate coordinates and data to gnuplot, depending on
     # whether we are doing 2-d, 3-d or image plots.
