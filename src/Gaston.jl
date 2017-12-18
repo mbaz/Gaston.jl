@@ -34,6 +34,24 @@ finalizer(gnuplot_state,gnuplot_exit)
 # global variable that stores Gaston's configuration
 gaston_config = GastonConfig()
 
+# list of supported features
+const supported_screenterms = ["qt", "wxt", "x11", "aqua"]
+const supported_fileterms = ["svg", "gif", "png", "pdf", "eps"]
+const supported_terminals = vcat(supported_screenterms,supported_fileterms)
+const supported_2Dplotstyles = ["lines", "linespoints", "points",
+		"impulses", "boxes", "errorlines", "errorbars", "dots", "steps",
+		"fsteps", "fillsteps", "financebars"]
+const supported_3Dplotstyles = ["lines", "linespoints", "points",
+		"impulses", "pm3d", "image", "rgbimage", "dots"]
+const supported_plotstyles = vcat(supported_2Dplotstyles, supported_3Dplotstyles)
+const supported_axis = ["", "normal", "semilogx", "semilogy", "loglog"]
+const supported_markers = ["", "+", "x", "*", "esquare", "fsquare",
+		"ecircle", "fcircle", "etrianup", "ftrianup", "etriandn",
+		"ftriandn", "edmd", "fdmd"]
+const supported_fillstyles = ["","empty","solid","pattern"]
+const supported_grids = ["", "on", "off"]
+
+# get started
 gnuplot_init()
 
 end

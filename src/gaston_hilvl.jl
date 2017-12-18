@@ -27,7 +27,7 @@ function closefigure(x...)
     end
     if in(h, handles)
         # only care about closing windows if term type is screen
-        if is_term_screen(term)
+        if term ∈ supported_screenterms
             if gnuplot_state.running
                 gnuplot_send("set term $term $h close")
             end
@@ -640,7 +640,7 @@ function printfigure(args...)
             error("Wrong arguments.")
         end
         term = args[2]
-        if !is_term_file(term)
+        if term ∉ supported_fileterms
             error("Wrong arguments.")
         end
     end

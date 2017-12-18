@@ -201,7 +201,7 @@ function termstring(term::AbstractString)
 
     gc = gaston_config
 
-    if is_term_screen(term)
+    if term ∈ supported_screenterms
         ts = "set term $term $(gnuplot_state.current)"
     else
         if term == "pdf"

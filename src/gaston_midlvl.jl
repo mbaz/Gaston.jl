@@ -70,14 +70,12 @@ function addcoords(x::Coord,y::Coord,Z::Array,conf::CurveConf)
     # TODO: figure out how to check valid color names -- gnuplot supports
     #  112 different color names.
     # check valid values of marker
-    @assert(validate_marker(conf.marker), "Invalid mark name specified")
+    conf.marker ∈ supported_markers || error("Invalid mark name specified")
     if nex && !neZ ## 2-d plot
         # check valid values of plotstyle
-        @assert(validate_2d_plotstyle(conf.plotstyle),
-            "Invalid plotstyle specified")
+        conf.plotstyle ∈ supported_2Dplotstyles || error("Invalid plotstyle specified")
     elseif nex && neZ ## 3-d plot or image
-        @assert(validate_3d_plotstyle(conf.plotstyle),
-            "Invalid plotstyle specified")
+        conf.plotstyle ∈ supported_3Dplotstyles || error("Invalid plotstyle specified")
     end
 
     conf = copy(conf)       # we need to dereference conf
@@ -210,7 +208,7 @@ function addconf(conf::AxesConf)
     # Perform argument validation
     # TODO: find a way to validate the box argument
     # validate axis type
-    @assert(validate_axis(conf.axis),"Invalid axis type specified")
+	conf.axis ∈ supported_axis || error("Invalid axis type specified")
     # validate ranges
     @assert(validate_range(conf.xrange),"Invalid xrange specified")
     @assert(validate_range(conf.yrange),"Invalid yrange specified")
