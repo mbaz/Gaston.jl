@@ -7,7 +7,7 @@
 # We need a global variable to keep track of gnuplot's state
 mutable struct GnuplotState
     running::Bool                # true when gnuplot is already running
-    current::Int                 # current figure
+    current                      # current figure
     fid                          # pipe streams id
 	gp_stdout::AbstractString    # store gnuplot's stdout
 	gp_stderr::AbstractString    # store gnuplot's stderr
@@ -16,19 +16,45 @@ mutable struct GnuplotState
     figs::Array                  # storage for all figures
 end
 
-# Structs to configure a plot
-# Two types of configuration are needed: one to configure a single curve, and
-# another to configure a set of curves (the 'axes').
+# Structs to define a figure
+
+## Coordinates
+Coord = Union{UnitRange,Range,Array}
+
+# storage for financial coordinates
+struct FinancialCoords
+	valid::Bool
+    open::Coord
+    low::Coord
+    high::Coord
+    close::Coord
+end
+FinancialCoords() = FinancialCoords(false,[],[],[],[])
+function FinancialCoords(o::Vector,l::Vector,h::Vector,c::Vector)
+	return FinancialCoords(true,o,l,h,c)
+end
+
+# storage for error coordinates
+struct ErrorCoords
+	valid::Bool
+	ylow::Coord
+	yhigh::Coord
+end
+ErrorCoords() = ErrorCoords(false,[],[])
+ErrorCoords(l::Vector,h::Vector) = ErrorCoords(true,l,h)
+
+## Curves
+# Curve configuration
 type CurveConf
     legend::AbstractString          # legend text
     plotstyle::AbstractString
     color::AbstractString           # one of gnuplot's builtin colors --
-                            # run 'show colornames' inside gnuplot
+                                    # run 'show colornames' inside gnuplot
     marker::AbstractString          # point type
     linewidth::Real
     pointsize::Real
-
 end
+# Constructor with default values (stored in gaston_config)
 CurveConf() = CurveConf(
     gaston_config.legend,
     gaston_config.plotstyle,
@@ -37,7 +63,28 @@ CurveConf() = CurveConf(
     gaston_config.linewidth,
     gaston_config.pointsize)
 
-type AxesConf
+# A curve is a set of coordinates and a configuration
+mutable struct Curve
+	x::Coord
+	y::Coord
+	Z::Coord
+	F::FinancialCoords
+	E::ErrorCoords
+	conf::CurveConf
+end
+# Construct an empty curve
+Curve() = Curve([],[],[],FinancialCoords(),ErrorCoords(),CurveConf())
+# Other convenience constructors
+Curve(y) = Curve(1:length(y),y,[],FinancialCoords(),ErrorCoords(),CurveConf())
+Curve(y,c::CurveConf) = Curve(1:length(y),y,[],FinancialCoords(),ErrorCoords(),c)
+Curve(x,y) = Curve(x,y,[],FinancialCoords(),ErrorCoords(),CurveConf())
+Curve(x,y,c::CurveConf) = Curve(x,y,[],FinancialCoords(),ErrorCoords(),c)
+Curve(x,y,Z) = Curve(x,y,Z,FinancialCoords(),ErrorCoords(),CurveConf())
+Curve(x,y,Z,c::CurveConf) = Curve(x,y,Z,FinancialCoords(),ErrorCoords(),c)
+
+## Axes
+# Storage for axes configuration
+mutable struct AxesConf
     title::AbstractString      # plot title
     xlabel::AbstractString     # xlabel
     ylabel::AbstractString     # ylabel
@@ -50,6 +97,7 @@ type AxesConf
     yrange::AbstractString     # yrange
     zrange::AbstractString     # zrange
 end
+# Constructor with default values (stored in gaston_config)
 AxesConf() = AxesConf(
     gaston_config.title,
     gaston_config.xlabel,
@@ -63,35 +111,13 @@ AxesConf() = AxesConf(
     gaston_config.yrange,
     gaston_config.zrange)
 
-type Financial
-    open::Vector
-    low::Vector
-    high::Vector
-    close::Vector
-end
-Financial() = Financial(Any[],Any[],Any[],Any[])
-
-# coordinates and configuration for a single curve
-type CurveData
-    x::Vector          # abscissa
-    y::Vector          # ordinate
-    Z::Array           # 3-d plots and images
-    ylow::Vector       # error data
-    yhigh::Vector      # error data
-    finance::Financial # financial data
-    conf::CurveConf    # curve configuration
-end
-CurveData() = CurveData(Any[],Any[],Any[],Any[],Any[],Financial(),CurveConf())
-CurveData(x,y,Z,conf::CurveConf) = CurveData(x,y,Z,Any[],Any[],Financial(),conf)
-
-# curves and configuration for a single figure
-type Figure
-    handle::Int                  # each figure has a unique handle
-    curves::Vector{CurveData}    # a vector of curves (x,y,conf)
+# At the top level, a figure is a handle, an axes configuration, and a
+# set of curves.
+mutable struct Figure
+    handle                       # each figure has a unique handle
     conf::AxesConf               # figure configuration
+    curves::Vector{Curve}        # a vector of curves
     isempty::Bool                # a flag to indicate if figure is empty
 end
-Figure(handle) = Figure(handle,CurveData[CurveData()],AxesConf(),true)
-
-# coordinate type
-Coord = Union{UnitRange,Range,Matrix,Vector}
+# Construct an empty figure with given handle
+Figure(handle) = Figure(handle,AxesConf(),Curve[Curve()],true)

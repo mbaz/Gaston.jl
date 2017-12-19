@@ -3,13 +3,11 @@
 ## This file is distributed under the 2-clause BSD License.
 
 # append x,y,z coordinates and configuration to current figure
-function addcoords(x::Coord,y::Coord,Z::Array,conf::CurveConf)
+function addcoords(x::Coord,y::Coord,Z::Coord,conf::CurveConf)
     global gnuplot_state
 
     # check that at least one figure has been setup
-    if gnuplot_state.current == 0
-        figure(1)
-    end
+    gnuplot_state.current == nothing && figure(1)
 
     # check coordinates: dimensions, sizes and types
     nex = !isempty(x); ney = !isempty(y); neZ = !isempty(Z)
@@ -83,10 +81,10 @@ function addcoords(x::Coord,y::Coord,Z::Array,conf::CurveConf)
     c = findfigure(gnuplot_state.current)
     fig = gnuplot_state.figs[c]
     if fig.isempty == true
-        fig.curves[1] = CurveData(x,y,Z,conf)
+        fig.curves[1] = Curve(x,y,Z,conf)
         fig.isempty = false
     else
-        push!(fig.curves, CurveData(x,y,Z,conf))
+        push!(fig.curves, Curve(x,y,Z,conf))
     end
     gnuplot_state.figs[c] = fig
 end
@@ -116,9 +114,7 @@ addcoords(Y::Matrix) = addcoords(Y,CurveConf())
 function adderror(yl::Coord,yh::Coord)
     global gnuplot_state
     # check that at least one figure has been setup
-    if gnuplot_state.current == 0
-        figure(1)
-    end
+    gnuplot_state.current == nothing && figure(1)
     c = findfigure(gnuplot_state.current)
 
     # check arguments and convert to vectors
@@ -160,20 +156,16 @@ function adderror(yl::Coord,yh::Coord)
     end
 
     # set fields in current curve
-    gnuplot_state.figs[c].curves[end].ylow = yl
-    gnuplot_state.figs[c].curves[end].yhigh = yh
-
+    gnuplot_state.figs[c].curves[end].E = ErrorCoords(yl,yh)
 end
-adderror(ydelta) = adderror(ydelta,Any[])
+adderror(ydelta) = adderror(ydelta,[])
 
 # add financial data to current set of coordinates
 # input order is: open, low, high, close
 function addfinancial(args...)
 	global gnuplot_state
 	    # check that at least one figure has been setup
-    if gnuplot_state.current == 0
-        figure(1)
-    end
+    gnuplot_state.current == nothing && figure(1)
     c = findfigure(gnuplot_state.current)
 
     # check arguments and convert to vectors
@@ -189,21 +181,15 @@ function addfinancial(args...)
 	end
 
     # set fields in current curve
-    gnuplot_state.figs[c].curves[end].finance.open = args[1]
-    gnuplot_state.figs[c].curves[end].finance.low = args[2]
-    gnuplot_state.figs[c].curves[end].finance.high = args[3]
-    gnuplot_state.figs[c].curves[end].finance.close = args[4]
-
+    tmp = FinancialCoords(args[1], args[2], args[3], args[4])
+    gnuplot_state.figs[c].curves[end].F = tmp
 end
-
 
 # add axes configuration to current figure
 function addconf(conf::AxesConf)
     global gnuplot_state
     # check that at least one figure has been setup
-    if gnuplot_state.current == 0
-        figure(1)
-    end
+    gnuplot_state.current == nothing && figure(1)
 
     # Perform argument validation
     # TODO: find a way to validate the box argument
@@ -225,7 +211,7 @@ function llplot()
     global gnuplot_state
     global gaston_config
 
-    # select current plot
+    # select current figure
     c = findfigure(gnuplot_state.current)
     if c == 0
         println("No current figure")
@@ -234,14 +220,14 @@ function llplot()
     figs = gnuplot_state.figs
     config = figs[c].conf
 
-    # Build terminal setup string and send it to gnuplot
-    ts = termstring(gaston_config.terminal)
-    gnuplot_send(ts)
-
     # if figure has no data, stop here
     if isempty(figs[c].curves[1].x)
         return
     end
+
+    # Build terminal setup string and send it to gnuplot
+    ts = termstring(gaston_config.terminal)
+    gnuplot_send(ts)
 
     # datafile filename
     (filename,f) = mktemp()
@@ -257,7 +243,7 @@ function llplot()
         for i in figs[c].curves
             ps = i.conf.plotstyle
             if ps == "errorbars" || ps == "errorlines"
-                if isempty(i.yhigh)
+                if isempty(i.F.yhigh)
                     # ydelta (single error coordinate)
                     writedlm(f,[i.x i.y i.ylow],' ')
                 else
@@ -270,10 +256,10 @@ function llplot()
                 # output matrix
                 for col = 1:length(i.x)
 					tmparr[col,1] = i.x[col]
-					tmparr[col,2] = i.finance.open[col]
-					tmparr[col,3] = i.finance.low[col]
-					tmparr[col,4] = i.finance.high[col]
-					tmparr[col,5] = i.finance.close[col]
+					tmparr[col,2] = i.F.open[col]
+					tmparr[col,3] = i.F.low[col]
+					tmparr[col,4] = i.F.high[col]
+					tmparr[col,5] = i.F.close[col]
                 end
 				writedlm(f,tmparr,' ')
             elseif ps == "image"
