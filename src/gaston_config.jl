@@ -2,6 +2,58 @@
 ##
 ## This file is distributed under the 2-clause BSD License.
 
+# Structure to keep Gaston's configuration
+mutable struct GastonConfig
+    # default CurveConf values
+    legend::AbstractString
+    plotstyle::AbstractString
+    color::AbstractString
+    marker::AbstractString
+    linewidth::Real
+    pointsize::Real
+    # default AxesConf values
+    title::AbstractString
+    xlabel::AbstractString
+    ylabel::AbstractString
+    zlabel::AbstractString
+    fill::AbstractString
+    grid::AbstractString
+    box::AbstractString
+    axis::AbstractString
+    xrange::AbstractString
+    yrange::AbstractString
+    zrange::AbstractString
+    # default terminal type
+    terminal::AbstractString
+    # for terminals that support filenames
+    outputfile::AbstractString
+    # for printing to file
+    print_color::AbstractString
+    print_fontface::AbstractString
+    print_fontsize::Real
+    print_fontscale::Real
+    print_linewidth::Real
+    print_size::AbstractString
+end
+function GastonConfig()
+	gc = GastonConfig(
+		# CurveConf
+		"","lines","","",1,0.5,
+		# AxesConf
+		"Untitled","x","y","z","empty","off","inside vertical right top","",
+		"[*:*]","[*:*]","[*:*]",
+		# terminal
+		"wxt",
+		# output file name
+		"",
+		# print parameters
+		"color", "Sans", 12, 0.5, 1, "640,480"
+	)
+	# Determine if current display supports PNG; this allows IJulia support.
+	displayable("image/png") && gc.outputfile = "$(tempdir())/gaston-ijulia.png"
+	return gc
+end
+
 # Set any of Gaston's configuration variables
 # This function assumes that gaston_config exists
 function set(;legend         = gaston_config.legend,
