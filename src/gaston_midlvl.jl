@@ -76,7 +76,7 @@ function addcoords(x::Coord,y::Coord,Z::Coord,conf::CurveConf)
         conf.plotstyle ∈ supported_3Dplotstyles || error("Invalid plotstyle specified")
     end
 
-    conf = copy(conf)       # we need to dereference conf
+    #conf = copy(conf)       # we need to dereference conf
     # append data to figure
     c = findfigure(gnuplot_state.current)
     fig = gnuplot_state.figs[c]
@@ -243,12 +243,12 @@ function llplot()
         for i in figs[c].curves
             ps = i.conf.plotstyle
             if ps == "errorbars" || ps == "errorlines"
-                if isempty(i.F.yhigh)
+                if isempty(i.E.yhigh)
                     # ydelta (single error coordinate)
-                    writedlm(f,[i.x i.y i.ylow],' ')
+                    writedlm(f,[i.x i.y i.E.ylow],' ')
                 else
                     # ylow, yhigh (double error coordinate)
-                    writedlm(f,[i.x i.y i.ylow i.yhigh],' ')
+                    writedlm(f,[i.x i.y i.E.ylow i.E.yhigh],' ')
                 end
 			elseif ps == "financebars"
             	# data is written to tmparr, which is then written to disk

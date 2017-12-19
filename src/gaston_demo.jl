@@ -6,9 +6,9 @@ function gaston_demo()
     closeall()
 
     t = -2:0.01:2
-    st = sin(10pi*t)
-    ct = cos(10pi*t)
-    et = exp(abs(t/10))
+    st = sin.(10pi*t)
+    ct = cos.(10pi*t)
+    et = @. exp(abs(t/10))
 
     # simplest figure
     figure(1)
@@ -20,7 +20,7 @@ function gaston_demo()
     addcoords(t,st)
     llplot()
 
-    # plot configuration
+    # curve configuration
     figure(3)
     c = CurveConf()
     c.legend = "Sinusoidal"
@@ -32,7 +32,7 @@ function gaston_demo()
     addcoords(t,st,c)
     llplot()
 
-    # figure configuration
+    # axes configuration
     figure(4)
     a = AxesConf()
     a.title = "Example of figure configuration"
@@ -69,7 +69,7 @@ function gaston_demo()
     llplot()
 
     # error bars with ydelta
-    y = exp(-(1:.1:4.9))
+    y = exp.(-(1:.1:4.9))
     figure(6)
     c = CurveConf()
     c.legend = "Random"
@@ -235,7 +235,6 @@ function gaston_demo()
     c.color = "blue"
     y = 1:10
     (x,y) = hist(y,10)
-    x = midpoints(x)
     addcoords(x,y,c)
     a = AxesConf()
     a.title = "Simple histogram test"
@@ -248,12 +247,11 @@ function gaston_demo()
     c.color = "blue"
     c.legend = "1000 samples"
     (x,y) = hist(randn(1000),25)
-    x = midpoints(x)
     delta = x[2]-x[1]
     y = y/(delta*sum(y))  # normalization
     addcoords(x,y,c)
     x = -5:0.05:5
-    y = 1/sqrt(2pi)*exp((-x.^2)/2)
+    y = @. 1/sqrt(2pi)*exp((-x.^2)/2)
     c = CurveConf()
     c.plotstyle = "lines"
     c.color = "black"
@@ -274,7 +272,7 @@ function gaston_demo()
     c.plotstyle = "lines"
     c.color = "blue"
     t = linspace(0,2pi,10)
-    addcoords(3*sin(t)+3,c)
+    addcoords(3*sin.(t)+3,c)
     a = AxesConf()
     a.title = "Image and curve on the same figure"
     addconf(a)
