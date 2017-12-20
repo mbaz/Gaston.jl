@@ -23,22 +23,22 @@ using Base.Test
 	@test closeall() == 1
 	@test closeall() == 0
 	@test plot(1:10) == 1
-	@test plot(2,1:10) == 2
-	@test plot(4,1:10) == 4
+	@test plot(1:10,handle=2) == 2
+	@test plot(1:10,handle=4) == 4
 	@test closeall() == 3
 	@test begin
 		plot(sin.(-3:0.01:3),
-		"legend", "sine",
-		"plotstyle", "lines",
-		"color","blue",
-		"marker","ecircle",
-		"linewidth",2,
-		"pointsize",1.1,
-		"title","test plot 1",
-		"xlabel","x",
-		"ylabel","y",
-		"box","inside horizontal left top",
-		"axis","loglog") == 1
+		legend = "sine",
+		plotstyle = "lines",
+		color = "blue",
+		marker = "ecircle",
+		linewidth = 2,
+		pointsize = 1.1,
+		title = "test plot 1",
+		xlabel = "x",
+		ylabel = "y",
+		box = "inside horizontal left top",
+		axis ="loglog") == 1
 	end
 	@test histogram(rand(1000)) == 1
 	@test begin
@@ -66,7 +66,7 @@ using Base.Test
 		printfigure()
 	end == 1
 	@test begin
-		plot(2,1:10)
+		plot(1:10,handle=2)
 		printfigure(2,"png")
 		closefigure()
 	end == 2
@@ -80,43 +80,43 @@ using Base.Test
 		printfigure("svg")
 	end == 1
 	@test printfigure("gif") == 1
-	@test plot(1:10,"xrange","[2:3]") == 1
-	@test plot(1:10,"xrange","[-1.1:3.4]") == 1
-	@test plot(1:10,"xrange","[:3.4]") == 1
-	@test plot(1:10,"xrange","[3.4:]") == 1
-	@test plot(1:10,"xrange","[3.4:*]") == 1
-	@test plot(1:10,"xrange","[*:3.4]") == 1
+	@test plot(1:10,xrange = "[2:3]") == 1
+	@test plot(1:10,xrange = "[-1.1:3.4]") == 1
+	@test plot(1:10,xrange = "[:3.4]") == 1
+	@test plot(1:10,xrange = "[3.4:]") == 1
+	@test plot(1:10,xrange = "[3.4:*]") == 1
+	@test plot(1:10,xrange = "[*:3.4]") == 1
 	closeall()
 end
 
 @testset "Failure expected" begin
 	closeall()
-	@test_throws MethodError figure("invalid")
-	@test_throws MethodError figure(1.0)
-    @test_throws MethodError figure(1:2)
+	@test_throws ErrorException figure("invalid")
+	@test_throws ErrorException figure(1.0)
+    @test_throws ErrorException figure(1:2)
 	@test_throws ErrorException closefigure(-1)
 	@test_throws ErrorException closefigure("invalid")
 	@test_throws ErrorException closefigure(1.0)
 	@test_throws ErrorException closefigure(1:2)
-	for op = (:plot, :histogram)
-		@test_throws MethodError op("linewidth")
-		@test_throws MethodError op(0:10,0:11)
-		@test_throws MethodError op(0:10+im*0:10)
-		@test_throws MethodError op(0:10,"legend",0)
-		@test_throws MethodError op(0:10,"plotstyle","invalid")
-		@test_throws MethodError op(0:10,"marker","invalid")
-		@test_throws MethodError op(0:10,"marker",0)
-		@test_throws MethodError op(0:10,"linewidth","b")
-		@test_throws MethodError op(0:10,"linewidth",im)
-		@test_throws MethodError op(0:10,"pointsize","b")
-		@test_throws MethodError op(0:10,"pointsize",im)
-		@test_throws MethodError op(0:10,"title",0)
-		@test_throws MethodError op(0:10,"xlabel",0)
-		@test_throws MethodError op(0:10,"ylabel",0)
-		@test_throws MethodError op(0:10,"zlabel","z")
-		@test_throws MethodError op(0:10,"axis","invalid")
-	end
-	@test_throws AssertionError plot(1:10,"xrange","2:3")
-	@test_throws AssertionError plot(1:10,"xrange","ab")
+#for op = (:plot, :histogram)
+#	@test_throws MethodError op("linewidth")
+#	@test_throws MethodError op(0:10,0:11)
+#	@test_throws MethodError op(0:10+im*0:10)
+#	@test_throws MethodError op(0:10,"legend",0)
+#	@test_throws MethodError op(0:10,"plotstyle","invalid")
+#	@test_throws MethodError op(0:10,"marker","invalid")
+#	@test_throws MethodError op(0:10,"marker",0)
+#	@test_throws MethodError op(0:10,"linewidth","b")
+#	@test_throws MethodError op(0:10,"linewidth",im)
+#	@test_throws MethodError op(0:10,"pointsize","b")
+#	@test_throws MethodError op(0:10,"pointsize",im)
+#	@test_throws MethodError op(0:10,"title",0)
+#	@test_throws MethodError op(0:10,"xlabel",0)
+#	@test_throws MethodError op(0:10,"ylabel",0)
+#	@test_throws MethodError op(0:10,"zlabel","z")
+#	@test_throws MethodError op(0:10,"axis","invalid")
+#end
+	@test_throws ErrorException plot(1:10,xrange = "2:3")
+	@test_throws ErrorException plot(1:10,xrange = "ab")
 	closeall()
 end

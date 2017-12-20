@@ -61,7 +61,7 @@ end
 # Select or create a figure. When called with no arguments, create a new
 # figure. Figure handles must be natural numbers.
 # Returns the current figure handle.
-function figure(h::Int,redraw::Bool)
+function figure(h,redraw::Bool)
     global gnuplot_state
     global gaston_config
 
@@ -72,6 +72,7 @@ function figure(h::Int,redraw::Bool)
 	handles = [f.handle for f in gnuplot_state.figs]
 
     # make sure handle is valid
+	h == nothing && (h = 0)
 	isa(h,Int) || error("Invalid handle.")
 	h < 0 && error("Invalid handle.")
 
@@ -101,124 +102,85 @@ function figure(h::Int,redraw::Bool)
     end
     return h
 end
-figure() = figure(0,true)
-figure(h::Int) = figure(h,true)
+figure() = figure(0,true)  # create new figure with next available handle
+figure(h) = figure(h,true) # create/select figure with handle h
 
-# 2-d plots
-function newplot()
+# 2D plots
+function plot(x::Coord,y::Coord;
+			 legend          = gaston_config.legend,
+			 plotstyle       = gaston_config.plotstyle,
+			 color           = gaston_config.color,
+			 marker          = gaston_config.marker,
+			 linewidth       = gaston_config.linewidth,
+			 pointsize       = gaston_config.pointsize,
+			 title           = gaston_config.title,
+			 xlabel          = gaston_config.xlabel,
+			 ylabel          = gaston_config.ylabel,
+			 zlabel          = gaston_config.zlabel,
+			 fill            = gaston_config.fill,
+			 grid            = gaston_config.grid,
+			 box             = gaston_config.box,
+			 axis            = gaston_config.axis,
+			 xrange          = gaston_config.xrange,
+			 yrange          = gaston_config.yrange,
+			 financial       = FinancialCoords(),
+			 err             = ErrorCoords(),
+			 handle          = gnuplot_state.current,
+			)
+	# validation
+	plotstyle ∈ supported_2Dplotstyles || error("Plotstyle $(plotstyle) not supported.")
+    marker ∈ supported_markers || error("Marker $(marker) not supported.")
+	fill ∈ supported_fillstyles || error("Fill style $(fill) not supported.")
+	grid ∈ supported_grids || error("Grid style $(grid) not supported.")
+    axis ∈ supported_axis || error("Axis $(axis) not supported.")
+    validate_range(xrange) || error("Range $(xrange) not supported.")
+    validate_range(yrange) || error("Range $(yrange) not supported.")
+	length(x) != length(y) && error("Input vectors must have the same number of elements.")
+
+	handle = figure(handle,false)
+	index = findfigure(handle)
+	clearfigure(handle)
+	ac = AxesConf(title,xlabel,ylabel,"",fill,grid,box,axis,xrange,yrange,"")
+	cc = CurveConf(legend,plotstyle,color,marker,linewidth,pointsize)
+	c = [Curve(x,y,[],financial,err,cc)]
+	f = Figure(handle,ac,c,false)
+	if gnuplot_state.figs[index].isempty
+		gnuplot_state.figs[index] = f
+	else
+		push!(gnuplot_state.figs,f)
+	end
+	llplot()
+	return handle
 end
+plot(y;args...) = plot(1:length(y),y;args...)
 
-function plot(args...)
-    global gnuplot_state
-    # if args[1] is an integer, it's the figure handle.
-    if isa(args[1], Int)
-        h = args[1]
-        args = args[2:end]   # argument parsing starts with 1 (eases debug)
-    else
-        h = gnuplot_state.current
-		h == nothing && (h = 0)
-    end
-    h = figure(h,false) # create/select figure
-    clearfigure(h)  # remove all figure configuration
-    # parse arguments
-    state = "SINI"
-    la = length(args)
-    while(true)
-        if state == "SINI"
-            i = 1
-            cc = CurveConf()
-            ac = AxesConf()
-            state = "S1"
-        elseif state == "S1"
-            if i > la
-                state = "SERROR"
-                continue
-            end
-            y = args[i]
-            i = i+1
-            state = "S2"
-        elseif state == "S2"
-            if i > la
-                addcoords(y,cc)
-                state = "SEND"
-                continue
-            end
-            if isa(args[i], AbstractString)
-                x = 1:length(y)
-                state = "S4"
-            else
-                x = y
-                y = args[i]
-                i = i+1
-                state = "S3"
-            end
-        elseif state == "S3"
-            if i > la
-                addcoords(x,y,cc)
-                state = "SEND"
-                continue
-            end
-            if isa(args[i], AbstractString)
-                state = "S4"
-            else
-                addcoords(x,y,cc)
-                cc = CurveConf()
-                y = args[i]
-                i = i+1
-                state = "S2"
-            end
-        elseif state == "S4"
-            if i+1 > la
-                state = "SERROR"
-                continue
-            end
-            ai = args[i]; ai1 = args[i+1]
-            if ai == "legend"
-                cc.legend = ai1
-            elseif ai == "plotstyle"
-                cc.plotstyle = ai1
-            elseif ai == "color"
-                cc.color = ai1
-            elseif ai == "marker"
-                cc.marker = ai1
-            elseif ai == "linewidth"
-                cc.linewidth = ai1
-            elseif ai == "pointsize"
-                cc.pointsize = ai1
-            elseif ai == "title"
-                ac.title = ai1
-            elseif ai == "xlabel"
-                ac.xlabel = ai1
-            elseif ai == "ylabel"
-                ac.ylabel = ai1
-			elseif ai == "fillstyle"
-				ac.fill = ai1
-			elseif ai == "grid"
-				ac.grid = ai1
-            elseif ai == "box"
-                ac.box = ai1
-            elseif ai == "axis"
-                ac.axis = ai1
-            elseif ai == "xrange"
-                ac.xrange = ai1
-            elseif ai == "yrange"
-                ac.yrange = ai1
-            else
-                error("Invalid property specified")
-            end
-            i = i+2
-            state = "S3"
-        elseif state == "SEND"
-            addconf(ac)
-            llplot()
-            break
-        elseif state == "SERROR"
-            error("Invalid arguments")
-        else
-            error("Unforseen situation, bailing out")
-        end
-    end
-    return h
+# Add a curve to an existing figure
+function plot!(x::Coord,y::Coord;
+			 legend          = gaston_config.legend,
+			 plotstyle       = gaston_config.plotstyle,
+			 color           = gaston_config.color,
+			 marker          = gaston_config.marker,
+			 linewidth       = gaston_config.linewidth,
+			 pointsize       = gaston_config.pointsize,
+			 financial       = FinancialCoords(),
+			 err             = ErrorCoords(),
+			 handle          = gnuplot_state.current
+		 )
+
+	# validation
+	plotstyle ∈ supported_2Dplotstyles || error("Plotstyle $(plotstyle) not supported.")
+    marker ∈ supported_markers || error("Marker $(marker) not supported.")
+	length(x) != length(y) && error("Input vectors must have the same number of elements.")
+
+	handle = figure(handle,false)
+	index = findfigure(handle)
+	gnuplot_state.figs[index].isempty && error("Cannot add curve to empty figure.")
+
+	cc = CurveConf(legend,plotstyle,color,marker,linewidth,pointsize)
+	c = Curve(x,y,[],financial,err,cc)
+	push!(gnuplot_state.figs[index].curves,c)
+	llplot()
+	return handle
 end
 
 function histogram(args...)
