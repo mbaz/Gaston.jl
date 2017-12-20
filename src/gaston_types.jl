@@ -7,7 +7,7 @@
 # We need a global variable to keep track of gnuplot's state
 mutable struct GnuplotState
     running::Bool                # true when gnuplot is already running
-    current                      # current figure
+    current                      # current figure -- "pointer" to figs
     fid                          # pipe streams id
 	gp_stdout::AbstractString    # store gnuplot's stdout
 	gp_stderr::AbstractString    # store gnuplot's stderr

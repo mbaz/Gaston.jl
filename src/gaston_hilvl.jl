@@ -6,60 +6,42 @@ function closefigure(x...)
     global gnuplot_state
     global gaston_config
 
-    # parse argument
-    if isempty(x)
-        # close current figure
-        h = gnuplot_state.current
-    else
-        h = x[1]
-        if !(isa(h,Int) && h > 0)
-            error("Invalid handle")
-        end
-    end
+    # build vector of handles
+	handles = [f.handle for f in gnuplot_state.figs]
+	isempty(handles) && error("No figures exist.")
 
-    term = gaston_config.terminal
-    # create vector of handles
-    handles = Any[]
-    if gnuplot_state.current != 0
-        for i in gnuplot_state.figs
-            push!(handles, i.handle)
-        end
-    end
-    if in(h, handles)
-        # only care about closing windows if term type is screen
-        if term ∈ supported_screenterms
-            if gnuplot_state.running
-                gnuplot_send("set term $term $h close")
-            end
-        end
-        # delete all data related to this figure
-        _figs = Any[]
-        for i in gnuplot_state.figs
-            if i.handle != h
-                push!(_figs, i)
-            end
-        end
-        gnuplot_state.figs = _figs
-        # update state
-        if isempty(gnuplot_state.figs)
-            # we just closed the last figure
-            gnuplot_state.current = 0
-        else
-            # select the most-recently created figure
-            gnuplot_state.current = gnuplot_state.figs[end].handle
-        end
-    else
-        h = 0
-    end
-    return h
+    # get handle of figure to close
+    isempty(x) ? handle = gnuplot_state.current : handle = x[1]
+
+    # make sure handle is valid
+	isa(handle,Int) || error("Invalid handle.")
+	handle < 1 && error("Invalid handle.")
+	handle ∈ handles || error("No such figure exists.")
+
+	# only inform gnuplot if term type is screen
+	term = gaston_config.terminal
+    term ∈ supported_screenterms && gnuplot_send("set term $term $handle close")
+
+	# remove figure
+	filter!(h->h.handle!=handle,gnuplot_state.figs)
+
+	# update state
+	if isempty(gnuplot_state.figs)
+		# we just closed the last figure
+		gnuplot_state.current = nothing
+	else
+		# select the most-recently created figure
+		gnuplot_state.current = gnuplot_state.figs[end].handle
+	end
+	return handle
 end
 
 # close all figures
 function closeall()
-    global gnuplot_state
+	global gnuplot_state
 
 	closed = 0
-	for i in gnuplot_state.figs
+	for i = 1:length(gnuplot_state.figs)
 		closefigure()
 		closed = closed + 1
 	end
@@ -76,7 +58,6 @@ function clearfigure(h::Int)
     end
 end
 
-
 # Select or create a figure. When called with no arguments, create a new
 # figure. Figure handles must be natural numbers.
 # Returns the current figure handle.
@@ -84,25 +65,19 @@ function figure(h::Int,redraw::Bool)
     global gnuplot_state
     global gaston_config
 
-    term = gaston_config.terminal
-
-    # assert h is non-negative
-    @assert(h >= 0, "Figure handle must not be negative.")
-
     # see if we need to set up gnuplot
-    if gnuplot_state.running == false
-        gnuplot_init();
-    end
-    # create vector of handles, needed later
-    handles = Any[]
-    for i in gnuplot_state.figs
-        push!(handles, i.handle)
-    end
+    gnuplot_state.running || gnuplot_init()
+
+    # build vector of handles
+	handles = [f.handle for f in gnuplot_state.figs]
+
+    # make sure handle is valid
+	isa(h,Int) || error("Invalid handle.")
+	h < 0 && error("Invalid handle.")
+
     # determine figure handle
-    if gnuplot_state.current == 0
-        if h == 0
-            h = 1
-        end
+    if gnuplot_state.current == nothing
+		h == 0 && (h = 1)
     else
         if h == 0
             # use lowest numbered handle available
@@ -130,6 +105,9 @@ figure() = figure(0,true)
 figure(h::Int) = figure(h,true)
 
 # 2-d plots
+function newplot()
+end
+
 function plot(args...)
     global gnuplot_state
     # if args[1] is an integer, it's the figure handle.
@@ -138,6 +116,7 @@ function plot(args...)
         args = args[2:end]   # argument parsing starts with 1 (eases debug)
     else
         h = gnuplot_state.current
+		h == nothing && (h = 0)
     end
     h = figure(h,false) # create/select figure
     clearfigure(h)  # remove all figure configuration

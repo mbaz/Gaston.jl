@@ -26,7 +26,7 @@ include("gaston_demo.jl")
 
 # set up global variables
 # global variable that stores gnuplot's state
-gnuplot_state = GnuplotState(false,0,nothing,"","","",false,Any[])
+gnuplot_state = GnuplotState(false,nothing,[],"","","",false,Any[])
 
 # when gnuplot_state goes out of scope, close the pipe
 finalizer(gnuplot_state,gnuplot_exit)
