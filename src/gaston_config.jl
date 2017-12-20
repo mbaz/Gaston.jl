@@ -50,7 +50,11 @@ function GastonConfig()
 		"color", "Sans", 12, 0.5, 1, "640,480"
 	)
 	# Determine if current display supports PNG; this allows IJulia support.
-	displayable("image/png") && (gc.outputfile = "$(tempdir())/gaston-ijulia.png")
+	if displayable("image/png")
+		gc.outputfile = "$(tempdir())/gaston-ijulia.png"
+		gc.terminal = "png"
+		gc.print_fontsize = 20
+	end
 	return gc
 end
 
