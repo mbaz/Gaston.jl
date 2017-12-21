@@ -53,9 +53,8 @@ using Base.Test
         box="inside horizontal left top")
 	end == 1
 	z = rand(5,6)
-	@test imagesc(z,"title","test imagesc 1","xlabel","xx","ylabel","yy") == 1
-	@test imagesc(1:5,z,"title","test imagesc 2","xlabel","xx","ylabel","yy") == 1
-	@test imagesc(1:5,1:6,z,"title","test imagesc 3","xlabel","xx","ylabel","yy") == 1
+	@test imagesc(z,title="test imagesc 1",xlabel="xx",ylabel="yy") == 1
+	@test imagesc(1:6,1:5,z,title="test imagesc 3",xlabel="xx",ylabel="yy") == 1
 	@test surf(rand(10,10)) == 1
 	@test surf(2:11,rand(10,10)) == 1
 	@test surf(0:9,2:11,rand(10,10)) == 1
@@ -99,6 +98,8 @@ end
 	@test_throws ErrorException closefigure(1.0)
 	@test_throws ErrorException closefigure(1:2)
 	@test_throws ErrorException plot(0:10,0:11)
+	z = rand(5,6)
+	@test_throws ErrorException imagesc(1:5,1:7,z)
 	for op = (:plot, :histogram)
 		@test_throws MethodError op(0:10+im*0:10)
 		@test_throws ErrorException op(0:10,legend=0)

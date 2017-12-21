@@ -237,7 +237,48 @@ function histogram(data::Coord;
 end
 
 # image plots
-function imagesc(args...)
+function imagesc(x::Coord,y::Coord,Z::Coord;
+				 title = gaston_config.title,
+				 xlabel = gaston_config.xlabel,
+				 ylabel = gaston_config.ylabel,
+				 clim = [0,255],
+				 handle = gnuplot_state.current
+				 )
+
+	handle = figure(handle,false)
+	index = findfigure(handle)
+	clearfigure(handle)
+
+	length(x) == size(Z)[2] || error("Invalid coordinates.")
+	length(y) == size(Z)[1] || error("Invalid coordinates.")
+	2 <= ndims(Z) <= 3 || error("Z must have two or three dimensions.")
+	ndims(Z) == 2 ? plotstyle = "image" : plotstyle = "rgbimage"
+
+	ac = AxesConf(title = title,
+				  xlabel = xlabel,
+				  ylabel = ylabel)
+	cc = CurveConf(plotstyle=plotstyle)
+
+	if ndims(Z) == 3
+		Z[:] = Z.-clim[1]
+		Z[Z.<0] = 0.0
+		Z[:] = Z.*255.0/(clim[2]-clim[1])
+		Z[Z.>255] = 255
+	end
+	c = [Curve(x,y,Z,cc)]
+
+	f = Figure(handle,ac,c,false)
+	if gnuplot_state.figs[index].isempty
+		gnuplot_state.figs[index] = f
+	else
+		push!(gnuplot_state.figs,f)
+	end
+	llplot()
+	return handle
+end
+imagesc(Z::Coord;args...) = imagesc(1:size(Z)[2],1:size(Z)[1],Z;args...)
+
+function oldimagesc(args...)
     global gnuplot_state
     # if args[1] is an integer, it's the figure handle.
     if isa(args[1], Int)
