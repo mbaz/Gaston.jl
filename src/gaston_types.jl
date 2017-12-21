@@ -19,7 +19,7 @@ end
 # Structs to define a figure
 
 ## Coordinates
-Coord = Union{UnitRange,Range,Array}
+Coord = Union{Range{T},Array{T}} where T <: Real
 
 # storage for financial coordinates
 struct FinancialCoords
@@ -29,7 +29,7 @@ struct FinancialCoords
     high::Coord
     close::Coord
 end
-FinancialCoords() = FinancialCoords(false,[],[],[],[])
+FinancialCoords() = FinancialCoords(false,Real[],Real[],Real[],Real[])
 function FinancialCoords(o::Vector,l::Vector,h::Vector,c::Vector)
 	return FinancialCoords(true,o,l,h,c)
 end
@@ -40,7 +40,7 @@ struct ErrorCoords
 	ylow::Coord
 	yhigh::Coord
 end
-ErrorCoords() = ErrorCoords(false,[],[])
+ErrorCoords() = ErrorCoords(false,Real[],Real[])
 ErrorCoords(l::Vector,h::Vector) = ErrorCoords(true,l,h)
 
 ## Curves
@@ -54,14 +54,15 @@ type CurveConf
     linewidth::Real
     pointsize::Real
 end
-# Constructor with default values (stored in gaston_config)
-CurveConf() = CurveConf(
-    gaston_config.legend,
-    gaston_config.plotstyle,
-    gaston_config.color,
-    gaston_config.marker,
-    gaston_config.linewidth,
-    gaston_config.pointsize)
+# Convenience constructor
+CurveConf(;
+		  legend    = gaston_config.legend,
+		  plotstyle = gaston_config.plotstyle,
+		  color     = gaston_config.color,
+		  marker    = gaston_config.marker,
+		  linewidth = gaston_config.linewidth,
+		  pointsize = gaston_config.pointsize
+		 ) = CurveConf(legend,plotstyle,color,marker,linewidth,pointsize)
 
 # A curve is a set of coordinates and a configuration
 mutable struct Curve
@@ -73,12 +74,13 @@ mutable struct Curve
 	conf::CurveConf
 end
 # Construct an empty curve
-Curve() = Curve([],[],[],FinancialCoords(),ErrorCoords(),CurveConf())
-# Other convenience constructors
-Curve(y) = Curve(1:length(y),y,[],FinancialCoords(),ErrorCoords(),CurveConf())
-Curve(y,c::CurveConf) = Curve(1:length(y),y,[],FinancialCoords(),ErrorCoords(),c)
-Curve(x,y) = Curve(x,y,[],FinancialCoords(),ErrorCoords(),CurveConf())
-Curve(x,y,c::CurveConf) = Curve(x,y,[],FinancialCoords(),ErrorCoords(),c)
+Curve() = Curve(Real[],Real[],Real[],FinancialCoords(),ErrorCoords(),CurveConf())
+# Convenience constructors
+Curve(y) = Curve(1:length(y),y,Real[],FinancialCoords(),ErrorCoords(),CurveConf())
+Curve(y,c::CurveConf) = Curve(1:length(y),y,Real[],FinancialCoords(),ErrorCoords(),c)
+Curve(x,y) = Curve(x,y,Real[],FinancialCoords(),ErrorCoords(),CurveConf())
+Curve(x,y,c::CurveConf) = Curve(x,y,Real[],FinancialCoords(),ErrorCoords(),c)
+Curve(x,y,fc::FinancialCoords,ec::ErrorCoords,c::CurveConf) = Curve(x,y,Real[],fc,ec,c)
 Curve(x,y,Z) = Curve(x,y,Z,FinancialCoords(),ErrorCoords(),CurveConf())
 Curve(x,y,Z,c::CurveConf) = Curve(x,y,Z,FinancialCoords(),ErrorCoords(),c)
 
@@ -98,26 +100,27 @@ mutable struct AxesConf
     zrange::AbstractString     # zrange
 end
 # Constructor with default values (stored in gaston_config)
-AxesConf() = AxesConf(
-    gaston_config.title,
-    gaston_config.xlabel,
-    gaston_config.ylabel,
-    gaston_config.zlabel,
-    gaston_config.fill,
-    gaston_config.grid,
-    gaston_config.box,
-    gaston_config.axis,
-    gaston_config.xrange,
-    gaston_config.yrange,
-    gaston_config.zrange)
+AxesConf(;
+	  title  = gaston_config.title,
+	  xlabel = gaston_config.xlabel,
+	  ylabel = gaston_config.ylabel,
+	  zlabel = gaston_config.zlabel,
+	  fill   = gaston_config.fill,
+	  grid   = gaston_config.grid,
+	  box    = gaston_config.box,
+	  axis   = gaston_config.axis,
+	  xrange =  gaston_config.xrange,
+	  yrange =  gaston_config.yrange,
+	  zrange =  gaston_config.zrange
+	  ) = AxesConf(title,xlabel,ylabel,zlabel,fill,grid,box,axis,xrange,yrange,zrange)
 
 # At the top level, a figure is a handle, an axes configuration, and a
 # set of curves.
 mutable struct Figure
-    handle                       # each figure has a unique handle
-    conf::AxesConf               # figure configuration
-    curves::Vector{Curve}        # a vector of curves
-    isempty::Bool                # a flag to indicate if figure is empty
+	handle                       # each figure has a unique handle
+	conf::AxesConf               # figure configuration
+	curves::Vector{Curve}        # a vector of curves
+	isempty::Bool                # a flag to indicate if figure is empty
 end
 # Construct an empty figure with given handle
 Figure(handle) = Figure(handle,AxesConf(),Curve[Curve()],true)

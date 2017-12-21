@@ -140,9 +140,17 @@ function plot(x::Coord,y::Coord;
 	handle = figure(handle,false)
 	index = findfigure(handle)
 	clearfigure(handle)
-	ac = AxesConf(title,xlabel,ylabel,"",fill,grid,box,axis,xrange,yrange,"")
+	ac = AxesConf(title = title,
+				  xlabel = xlabel,
+				  ylabel = ylabel,
+				  fill = fill,
+				  grid = grid,
+				  box = box,
+				  axis = axis,
+				  xrange = xrange,
+				  yrange = yrange)
 	cc = CurveConf(legend,plotstyle,color,marker,linewidth,pointsize)
-	c = [Curve(x,y,[],financial,err,cc)]
+	c = [Curve(x,y,financial,err,cc)]
 	f = Figure(handle,ac,c,false)
 	if gnuplot_state.figs[index].isempty
 		gnuplot_state.figs[index] = f
@@ -152,7 +160,7 @@ function plot(x::Coord,y::Coord;
 	llplot()
 	return handle
 end
-plot(y;args...) = plot(1:length(y),y;args...)
+plot(y::Coord;args...) = plot(1:length(y),y;args...)
 
 # Add a curve to an existing figure
 function plot!(x::Coord,y::Coord;
@@ -177,106 +185,55 @@ function plot!(x::Coord,y::Coord;
 	gnuplot_state.figs[index].isempty && error("Cannot add curve to empty figure.")
 
 	cc = CurveConf(legend,plotstyle,color,marker,linewidth,pointsize)
-	c = Curve(x,y,[],financial,err,cc)
+	c = Curve(x,y,financial,err,cc)
 	push!(gnuplot_state.figs[index].curves,c)
 	llplot()
 	return handle
 end
 
-function histogram(args...)
-    global gnuplot_state
-    # if args[1] is an integer, it's the figure handle.
-    if isa(args[1], Int)
-        h = args[1]
-        args = args[2:end]   # argument parsing starts with 1 (eases debug)
-    else
-        h = gnuplot_state.current
-    end
-    h = figure(h,false) # create/select figure
-    clearfigure(h)  # remove all figure configuration
-    # parse arguments
-    state = "SINI"
-    la = length(args)
-    while(true)
-        if state == "SINI"
-            i = 1
-            bins = 10
-            norm = 0
-            cc = CurveConf()
-            cc.plotstyle = "boxes"
-            ac = AxesConf()
-            state = "S1"
-        elseif state == "S1"
-            if i > la
-                state = "SERROR"
-                continue
-            end
-            y = args[i]
-            i = i+1
-            state = "S2"
-        elseif state == "S2"
-            if i > la
-                # validate bins and norm
-                if !isa(bins,Int) || !isa(norm,Real) || bins <= 0 || norm < 0
-                    state = "SERROR"
-                    continue
-                end
-                x, y = hist(y,bins)
-                if norm != 0
-                    delta = step(x)
-                    y = norm*y/(delta*sum(y))
-                end
-                addcoords(x,y,cc)
-                state = "SEND"
-                continue
-            end
-            state = "S3"
-        elseif state == "S3"
-            if i+1 > la
-                state = "SERROR"
-                continue
-            end
-            ai = args[i]; ai1 = args[i+1]
-            if ai == "legend"
-                cc.legend = ai1
-            elseif ai == "color"
-                cc.color = ai1
-            elseif ai == "linewidth"
-                cc.linewidth = ai1
-            elseif ai == "bins"
-                bins = ai1
-            elseif ai == "norm"
-                norm = ai1
-            elseif ai == "title"
-                ac.title = ai1
-            elseif ai == "xlabel"
-                ac.xlabel = ai1
-            elseif ai == "ylabel"
-                ac.ylabel = ai1
-			elseif ai == "fillstyle"
-				ac.fill = ai1
-            elseif ai == "box"
-                ac.box = ai1
-            elseif ai == "xrange"
-                ac.xrange = ai1
-            elseif ai == "yrange"
-                ac.yrange = ai1
-            else
-                error("Invalid property specified")
-            end
-            i = i+2
-            state = "S2"
-        elseif state == "SEND"
-            addconf(ac)
-            llplot()
-            break
-        elseif state == "SERROR"
-            error("Invalid arguments")
-        else
-            error("Unforseen situation, bailing out")
-        end
-    end
-    return h
+function histogram(data::Coord;
+				   bins::Int = 10,
+				   norm      = 1.0,
+				   legend    = gaston_config.legend,
+				   color     = gaston_config.color,
+				   linewidth = gaston_config.linewidth,
+				   title     = gaston_config.title,
+				   xlabel    = gaston_config.xlabel,
+				   ylabel    = gaston_config.ylabel,
+				   fill      = gaston_config.fill,
+				   box       = gaston_config.box,
+				   xrange    = gaston_config.xrange,
+				   yrange    = gaston_config.yrange,
+				   handle    = gnuplot_state.current
+				   )
+	# validation
+	bins < 1 && error("At least one bin is required.")
+	handle = figure(handle,false)
+	index = findfigure(handle)
+	clearfigure(handle)
+
+	ac = AxesConf(title = title,
+				  xlabel = xlabel,
+				  ylabel = ylabel,
+				  fill = fill,
+				  box = box,
+				  xrange = xrange,
+				  yrange = yrange)
+	x, y = hist(data,bins)
+	y = norm*y/(step(x)*sum(y))  # make area under histogram equal to norm
+	cc = CurveConf(legend = legend,
+				   plotstyle = "boxes",
+				   color = color,
+				   linewidth = linewidth)
+	c = [Curve(x,y,cc)]
+	f = Figure(handle,ac,c,false)
+	if gnuplot_state.figs[index].isempty
+		gnuplot_state.figs[index] = f
+	else
+		push!(gnuplot_state.figs,f)
+	end
+	llplot()
+	return handle
 end
 
 # image plots

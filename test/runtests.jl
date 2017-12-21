@@ -43,14 +43,14 @@ using Base.Test
 	@test histogram(rand(1000)) == 1
 	@test begin
 		histogram(randn(1000),
-        "bins",100,
-        "norm",1,
-        "color","blue",
-        "linewidth",2,
-        "title","test histogram",
-        "xlabel","x",
-        "ylabel","y",
-        "box","inside horizontal left top")
+        bins=100,
+        norm=1,
+        color="blue",
+        linewidth=2,
+        title="test histogram",
+        xlabel="x",
+        ylabel="y",
+        box="inside horizontal left top")
 	end == 1
 	z = rand(5,6)
 	@test imagesc(z,"title","test imagesc 1","xlabel","xx","ylabel","yy") == 1
@@ -98,24 +98,22 @@ end
 	@test_throws ErrorException closefigure("invalid")
 	@test_throws ErrorException closefigure(1.0)
 	@test_throws ErrorException closefigure(1:2)
-#for op = (:plot, :histogram)
-#	@test_throws MethodError op("linewidth")
-#	@test_throws MethodError op(0:10,0:11)
-#	@test_throws MethodError op(0:10+im*0:10)
-#	@test_throws MethodError op(0:10,"legend",0)
-#	@test_throws MethodError op(0:10,"plotstyle","invalid")
-#	@test_throws MethodError op(0:10,"marker","invalid")
-#	@test_throws MethodError op(0:10,"marker",0)
-#	@test_throws MethodError op(0:10,"linewidth","b")
-#	@test_throws MethodError op(0:10,"linewidth",im)
-#	@test_throws MethodError op(0:10,"pointsize","b")
-#	@test_throws MethodError op(0:10,"pointsize",im)
-#	@test_throws MethodError op(0:10,"title",0)
-#	@test_throws MethodError op(0:10,"xlabel",0)
-#	@test_throws MethodError op(0:10,"ylabel",0)
-#	@test_throws MethodError op(0:10,"zlabel","z")
-#	@test_throws MethodError op(0:10,"axis","invalid")
-#end
+	@test_throws ErrorException plot(0:10,0:11)
+	for op = (:plot, :histogram)
+		@test_throws MethodError op(0:10+im*0:10)
+		@test_throws ErrorException op(0:10,legend=0)
+		@test_throws ErrorException op(0:10,plotstyle="invalid")
+		@test_throws ErrorException op(0:10,marker="invalid")
+		@test_throws ErrorException op(0:10,marker=0)
+		@test_throws ErrorException op(0:10,linewidth="b")
+		@test_throws ErrorException op(0:10,linewidth=im)
+		@test_throws ErrorException op(0:10,pointsize="b")
+		@test_throws ErrorException op(0:10,pointsize=im)
+		@test_throws ErrorException op(0:10,title=0)
+		@test_throws ErrorException op(0:10,xlabel=0)
+		@test_throws ErrorException op(0:10,ylabel=0)
+		@test_throws ErrorException op(0:10,axis="invalid")
+	end
 	@test_throws ErrorException plot(1:10,xrange = "2:3")
 	@test_throws ErrorException plot(1:10,xrange = "ab")
 	closeall()
