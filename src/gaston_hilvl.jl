@@ -279,149 +279,46 @@ end
 imagesc(Z::Coord;args...) = imagesc(1:size(Z)[2],1:size(Z)[1],Z;args...)
 
 # surface plots
-function surf(args...)
-    global gnuplot_state
-    # if args[1] is an integer, it's the figure handle.
-    if isa(args[1], Int)
-        h = args[1]
-        args = args[2:end]   # argument parsing starts with 1 (eases debug)
-    else
-        h = gnuplot_state.current
-    end
-    h = figure(h,false) # create/select figure
-    clearfigure(h)  # remove all figure configuration
-    # parse arguments
-    state = "SINI"
-    la = length(args)
-    while(true)
-        if state == "SINI"
-            i = 1
-            cc = CurveConf()
-            ac = AxesConf()
-            state = "S1"
-        elseif state == "S1"
-            if i > la
-                state = "SERROR"
-                continue
-            end
-            tmp = args[i]
-            i = i+1
-            state = "S2"
-        elseif state == "S2"
-            if i > la
-                Z = tmp
-                if isa(Z,Array) && ndims(Z) == 2
-                    y = 1:size(Z)[1]
-                    x = 1:size(Z)[2]
-                    state = "S3"
-                else
-                    state = "SERROR"
-                end
-            else
-                if isa(args[i],AbstractString)
-                    Z = tmp
-                    if isa(Z,Array) && ndims(Z) == 2
-                        y = 1:size(Z)[1]
-                        x = 1:size(Z)[2]
-                        state = "S6"
-                    else
-                        state = "SERROR"
-                    end
-                else
-                    y = tmp
-                    tmp = args[i]
-                    i = i+1
-                    state = "S4"
-                end
-            end
-        elseif state == "S3"
-            if isa(Z,Function)
-                Z = meshgrid(x,y,Z)
-            end
-            addcoords(x,y,Z,cc)
-            state = "SEND"
-        elseif state == "S4"
-            if i > la
-                Z = tmp
-                if isa(Z,Array) && ndims(Z) == 2
-                    x = 1:size(Z)[2]
-                    state = "S3"
-                else
-                    state = "SERROR"
-                end
-            else
-                if isa(args[i],AbstractString)
-                    Z = tmp
-                    if isa(Z,Array) && ndims(Z) == 2
-                        x = 1:size(Z)[2]
-                        state = "S6"
-                    else
-                        state = "SERROR"
-                    end
-                else
-                    x = tmp
-                    tmp = args[i]
-                    i = i+1
-                    state = "S5"
-                end
-            end
-        elseif state == "S5"
-            Z = tmp
-            if i > la
-                state = "S3"
-            else
-                state = "S6"
-            end
-        elseif state == "S6"
-            if i+1 > la
-                state = "S3"
-            else
-                ai = args[i]; ai1 = args[i+1]
-                if ai == "xlabel"
-                    ac.xlabel = ai1
-                elseif ai == "ylabel"
-                    ac.ylabel = ai1
-                elseif ai == "zlabel"
-                    ac.zlabel = ai1
-                elseif ai == "title"
-                    ac.title = ai1
-                elseif ai == "legend"
-                    cc.legend = ai1
-                elseif ai == "plotstyle"
-                    cc.plotstyle = ai1
-                elseif ai == "color"
-                    cc.color = ai1
-                elseif ai == "marker"
-                    cc.marker = ai1
-                elseif ai == "linewidth"
-                    cc.linewidth = ai1
-                elseif ai == "pointsize"
-                    cc.pointsize = ai1
-                elseif ai == "box"
-                    ac.box = ai1
-                elseif ai == "xrange"
-                    ac.xrange = ai1
-                elseif ai == "yrange"
-                    ac.yrange = ai1
-                elseif ai == "zrange"
-                    ac.zrange = ai1
-                else
-                    error("Invalid property specified")
-                end
-                i = i+2
-            end
-        elseif state == "SEND"
-            addconf(ac)
-            llplot()
-            break
-        elseif state == "SERROR"
-            error("Invalid arguments")
-        else
-            error("Unforseen situation, bailing out")
-        end
-    end
-    return h
+function surf(x::Coord,y::Coord,Z::Coord;
+			  title     = gaston_config.title,
+			  plotstyle = gaston_config.plotstyle,
+			  xlabel    = gaston_config.xlabel,
+			  ylabel    = gaston_config.ylabel,
+			  zlabel    = gaston_config.zlabel,
+			  legend    = gaston_config.legend,
+			  color     = gaston_config.color,
+			  marker    = gaston_config.marker,
+			  linewidth = gaston_config.linewidth,
+			  pointsize = gaston_config.pointsize,
+			  box       = gaston_config.box,
+			  handle    = gnuplot_state.current)
+
+	length(x) == size(Z)[2] || error("Invalid coordinates.")
+	length(y) == size(Z)[1] || error("Invalid coordinates.")
+	ndims(Z) == 2 || error("Z must have two dimensions.")
+
+	handle = figure(handle,false)
+	index = findfigure(handle)
+	clearfigure(handle)
+	ac = AxesConf(title = title,
+				  xlabel = xlabel,
+				  ylabel = ylabel,
+				  zlabel = zlabel,
+				  box = box)
+	cc = CurveConf(plotstyle = plotstyle,
+				   legend = legend,
+				   color = color,
+				   marker = marker,
+				   linewidth = linewidth,
+				   pointsize = pointsize)
+	c = [Curve(x,y,Z,cc)]
+	f = Figure(handle,ac,c,false)
+	gnuplot_state.figs[index] = f
+	llplot()
+	return handle
 end
+surf(x::Coord,y::Coord,f::Function;args...) = surf(x,y,meshgrid(x,y,f);args...)
+surf(Z::Matrix;args...) = surf(1:size(Z)[2],1:size(Z)[1],Z;args...)
 
 # print a figure to a file
 function printfigure(args...)

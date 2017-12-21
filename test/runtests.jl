@@ -56,10 +56,10 @@ using Base.Test
 	@test imagesc(z,title="test imagesc 1",xlabel="xx",ylabel="yy") == 1
 	@test imagesc(1:6,1:5,z,title="test imagesc 3",xlabel="xx",ylabel="yy") == 1
 	@test surf(rand(10,10)) == 1
-	@test surf(2:11,rand(10,10)) == 1
+	@test surf(rand(10,10)) == 1
 	@test surf(0:9,2:11,rand(10,10)) == 1
     @test surf(0:9,2:11,(x,y)->x*y) == 1
-	@test surf(0:9,2:11,(x,y)->x*y,"title","test","plotstyle","pm3d") == 1
+	@test surf(0:9,2:11,(x,y)->x*y,title="test",plotstyle="pm3d") == 1
 	@test begin
 		plot(1:10)
 		printfigure()
