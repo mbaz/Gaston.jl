@@ -41,6 +41,7 @@ struct ErrorCoords
 	yhigh::Coord
 end
 ErrorCoords() = ErrorCoords(false,Real[],Real[])
+ErrorCoords(l::Vector) = ErrorCoords(true,l,Real[])
 ErrorCoords(l::Vector,h::Vector) = ErrorCoords(true,l,h)
 
 ## Curves
