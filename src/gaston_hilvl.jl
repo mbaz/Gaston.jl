@@ -185,6 +185,7 @@ function plot!(x::Coord,y::Coord;
 	llplot()
 	return handle
 end
+plot!(y::Coord;args...) = plot!(1:length(y),y;args...)
 
 function histogram(data::Coord;
 				   bins::Int = 10,
