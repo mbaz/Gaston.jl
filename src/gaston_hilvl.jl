@@ -205,7 +205,6 @@ function histogram(data::Coord;
 	# validation
 	bins < 1 && error("At least one bin is required.")
 	handle = figure(handle,false)
-	index = findfigure(handle)
 	clearfigure(handle)
 
 	ac = AxesConf(title = title,
@@ -223,11 +222,7 @@ function histogram(data::Coord;
 				   linewidth = linewidth)
 	c = [Curve(x,y,cc)]
 	f = Figure(handle,ac,c,false)
-	if gnuplot_state.figs[index].isempty
-		gnuplot_state.figs[index] = f
-	else
-		push!(gnuplot_state.figs,f)
-	end
+	push_figure!(f)
 	llplot()
 	return handle
 end
@@ -242,7 +237,6 @@ function imagesc(x::Coord,y::Coord,Z::Coord;
 				 )
 
 	handle = figure(handle,false)
-	index = findfigure(handle)
 	clearfigure(handle)
 
 	length(x) == size(Z)[2] || error("Invalid coordinates.")
@@ -264,11 +258,7 @@ function imagesc(x::Coord,y::Coord,Z::Coord;
 	c = [Curve(x,y,Z,cc)]
 
 	f = Figure(handle,ac,c,false)
-	if gnuplot_state.figs[index].isempty
-		gnuplot_state.figs[index] = f
-	else
-		push!(gnuplot_state.figs,f)
-	end
+	push_figure!(f)
 	llplot()
 	return handle
 end
@@ -294,7 +284,6 @@ function surf(x::Coord,y::Coord,Z::Coord;
 	ndims(Z) == 2 || error("Z must have two dimensions.")
 
 	handle = figure(handle,false)
-	index = findfigure(handle)
 	clearfigure(handle)
 	ac = AxesConf(title = title,
 				  xlabel = xlabel,
@@ -309,7 +298,7 @@ function surf(x::Coord,y::Coord,Z::Coord;
 				   pointsize = pointsize)
 	c = [Curve(x,y,Z,cc)]
 	f = Figure(handle,ac,c,false)
-	gnuplot_state.figs[index] = f
+	push_figure!(f)
 	llplot()
 	return handle
 end
