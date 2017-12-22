@@ -81,6 +81,34 @@ function findfigure(c)
     return i
 end
 
+# Push a figure to gnuplot_state
+function push_figure!(f::Figure)
+	# if pushing to an existing but empty handle, overwrite it
+	handle = f.handle
+	handle < 1 && error("Invalid handle")
+	index = findfigure(handle)
+	if gnuplot_state.figs[index].isempty
+		gnuplot_state.figs[index] = f
+	else
+		push!(gnuplot_state.figs,f)
+	end
+	return nothing
+end
+
+# Push a curve to a figure
+function push_curve!(handle,curves...)
+	index = findfigure(handle)
+	index == 0 && error("No such figure.")
+	for c in curves
+		if gnuplot_state.figs[index].isempty
+			gnuplot_state.figs[index].curves = c
+		else
+			push!(gnuplot_state.figs[index].curves,c)
+		end
+	end
+	return nothing
+end
+
 # convert marker string description to gnuplot's expected number
 function pointtype(x::AbstractString)
     if x == "+"

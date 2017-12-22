@@ -138,7 +138,6 @@ function plot(x::Coord,y::Coord;
 	length(x) != length(y) && error("Input vectors must have the same number of elements.")
 
 	handle = figure(handle,false)
-	index = findfigure(handle)
 	clearfigure(handle)
 	ac = AxesConf(title = title,
 				  xlabel = xlabel,
@@ -152,11 +151,7 @@ function plot(x::Coord,y::Coord;
 	cc = CurveConf(legend,plotstyle,color,marker,linewidth,pointsize)
 	c = [Curve(x,y,financial,err,cc)]
 	f = Figure(handle,ac,c,false)
-	if gnuplot_state.figs[index].isempty
-		gnuplot_state.figs[index] = f
-	else
-		push!(gnuplot_state.figs,f)
-	end
+	push_figure!(f)
 	llplot()
 	return handle
 end
@@ -186,7 +181,7 @@ function plot!(x::Coord,y::Coord;
 
 	cc = CurveConf(legend,plotstyle,color,marker,linewidth,pointsize)
 	c = Curve(x,y,financial,err,cc)
-	push!(gnuplot_state.figs[index].curves,c)
+	push_curve!(handle,c)
 	llplot()
 	return handle
 end
@@ -293,8 +288,8 @@ function surf(x::Coord,y::Coord,Z::Coord;
 			  box       = gaston_config.box,
 			  handle    = gnuplot_state.current)
 
-	length(x) == size(Z)[2] || error("Invalid coordinates.")
-	length(y) == size(Z)[1] || error("Invalid coordinates.")
+	length(x) == size(Z)[1] || error("Invalid coordinates.")
+	length(y) == size(Z)[2] || error("Invalid coordinates.")
 	ndims(Z) == 2 || error("Z must have two dimensions.")
 
 	handle = figure(handle,false)
