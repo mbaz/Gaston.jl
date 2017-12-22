@@ -4,9 +4,9 @@
 
 module Gaston
 
-export closefigure, closeall, clearfigure, figure, plot, histogram, imagesc,
-surf, printfigure, gaston_demo, set, gnuplot_send, addconf, addcoords,
-adderror, addfinancial, CurveConf, AxesConf, llplot, meshgrid, gnuplot_exit
+export closefigure, closeall, figure,
+		plot, plot!, histogram, imagesc, surf,
+		printfigure, set
 
 import Base.show
 
