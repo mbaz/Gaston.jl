@@ -80,16 +80,7 @@ function figure(h,redraw::Bool)
     if gnuplot_state.current == nothing
 		h == 0 && (h = 1)
     else
-        if h == 0
-            # use lowest numbered handle available
-            mh = maximum(handles)
-            for i = 1:mh+1
-                if !in(i, handles)
-                    h = i
-                    break
-                end
-            end
-        end
+		h == 0 && (h = nexthandle())
     end
     # if figure with handle h exists, replot it; otherwise create it
     gnuplot_state.current = h

@@ -81,6 +81,15 @@ function findfigure(c)
     return i
 end
 
+# Return the next available handle (smallest non-used positive integer)
+function nexthandle()
+	handles = [f.handle for f in gnuplot_state.figs]
+	mh = maximum(handles)
+	for i = 1:mh+1
+		!in(i,handles) && return i
+	end
+end
+
 # Push a figure to gnuplot_state
 function push_figure!(f::Figure)
 	# if pushing to an existing but empty handle, overwrite it
