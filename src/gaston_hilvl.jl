@@ -77,11 +77,7 @@ function figure(h,redraw::Bool)
 	h < 0 && error("Invalid handle.")
 
     # determine figure handle
-    if gnuplot_state.current == nothing
-		h == 0 && (h = 1)
-    else
-		h == 0 && (h = nexthandle())
-    end
+	h == 0 && (h = nexthandle())
     # if figure with handle h exists, replot it; otherwise create it
     gnuplot_state.current = h
     if !in(h, handles)

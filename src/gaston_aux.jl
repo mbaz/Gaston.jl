@@ -83,6 +83,7 @@ end
 
 # Return the next available handle (smallest non-used positive integer)
 function nexthandle()
+	isempty(gnuplot_state.figs) && return 1
 	handles = [f.handle for f in gnuplot_state.figs]
 	mh = maximum(handles)
 	for i = 1:mh+1
