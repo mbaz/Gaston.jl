@@ -101,7 +101,7 @@ function push_curve!(handle,curves...)
 	index == 0 && error("No such figure.")
 	for c in curves
 		if gnuplot_state.figs[index].isempty
-			gnuplot_state.figs[index].curves = c
+			gnuplot_state.figs[index].curves = [c]
 		else
 			push!(gnuplot_state.figs[index].curves,c)
 		end

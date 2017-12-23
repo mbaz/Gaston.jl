@@ -149,8 +149,8 @@ function plot(x::Coord,y::Coord;
 				  xrange = xrange,
 				  yrange = yrange)
 	cc = CurveConf(legend,plotstyle,color,marker,linewidth,pointsize)
-	c = [Curve(x,y,financial,err,cc)]
-	f = Figure(handle,ac,c,false)
+	c = Curve(x,y,financial,err,cc)
+	f = Figure(handle,ac,[c],false)
 	push_figure!(f)
 	llplot()
 	return handle
@@ -220,8 +220,8 @@ function histogram(data::Coord;
 				   plotstyle = "boxes",
 				   color = color,
 				   linewidth = linewidth)
-	c = [Curve(x,y,cc)]
-	f = Figure(handle,ac,c,false)
+	c = Curve(x,y,cc)
+	f = Figure(handle,ac,[c],false)
 	push_figure!(f)
 	llplot()
 	return handle
@@ -255,9 +255,9 @@ function imagesc(x::Coord,y::Coord,Z::Coord;
 		Z[:] = Z.*255.0/(clim[2]-clim[1])
 		Z[Z.>255] = 255
 	end
-	c = [Curve(x,y,Z,cc)]
+	c = Curve(x,y,Z,cc)
 
-	f = Figure(handle,ac,c,false)
+	f = Figure(handle,ac,[c],false)
 	push_figure!(f)
 	llplot()
 	return handle
@@ -296,8 +296,8 @@ function surf(x::Coord,y::Coord,Z::Coord;
 				   marker = marker,
 				   linewidth = linewidth,
 				   pointsize = pointsize)
-	c = [Curve(x,y,Z,cc)]
-	f = Figure(handle,ac,c,false)
+	c = Curve(x,y,Z,cc)
+	f = Figure(handle,ac,[c],false)
 	push_figure!(f)
 	llplot()
 	return handle

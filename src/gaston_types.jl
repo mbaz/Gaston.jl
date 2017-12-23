@@ -124,4 +124,4 @@ mutable struct Figure
 	isempty::Bool                # a flag to indicate if figure is empty
 end
 # Construct an empty figure with given handle
-Figure(handle) = Figure(handle,AxesConf(),Curve[Curve()],true)
+Figure(handle) = Figure(handle,AxesConf(),Curve[],true)
