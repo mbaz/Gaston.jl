@@ -4,18 +4,6 @@
 
 # types and constructors
 
-# We need a global variable to keep track of gnuplot's state
-mutable struct GnuplotState
-    running::Bool                # true when gnuplot is already running
-    current                      # current figure -- "pointer" to figs
-    fid                          # pipe streams id
-	gp_stdout::AbstractString    # store gnuplot's stdout
-	gp_stderr::AbstractString    # store gnuplot's stderr
-	gp_lasterror::AbstractString # store gnuplot's last error output
-	gp_error::Bool               # true if last command resulted in gp error
-    figs::Array                  # storage for all figures
-end
-
 # Structs to define a figure
 
 ## Coordinates
@@ -125,3 +113,15 @@ mutable struct Figure
 end
 # Construct an empty figure with given handle
 Figure(handle) = Figure(handle,AxesConf(),Curve[],true)
+
+# We need a global variable to keep track of gnuplot's state
+mutable struct GnuplotState
+    running::Bool                # true when gnuplot is already running
+    current                      # current figure -- "pointer" to figs
+    fid                          # pipe streams id
+	gp_stdout::AbstractString    # store gnuplot's stdout
+	gp_stderr::AbstractString    # store gnuplot's stderr
+	gp_lasterror::AbstractString # store gnuplot's last error output
+	gp_error::Bool               # true if last command resulted in gp error
+	figs::Array{Figure}          # storage for all figures
+end

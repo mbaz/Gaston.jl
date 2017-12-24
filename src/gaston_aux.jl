@@ -91,32 +91,20 @@ function nexthandle()
 	end
 end
 
-# Push a figure to gnuplot_state
-function push_figure!(f::Figure)
-	# if pushing to an existing but empty handle, overwrite it
-	handle = f.handle
-	handle < 1 && error("Invalid handle")
+# Push configuration or a curve to a figure. The handle is assumed valid.
+function push_figure!(handle,args...)
 	index = findfigure(handle)
-	if gnuplot_state.figs[index].isempty
-		gnuplot_state.figs[index] = f
-	else
-		push!(gnuplot_state.figs,f)
-	end
-	return nothing
-end
-
-# Push a curve to a figure
-function push_curve!(handle,curves...)
-	index = findfigure(handle)
-	index == 0 && error("No such figure.")
-	for c in curves
-		if gnuplot_state.figs[index].isempty
-			gnuplot_state.figs[index].curves = [c]
-		else
-			push!(gnuplot_state.figs[index].curves,c)
+	for c in args
+		isa(c, AxesConf) && (gnuplot_state.figs[index].conf = c)
+		if isa(c, Curve)
+			if gnuplot_state.figs[index].isempty
+				gnuplot_state.figs[index].curves = [c]
+			else
+				push!(gnuplot_state.figs[index].curves,c)
+			end
+			gnuplot_state.figs[index].isempty = false
 		end
 	end
-	return nothing
 end
 
 # convert marker string description to gnuplot's expected number

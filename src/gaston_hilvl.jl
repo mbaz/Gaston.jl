@@ -137,8 +137,7 @@ function plot(x::Coord,y::Coord;
 				  yrange = yrange)
 	cc = CurveConf(legend,plotstyle,color,marker,linewidth,pointsize)
 	c = Curve(x,y,financial,err,cc)
-	f = Figure(handle,ac,[c],false)
-	push_figure!(f)
+	push_figure!(handle,ac,c)
 	llplot()
 	return handle
 end
@@ -163,12 +162,9 @@ function plot!(x::Coord,y::Coord;
 	length(x) != length(y) && error("Input vectors must have the same number of elements.")
 
 	handle = figure(handle,false)
-	index = findfigure(handle)
-	gnuplot_state.figs[index].isempty && error("Cannot add curve to empty figure.")
-
 	cc = CurveConf(legend,plotstyle,color,marker,linewidth,pointsize)
 	c = Curve(x,y,financial,err,cc)
-	push_curve!(handle,c)
+	push_figure!(handle,c)
 	llplot()
 	return handle
 end
@@ -209,7 +205,7 @@ function histogram(data::Coord;
 				   linewidth = linewidth)
 	c = Curve(x,y,cc)
 	f = Figure(handle,ac,[c],false)
-	push_figure!(f)
+	push_figure!(handle,ac,c)
 	llplot()
 	return handle
 end
@@ -244,8 +240,7 @@ function imagesc(x::Coord,y::Coord,Z::Coord;
 	end
 	c = Curve(x,y,Z,cc)
 
-	f = Figure(handle,ac,[c],false)
-	push_figure!(f)
+	push_figure!(handle,ac,c)
 	llplot()
 	return handle
 end
@@ -284,8 +279,7 @@ function surf(x::Coord,y::Coord,Z::Coord;
 				   linewidth = linewidth,
 				   pointsize = pointsize)
 	c = Curve(x,y,Z,cc)
-	f = Figure(handle,ac,[c],false)
-	push_figure!(f)
+	push_figure!(handle,ac,c)
 	llplot()
 	return handle
 end
