@@ -85,6 +85,43 @@ using Base.Test
 	@test plot(1:10,xrange = "[3.4:]") == 1
 	@test plot(1:10,xrange = "[3.4:*]") == 1
 	@test plot(1:10,xrange = "[*:3.4]") == 1
+	@test begin
+		# build a multiple-plot figure manually
+		ac = Gaston.AxesConf(title="T")
+		x1, exp_pdf = Gaston.hist(randn(10000),25)
+		exp_pdf .= exp_pdf./(step(x1)*sum(exp_pdf))
+		exp_cconf = Gaston.CurveConf(plotstyle="boxes",
+									 color="blue",
+									 legend="E")
+		exp_curve = Gaston.Curve(x1,exp_pdf,exp_cconf)
+		x2 = -5:0.05:5
+		theo_pdf = @. 1/sqrt(2π)*exp((-x2^2)/2)
+		theo_cconf = Gaston.CurveConf(color="black",legend="T")
+		theo_curve = Gaston.Curve(x2,theo_pdf,theo_cconf)
+		figure(1)
+		Gaston.push_figure!(1,ac,exp_curve,theo_curve)
+		Gaston.llplot()
+	end == nothing
+	# test `set`
+	@test set(legend="A") == nothing
+	@test set(plotstyle="linespoints") == nothing
+	@test set(color="red") == nothing
+	@test set(marker="ecircle") == nothing
+	@test set(linewidth=3) == nothing
+	@test set(pointsize=3) == nothing
+	@test set(title="A") == nothing
+	@test set(xlabel="A") == nothing
+	@test set(ylabel="A") == nothing
+	@test set(zlabel="A") == nothing
+	@test set(fill="solid") == nothing
+	@test set(grid="on") == nothing
+	@test set(terminal="x11") == nothing
+	@test set(outputfile="A") == nothing
+	@test set(print_color="red") == nothing
+	@test set(print_fontface="A") == nothing
+	@test set(print_fontscale=1) == nothing
+	@test set(print_linewidth=3) == nothing
+	@test set(print_size="10,10") == nothing
 	closeall()
 end
 
@@ -117,5 +154,25 @@ end
 	end
 	@test_throws ErrorException plot(1:10,xrange = "2:3")
 	@test_throws ErrorException plot(1:10,xrange = "ab")
+	# test `set`
+	@test_throws ErrorException set(legend=3)
+	@test_throws ErrorException set(plotstyle="A")
+	@test_throws ErrorException set(color=3)
+	@test_throws ErrorException set(marker="xyz")
+	@test_throws ErrorException set(linewidth="A")
+	@test_throws ErrorException set(pointsize="A")
+	@test_throws ErrorException set(title=3)
+	@test_throws ErrorException set(xlabel=3)
+	@test_throws ErrorException set(ylabel=3)
+	@test_throws ErrorException set(zlabel=3)
+	@test_throws ErrorException set(fill="red")
+	@test_throws ErrorException set(grid="xyz")
+	@test_throws ErrorException set(terminal="x12")
+	@test_throws ErrorException set(outputfile=3)
+	@test_throws ErrorException set(print_color=3)
+	@test_throws ErrorException set(print_fontface=3)
+	@test_throws ErrorException set(print_fontscale="1")
+	@test_throws ErrorException set(print_linewidth="3")
+	@test_throws ErrorException set(print_size=10)
 	closeall()
 end

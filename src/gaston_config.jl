@@ -84,28 +84,36 @@ function set(;legend         = gaston_config.legend,
 			 print_fontscale = gaston_config.print_fontscale,
 			 print_linewidth = gaston_config.print_linewidth,
 			 print_size      = gaston_config.print_size)
-	# The following parameters are validated
+	# Validate paramaters
+	isa(legend, String) || error("Legend must be a string.")
 	plotstyle ∈ supported_plotstyles || error("Plotstyle $(plotstyle) not supported.")
+	isa(color, String) || error("Color must be a string.")
     marker ∈ supported_markers || error("Marker $(marker) not supported.")
+	(isa(linewidth, Real) && linewidth > 0) || error("Invalid linewdith.")
+	(isa(pointsize, Real) && pointsize > 0) || error("Invalid pointsize.")
+	isa(title, String) || error("Title must be a string.")
+	isa(xlabel, String) || error("xlabel must be a string.")
+	isa(ylabel, String) || error("ylabel must be a string.")
+	isa(zlabel, String) || error("zlabel must be a string.")
 	fill ∈ supported_fillstyles || error("Fill style $(fill) not supported.")
 	grid ∈ supported_grids || error("Grid style $(grid) not supported.")
+	isa(box, String) || error("Box must be a string.")
     axis ∈ supported_axis || error("Axis $(axis) not supported.")
     validate_range(xrange) || error("Range $(xrange) not supported.")
     validate_range(yrange) || error("Range $(yrange) not supported.")
     validate_range(zrange) || error("Range $(zrange) not supported.")
     terminal ∈ supported_terminals || error("Terminal type $(terminal) not supported.")
-	gaston_config.marker            = marker
-	gaston_config.fill              = fill
-	gaston_config.grid              = grid
-	gaston_config.axis              = axis
-	gaston_config.xrange            = xrange
-	gaston_config.plotstyle         = plotstyle
-	gaston_config.yrange            = yrange
-	gaston_config.zrange            = zrange
-	gaston_config.terminal          = terminal
-	# The folowwing parameters are not validated
-	gaston_config.color             = color
+	isa(outputfile, String) || error("Outputfile must be a string.")
+	isa(print_color, String) || error("print_color must be a string.")
+	isa(print_fontface, String) || error("print_fontface must be a string.")
+	isa(print_fontscale, Real) || error("Invalid print_fontscale.")
+	isa(print_linewidth, Real) || error("Invalid print_linewidth.")
+	isa(print_size, String) || error("print_size must be a string.")
+
 	gaston_config.legend            = legend
+	gaston_config.plotstyle         = plotstyle
+	gaston_config.color             = color
+	gaston_config.marker            = marker
 	gaston_config.linewidth         = linewidth
 	gaston_config.pointsize         = pointsize
 	gaston_config.title             = title
@@ -115,6 +123,11 @@ function set(;legend         = gaston_config.legend,
 	gaston_config.fill              = fill
 	gaston_config.grid              = grid
 	gaston_config.box               = box
+	gaston_config.axis              = axis
+	gaston_config.xrange            = xrange
+	gaston_config.yrange            = yrange
+	gaston_config.zrange            = zrange
+	gaston_config.terminal          = terminal
 	gaston_config.outputfile        = outputfile
 	gaston_config.print_color       = print_color
 	gaston_config.print_fontface    = print_fontface
