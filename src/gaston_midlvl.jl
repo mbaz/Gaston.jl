@@ -21,6 +21,9 @@ function llplot()
         return
     end
 
+    # Reset gnuplot settable options.
+    gnuplot_send("\nreset\n")
+
     # Build terminal setup string and send it to gnuplot
     ts = termstring(gaston_config.terminal)
     gnuplot_send(ts)
@@ -154,9 +157,6 @@ function llplot()
 			break
 		end
 	end
-
-    # Reset gnuplot settable options.
-    gnuplot_send("\nreset\n")
 
     # If the environment is IJulia, redisplay the figure.
     if displayable("image/png")
