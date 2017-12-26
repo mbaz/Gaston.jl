@@ -86,6 +86,14 @@ using Base.Test
 	@test plot(1:10,xrange = "[3.4:*]") == 1
 	@test plot(1:10,xrange = "[*:3.4]") == 1
 	@test begin
+		err = Gaston.ErrorCoords(rand(40))
+		plot(1:40,err=err,plotstyle="errorbars");
+	end == 1
+	@test begin
+		fin = Gaston.FinancialCoords(0.1*rand(10),0.1*rand(10),0.1*rand(10),0.1*rand(10))
+		plot(1:10,financial=fin,plotstyle="financebars");
+	end == 1
+	@test begin
 		# build a multiple-plot figure manually
 		ac = Gaston.AxesConf(title="T")
 		x1, exp_pdf = Gaston.hist(randn(10000),25)
@@ -127,6 +135,7 @@ end
 
 @testset "Failure expected" begin
 	closeall()
+	# figure-related
 	@test_throws ErrorException figure("invalid")
 	@test_throws ErrorException figure(1.0)
     @test_throws ErrorException figure(1:2)
@@ -134,45 +143,54 @@ end
 	@test_throws ErrorException closefigure("invalid")
 	@test_throws ErrorException closefigure(1.0)
 	@test_throws ErrorException closefigure(1:2)
-	@test_throws ErrorException plot(0:10,0:11)
+	# plot
+	@test_throws AssertionError plot(0:10,0:11)
+	@test_throws AssertionError plot(0:10,legend=0)
+	@test_throws AssertionError plot(0:10,plotstyle="invalid")
+	@test_throws AssertionError plot(0:10,marker="invalid")
+	@test_throws AssertionError plot(0:10,marker=0)
+	@test_throws AssertionError plot(0:10,linewidth="b")
+	@test_throws AssertionError plot(0:10,linewidth=im)
+	@test_throws AssertionError plot(0:10,pointsize="b")
+	@test_throws AssertionError plot(0:10,pointsize=im)
+	@test_throws AssertionError plot(0:10,title=0)
+	@test_throws AssertionError plot(0:10,xlabel=0)
+	@test_throws AssertionError plot(0:10,ylabel=0)
+	@test_throws AssertionError plot(0:10,axis="invalid")
+	@test_throws AssertionError plot(1:10,xrange = "2:3")
+	@test_throws AssertionError plot(1:10,yrange = "ab")
+	f = Gaston.FinancialCoords([1,2],[1,2],[1,2],[1,2])
+	@test_throws AssertionError plot(1:10,financial=f)
+	er = Gaston.ErrorCoords([0.1,0.1])
+	@test_throws AssertionError plot(1:10,err=er)
+	# plot!
+	plot(1:10)
+	@test_throws AssertionError plot!(0:10,legend=0)
+	@test_throws MethodError plot!(0:10,axis="loglog")
+	# imagesc
 	z = rand(5,6)
-	@test_throws ErrorException imagesc(1:5,1:7,z)
-	for op = (:plot, :histogram)
-		@test_throws MethodError op(0:10+im*0:10)
-		@test_throws ErrorException op(0:10,legend=0)
-		@test_throws ErrorException op(0:10,plotstyle="invalid")
-		@test_throws ErrorException op(0:10,marker="invalid")
-		@test_throws ErrorException op(0:10,marker=0)
-		@test_throws ErrorException op(0:10,linewidth="b")
-		@test_throws ErrorException op(0:10,linewidth=im)
-		@test_throws ErrorException op(0:10,pointsize="b")
-		@test_throws ErrorException op(0:10,pointsize=im)
-		@test_throws ErrorException op(0:10,title=0)
-		@test_throws ErrorException op(0:10,xlabel=0)
-		@test_throws ErrorException op(0:10,ylabel=0)
-		@test_throws ErrorException op(0:10,axis="invalid")
-	end
-	@test_throws ErrorException plot(1:10,xrange = "2:3")
-	@test_throws ErrorException plot(1:10,xrange = "ab")
-	# test `set`
-	@test_throws ErrorException set(legend=3)
-	@test_throws ErrorException set(plotstyle="A")
-	@test_throws ErrorException set(color=3)
-	@test_throws ErrorException set(marker="xyz")
-	@test_throws ErrorException set(linewidth="A")
-	@test_throws ErrorException set(pointsize="A")
-	@test_throws ErrorException set(title=3)
-	@test_throws ErrorException set(xlabel=3)
-	@test_throws ErrorException set(ylabel=3)
-	@test_throws ErrorException set(zlabel=3)
-	@test_throws ErrorException set(fill="red")
-	@test_throws ErrorException set(grid="xyz")
-	@test_throws ErrorException set(terminal="x12")
-	@test_throws ErrorException set(outputfile=3)
-	@test_throws ErrorException set(print_color=3)
-	@test_throws ErrorException set(print_fontface=3)
-	@test_throws ErrorException set(print_fontscale="1")
-	@test_throws ErrorException set(print_linewidth="3")
-	@test_throws ErrorException set(print_size=10)
+	@test_throws AssertionError imagesc(1:5,1:7,z)
+	# histogram
+	@test_throws MethodError histogram(0:10+im*0:10)
+	# set
+	@test_throws AssertionError set(legend=3)
+	@test_throws AssertionError set(plotstyle="A")
+	@test_throws AssertionError set(color=3)
+	@test_throws AssertionError set(marker="xyz")
+	@test_throws AssertionError set(linewidth="A")
+	@test_throws AssertionError set(pointsize="A")
+	@test_throws AssertionError set(title=3)
+	@test_throws AssertionError set(xlabel=3)
+	@test_throws AssertionError set(ylabel=3)
+	@test_throws AssertionError set(zlabel=3)
+	@test_throws AssertionError set(fill="red")
+	@test_throws AssertionError set(grid="xyz")
+	@test_throws AssertionError set(terminal="x12")
+	@test_throws AssertionError set(outputfile=3)
+	@test_throws AssertionError set(print_color=3)
+	@test_throws AssertionError set(print_fontface=3)
+	@test_throws AssertionError set(print_fontscale="1")
+	@test_throws AssertionError set(print_linewidth="3")
+	@test_throws AssertionError set(print_size=10)
 	closeall()
 end

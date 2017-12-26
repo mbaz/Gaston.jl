@@ -103,7 +103,6 @@ function plot(x::Coord,y::Coord;
 			 title           = gaston_config.title,
 			 xlabel          = gaston_config.xlabel,
 			 ylabel          = gaston_config.ylabel,
-			 zlabel          = gaston_config.zlabel,
 			 fill            = gaston_config.fill,
 			 grid            = gaston_config.grid,
 			 box             = gaston_config.box,
@@ -115,14 +114,22 @@ function plot(x::Coord,y::Coord;
 			 handle          = gnuplot_state.current,
 			)
 	# validation
-	plotstyle ∈ supported_2Dplotstyles || error("Plotstyle $(plotstyle) not supported.")
-    marker ∈ supported_markers || error("Marker $(marker) not supported.")
-	fill ∈ supported_fillstyles || error("Fill style $(fill) not supported.")
-	grid ∈ supported_grids || error("Grid style $(grid) not supported.")
-    axis ∈ supported_axis || error("Axis $(axis) not supported.")
-    validate_range(xrange) || error("Range $(xrange) not supported.")
-    validate_range(yrange) || error("Range $(yrange) not supported.")
-	length(x) != length(y) && error("Input vectors must have the same number of elements.")
+	@assert valid_label(legend) "Legend must be a string."
+	@assert valid_2Dplotstyle(plotstyle) "Non-recognized plotstyle."
+	@assert valid_label(color) "Color must be a string."
+	@assert valid_marker(marker) "Marker $(marker) not supported."
+	@assert valid_number(linewidth) "Invalid linewidth $linewidth."
+	@assert valid_number(pointsize) "Invalid pointsize $pointsize."
+	@assert valid_label(title) "Title must be a string."
+	@assert valid_label(xlabel) "xlabel must be a string."
+	@assert valid_label(ylabel) "ylabel must be a string."
+	@assert valid_fill(fill) "Fill style $(fill) not supported."
+	@assert valid_grid(grid) "Grid style $(grid) not supported."
+	@assert valid_label(box) "box must be a string."
+	@assert valid_axis(axis) "Axis $(axis) not supported."
+	@assert valid_range(xrange) "Range $(xrange) not supported."
+    @assert valid_range(yrange) "Range $(yrange) not supported."
+	@assert valid_coords(x,y,err=err,fin=financial) "Input vectors must have the same number of elements."
 
 	handle = figure(handle,false)
 	clearfigure(handle)
@@ -157,9 +164,13 @@ function plot!(x::Coord,y::Coord;
 		 )
 
 	# validation
-	plotstyle ∈ supported_2Dplotstyles || error("Plotstyle $(plotstyle) not supported.")
-    marker ∈ supported_markers || error("Marker $(marker) not supported.")
-	length(x) != length(y) && error("Input vectors must have the same number of elements.")
+	@assert valid_label(legend) "Legend must be a string."
+	@assert valid_2Dplotstyle(plotstyle) "Non-recognized plotstyle."
+	@assert valid_label(color) "Color must be a string."
+	@assert valid_marker(marker) "Marker $(marker) not supported."
+	@assert valid_number(linewidth) "Invalid linewidth $linewidth."
+	@assert valid_number(pointsize) "Invalid pointsize $pointsize."
+	@assert valid_coords(x,y,err=err,fin=financial) "Input vectors must have the same number of elements."
 
 	handle = figure(handle,false)
 	cc = CurveConf(legend,plotstyle,color,marker,linewidth,pointsize)
@@ -186,7 +197,19 @@ function histogram(data::Coord;
 				   handle    = gnuplot_state.current
 				   )
 	# validation
-	bins < 1 && error("At least one bin is required.")
+	@assert valid_label(legend) "Legend must be a string."
+	@assert valid_label(color) "Color must be a string."
+	@assert valid_number(linewidth) "Invalid linewidth $linewidth."
+	@assert valid_label(title) "Title must be a string."
+	@assert valid_label(xlabel) "xlabel must be a string."
+	@assert valid_label(ylabel) "ylabel must be a string."
+	@assert valid_fill(fill) "Fill style $(fill) not supported."
+	@assert valid_label(box) "box must be a string."
+	@assert valid_range(xrange) "Range $(xrange) not supported."
+    @assert valid_range(yrange) "Range $(yrange) not supported."
+	@assert bins > 0 "At least one bin is required."
+	@assert norm > 0 "norm must be a positive number."
+
 	handle = figure(handle,false)
 	clearfigure(handle)
 
@@ -218,13 +241,18 @@ function imagesc(x::Coord,y::Coord,Z::Coord;
 				 clim = [0,255],
 				 handle = gnuplot_state.current
 				 )
+	# validation
+	@assert valid_label(title) "Title must be a string."
+	@assert valid_label(xlabel) "xlabel must be a string."
+	@assert valid_label(ylabel) "ylabel must be a string."
+	@assert length(clim) == 2 "clim must be a 2-element vector."
+	@assert length(x) == size(Z)[2] "Invalid coordinates."
+	@assert length(y) == size(Z)[1] "Invalid coordinates."
+	@assert 2 <= ndims(Z) <= 3 "Z must have two or three dimensions."
 
 	handle = figure(handle,false)
 	clearfigure(handle)
 
-	length(x) == size(Z)[2] || error("Invalid coordinates.")
-	length(y) == size(Z)[1] || error("Invalid coordinates.")
-	2 <= ndims(Z) <= 3 || error("Z must have two or three dimensions.")
 	ndims(Z) == 2 ? plotstyle = "image" : plotstyle = "rgbimage"
 
 	ac = AxesConf(title = title,
@@ -248,22 +276,38 @@ imagesc(Z::Coord;args...) = imagesc(1:size(Z)[2],1:size(Z)[1],Z;args...)
 
 # surface plots
 function surf(x::Coord,y::Coord,Z::Coord;
-			  title     = gaston_config.title,
-			  plotstyle = gaston_config.plotstyle,
-			  xlabel    = gaston_config.xlabel,
-			  ylabel    = gaston_config.ylabel,
-			  zlabel    = gaston_config.zlabel,
 			  legend    = gaston_config.legend,
+			  plotstyle = gaston_config.plotstyle,
 			  color     = gaston_config.color,
 			  marker    = gaston_config.marker,
 			  linewidth = gaston_config.linewidth,
 			  pointsize = gaston_config.pointsize,
+			  title     = gaston_config.title,
+			  xlabel    = gaston_config.xlabel,
+			  ylabel    = gaston_config.ylabel,
+			  zlabel    = gaston_config.zlabel,
 			  box       = gaston_config.box,
+			  xrange    = gaston_config.xrange,
+			  yrange    = gaston_config.yrange,
+			  zrange    = gaston_config.zrange,
 			  handle    = gnuplot_state.current)
-
-	length(x) == size(Z)[1] || error("Invalid coordinates.")
-	length(y) == size(Z)[2] || error("Invalid coordinates.")
-	ndims(Z) == 2 || error("Z must have two dimensions.")
+	# validation
+	@assert valid_label(legend) "Legend must be a string."
+	@assert valid_3Dplotstyle(plotstyle) "Non-recognized plotstyle."
+	@assert valid_label(color) "Color must be a string."
+	@assert valid_marker(marker) "Marker $(marker) not supported."
+	@assert valid_number(linewidth) "Invalid linewidth $linewidth."
+	@assert valid_number(pointsize) "Invalid pointsize $pointsize."
+	@assert valid_label(title) "Title must be a string."
+	@assert valid_label(xlabel) "xlabel must be a string."
+	@assert valid_label(ylabel) "ylabel must be a string."
+	@assert valid_label(box) "box must be a string."
+	@assert valid_range(xrange) "Range $(xrange) not supported."
+    @assert valid_range(yrange) "Range $(yrange) not supported."
+    @assert valid_range(zrange) "Range $(zrange) not supported."
+	@assert length(x) == size(Z)[1] "Invalid coordinates."
+	@assert length(y) == size(Z)[2] "Invalid coordinates."
+	@assert ndims(Z) == 2 "Z must have two dimensions."
 
 	handle = figure(handle,false)
 	clearfigure(handle)

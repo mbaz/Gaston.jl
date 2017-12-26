@@ -85,30 +85,30 @@ function set(;legend         = gaston_config.legend,
 			 print_linewidth = gaston_config.print_linewidth,
 			 print_size      = gaston_config.print_size)
 	# Validate paramaters
-	isa(legend, String) || error("Legend must be a string.")
-	plotstyle ∈ supported_plotstyles || error("Plotstyle $(plotstyle) not supported.")
-	isa(color, String) || error("Color must be a string.")
-    marker ∈ supported_markers || error("Marker $(marker) not supported.")
-	(isa(linewidth, Real) && linewidth > 0) || error("Invalid linewdith.")
-	(isa(pointsize, Real) && pointsize > 0) || error("Invalid pointsize.")
-	isa(title, String) || error("Title must be a string.")
-	isa(xlabel, String) || error("xlabel must be a string.")
-	isa(ylabel, String) || error("ylabel must be a string.")
-	isa(zlabel, String) || error("zlabel must be a string.")
-	fill ∈ supported_fillstyles || error("Fill style $(fill) not supported.")
-	grid ∈ supported_grids || error("Grid style $(grid) not supported.")
-	isa(box, String) || error("Box must be a string.")
-    axis ∈ supported_axis || error("Axis $(axis) not supported.")
-    validate_range(xrange) || error("Range $(xrange) not supported.")
-    validate_range(yrange) || error("Range $(yrange) not supported.")
-    validate_range(zrange) || error("Range $(zrange) not supported.")
-    terminal ∈ supported_terminals || error("Terminal type $(terminal) not supported.")
-	isa(outputfile, String) || error("Outputfile must be a string.")
-	isa(print_color, String) || error("print_color must be a string.")
-	isa(print_fontface, String) || error("print_fontface must be a string.")
-	isa(print_fontscale, Real) || error("Invalid print_fontscale.")
-	isa(print_linewidth, Real) || error("Invalid print_linewidth.")
-	isa(print_size, String) || error("print_size must be a string.")
+	@assert valid_label(legend) "Legend must be a string."
+	@assert valid_plotstyle(plotstyle) "Plotstyle $(plotstyle) not supported."
+	@assert valid_label(color) "Color must be a string."
+	@assert valid_marker(marker) "Marker $(marker) not supported."
+	@assert valid_number(linewidth) "Invalid linewdith."
+	@assert valid_number(pointsize) "Invalid pointsize."
+	@assert valid_label(title) "Title must be a string."
+	@assert valid_label(xlabel) "xlabel must be a string."
+	@assert valid_label(ylabel) "ylabel must be a string."
+	@assert valid_label(zlabel) "zlabel must be a string."
+	@assert valid_fill(fill) "Fill style $(fill) not supported."
+	@assert valid_grid(grid) "Grid style $(grid) not supported."
+	@assert valid_label(box) "box must be a string."
+	@assert valid_axis(axis) "Axis $(axis) not supported."
+	@assert valid_range(xrange) "Range $(xrange) not supported."
+    @assert valid_range(yrange) "Range $(yrange) not supported."
+    @assert valid_range(zrange) "Range $(yrange) not supported."
+	@assert valid_terminal(terminal) "Terminal type $(terminal) not supported."
+	@assert valid_label(outputfile) "Outputfile must be a string."
+	@assert valid_label(print_color) "print_color must be a string."
+	@assert valid_label(print_fontface) "print_fontface must be a string."
+	@assert valid_number(print_fontscale) "Invalid value of print_fontscale"
+	@assert valid_number(print_linewidth) "Invalid value of print_linewidth"
+	@assert valid_label(print_size) "print_size must be a string."
 
 	gaston_config.legend            = legend
 	gaston_config.plotstyle         = plotstyle
@@ -137,8 +137,40 @@ function set(;legend         = gaston_config.legend,
 	return nothing
 end
 
+#
+# Validation functions
+#
+
+# list of supported features
+const supported_screenterms = ["qt", "wxt", "x11", "aqua"]
+const supported_fileterms = ["svg", "gif", "png", "pdf", "eps"]
+const supported_terminals = vcat(supported_screenterms,supported_fileterms)
+const supported_2Dplotstyles = ["lines", "linespoints", "points",
+		"impulses", "boxes", "errorlines", "errorbars", "dots", "steps",
+		"fsteps", "fillsteps", "financebars"]
+const supported_3Dplotstyles = ["lines", "linespoints", "points",
+		"impulses", "pm3d", "image", "rgbimage", "dots"]
+const supported_plotstyles = vcat(supported_2Dplotstyles, supported_3Dplotstyles)
+const supported_axis = ["", "normal", "semilogx", "semilogy", "loglog"]
+const supported_markers = ["", "+", "x", "*", "esquare", "fsquare",
+		"ecircle", "fcircle", "etrianup", "ftrianup", "etriandn",
+		"ftriandn", "edmd", "fdmd"]
+const supported_fillstyles = ["","empty","solid","pattern"]
+const supported_grids = ["", "on", "off"]
+
+valid_plotstyle(s) = s ∈ supported_plotstyles
+valid_2Dplotstyle(s) = s ∈ supported_2Dplotstyles
+valid_3Dplotstyle(s) = s ∈ supported_3Dplotstyles
+valid_marker(s) = s ∈ supported_markers
+valid_number(s) = isa(s, Real) && s > 0
+valid_label(s) = isa(s, String)
+valid_fill(s) = s ∈ supported_fillstyles
+valid_grid(s) = s ∈ supported_grids
+valid_axis(s) = s ∈ supported_axis
+valid_terminal(s) = s ∈ supported_terminals
+
 # Validate that a given range follows gnuplot's syntax.
-function validate_range(s::AbstractString)
+function valid_range(s::AbstractString)
     # floating point, starting with a dot
     f1 = "[-+]?\\.\\d+([eE][-+]?\\d+)?"
     # floating point, starting with a digit
@@ -164,4 +196,16 @@ function validate_range(s::AbstractString)
         return true
     end
     return false
+end
+
+# Validate coordinates
+function valid_coords(x,y;err=ErrorCoords(),fin=FinancialCoords())
+	length(x) != length(y) && return false
+	(err.valid && length(x) != length(err.ylow)) && return false
+	(err.valid && !isempty(err.yhigh) && length(x) != length(err.yhigh)) && return false
+	(fin.valid && length(x) != length(fin.open)) && return false
+	(fin.valid && length(x) != length(fin.low)) && return false
+	(fin.valid && length(x) != length(fin.high)) && return false
+	(fin.valid && length(x) != length(fin.close)) && return false
+	return true
 end
