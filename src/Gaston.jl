@@ -24,7 +24,7 @@ include("gaston_config.jl")
 
 # set up global variables
 # global variable that stores gnuplot's state
-gnuplot_state = GnuplotState(false,nothing,[],"","","",false,Figure[])
+gnuplot_state = GnuplotState(false,nothing,[],"","","",false,Figure[],displayable("image/png"))
 
 # when gnuplot_state goes out of scope, exit gnuplot
 finalizer(gnuplot_state,gnuplot_exit)

@@ -124,4 +124,5 @@ mutable struct GnuplotState
 	gp_lasterror::AbstractString # store gnuplot's last error output
 	gp_error::Bool               # true if last command resulted in gp error
 	figs::Array{Figure}          # storage for all figures
+	isjupyter::Bool              # true if running inside a jupyter notebook
 end

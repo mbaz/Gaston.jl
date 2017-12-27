@@ -52,7 +52,7 @@ function GastonConfig()
 		"color", "Sans", 12, 0.5, 1, "640,480"
 	)
 	# Determine if current display supports PNG; this allows IJulia support.
-	if displayable("image/png")
+	if gnuplot_state.isjupyter
 		gc.outputfile = "$(tempdir())/gaston-ijulia.png"
 		gc.terminal = "png"
 		gc.print_fontsize = 20
@@ -129,13 +129,18 @@ function set(;legend         = gaston_config.legend,
 	gaston_config.xrange            = xrange
 	gaston_config.yrange            = yrange
 	gaston_config.zrange            = zrange
-	gaston_config.terminal          = terminal
 	gaston_config.outputfile        = outputfile
 	gaston_config.print_color       = print_color
 	gaston_config.print_fontface    = print_fontface
 	gaston_config.print_fontscale   = print_fontscale
 	gaston_config.print_linewidth   = print_linewidth
 	gaston_config.print_size        = print_size
+	# don't change terminal inside jupyter
+	if terminal != "png" && gnuplot_state.isjupyter
+		warn("Terminal cannot be changed in a Jupyter notebook.")
+	else
+		gaston_config.terminal = terminal
+	end
 	return nothing
 end
 
