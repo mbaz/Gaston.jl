@@ -38,6 +38,9 @@ using Base.Test
 	@test plot(1:10,xrange = "[3.4:]") == 1
 	@test plot(1:10,xrange = "[3.4:*]") == 1
 	@test plot(1:10,xrange = "[*:3.4]") == 1
+	@test plot(3,4,plotstyle="points",pointsize=3,xrange="[2.95:3.05]",yrange="[3.95:4.045]")
+	@test plot(rand(10).+im.*rand(10)) == 1
+	@test plot(3+4im,plotstyle="points",pointsize=3,xrange="[2.95:3.05]",yrange="[3.95:4.045]") == 1
 	@test begin
 		err = Gaston.ErrorCoords(rand(40))
 		plot(1:40,err=err,plotstyle="errorbars");
