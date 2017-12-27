@@ -15,6 +15,7 @@ using Base.Test
 
 @testset "Pass expected" begin
 	closeall()
+	# figures
 	@test figure() == 1
 	@test figure() == 2
 	@test figure(4) == 4
@@ -22,44 +23,57 @@ using Base.Test
 	@test closefigure() == 2
 	@test closeall() == 1
 	@test closeall() == 0
+	# plots
 	@test plot(1:10) == 1
 	@test plot(1:10,handle=2) == 2
 	@test plot(1:10,handle=4) == 4
 	@test closeall() == 3
+	@test plot(sin.(-3:0.01:3), legend = "sine", plotstyle = "lines",
+		color = "blue", marker = "ecircle", linewidth = 2, pointsize = 1.1,
+		title = "test plot 1", xlabel = "x", ylabel = "y",
+		box = "inside horizontal left top", axis ="loglog") == 1
+	@test plot(1:10,xrange = "[2:3]") == 1
+	@test plot(1:10,xrange = "[-1.1:3.4]") == 1
+	@test plot(1:10,xrange = "[:3.4]") == 1
+	@test plot(1:10,xrange = "[3.4:]") == 1
+	@test plot(1:10,xrange = "[3.4:*]") == 1
+	@test plot(1:10,xrange = "[*:3.4]") == 1
 	@test begin
-		plot(sin.(-3:0.01:3),
-		legend = "sine",
-		plotstyle = "lines",
-		color = "blue",
-		marker = "ecircle",
-		linewidth = 2,
-		pointsize = 1.1,
-		title = "test plot 1",
-		xlabel = "x",
-		ylabel = "y",
-		box = "inside horizontal left top",
-		axis ="loglog") == 1
-	end
-	@test histogram(rand(1000)) == 1
-	@test begin
-		histogram(randn(1000),
-        bins=100,
-        norm=1,
-        color="blue",
-        linewidth=2,
-        title="test histogram",
-        xlabel="x",
-        ylabel="y",
-        box="inside horizontal left top")
+		err = Gaston.ErrorCoords(rand(40))
+		plot(1:40,err=err,plotstyle="errorbars");
 	end == 1
+	@test begin
+		err = Gaston.ErrorCoords(rand(40))
+		plot(1:40,err=err,plotstyle="errorlines");
+	end == 1
+	@test begin
+		err = Gaston.ErrorCoords(rand(40),rand(40))
+		plot(1:40,err=err,plotstyle="errorbars");
+	end == 1
+	@test begin
+		err = Gaston.ErrorCoords(rand(40),rand(40))
+		plot(1:40,err=err,plotstyle="errorlines");
+	end == 1
+	@test begin
+		fin = Gaston.FinancialCoords(0.1*rand(10),0.1*rand(10),0.1*rand(10),0.1*rand(10))
+		plot(1:10,financial=fin,plotstyle="financebars");
+	end == 1
+	# histograms
+	@test histogram(rand(1000)) == 1
+	@test histogram(randn(1000), bins=100, norm=1, color="blue", linewidth=2,
+        title="test histogram", xlabel="x", ylabel="y",
+        box="inside horizontal left top") == 1
+    # imagesc
 	z = rand(5,6)
 	@test imagesc(z,title="test imagesc 1",xlabel="xx",ylabel="yy") == 1
 	@test imagesc(1:6,1:5,z,title="test imagesc 3",xlabel="xx",ylabel="yy") == 1
+	# surf
 	@test surf(rand(10,10)) == 1
 	@test surf(rand(10,10)) == 1
 	@test surf(0:9,2:11,rand(10,10)) == 1
     @test surf(0:9,2:11,(x,y)->x*y) == 1
 	@test surf(0:9,2:11,(x,y)->x*y,title="test",plotstyle="pm3d") == 1
+	# printfigure
 	@test begin
 		plot(1:10)
 		printfigure()
@@ -79,22 +93,8 @@ using Base.Test
 		printfigure("svg")
 	end == 1
 	@test printfigure("gif") == 1
-	@test plot(1:10,xrange = "[2:3]") == 1
-	@test plot(1:10,xrange = "[-1.1:3.4]") == 1
-	@test plot(1:10,xrange = "[:3.4]") == 1
-	@test plot(1:10,xrange = "[3.4:]") == 1
-	@test plot(1:10,xrange = "[3.4:*]") == 1
-	@test plot(1:10,xrange = "[*:3.4]") == 1
+	# build a multiple-plot figure manually
 	@test begin
-		err = Gaston.ErrorCoords(rand(40))
-		plot(1:40,err=err,plotstyle="errorbars");
-	end == 1
-	@test begin
-		fin = Gaston.FinancialCoords(0.1*rand(10),0.1*rand(10),0.1*rand(10),0.1*rand(10))
-		plot(1:10,financial=fin,plotstyle="financebars");
-	end == 1
-	@test begin
-		# build a multiple-plot figure manually
 		ac = Gaston.AxesConf(title="T")
 		x1, exp_pdf = Gaston.hist(randn(10000),25)
 		exp_pdf .= exp_pdf./(step(x1)*sum(exp_pdf))
@@ -110,7 +110,7 @@ using Base.Test
 		Gaston.push_figure!(1,ac,exp_curve,theo_curve)
 		Gaston.llplot()
 	end == nothing
-	# test `set`
+	# set
 	@test set(legend="A") == nothing
 	@test set(plotstyle="linespoints") == nothing
 	@test set(color="red") == nothing
