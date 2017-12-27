@@ -276,7 +276,7 @@ function termstring(term::AbstractString)
         ts = "set term $term $(gnuplot_state.current)"
     else
         if term == "pdf"
-            s = "set term pdfcairo $(gc.print_color) "
+            s = "set term pdfcairo enhanced transparent $(gc.print_color) "
             s = "$s font \"$(gc.print_fontface),$(gc.print_fontsize)\" "
             s = "$s fontscale $(gc.print_fontscale) "
             s = "$s linewidth $(gc.print_linewidth) "

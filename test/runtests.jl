@@ -38,7 +38,7 @@ using Base.Test
 	@test plot(1:10,xrange = "[3.4:]") == 1
 	@test plot(1:10,xrange = "[3.4:*]") == 1
 	@test plot(1:10,xrange = "[*:3.4]") == 1
-	@test plot(3,4,plotstyle="points",pointsize=3,xrange="[2.95:3.05]",yrange="[3.95:4.045]")
+	@test plot(3,4,plotstyle="points",pointsize=3,xrange="[2.95:3.05]",yrange="[3.95:4.045]") == 1
 	@test plot(rand(10).+im.*rand(10)) == 1
 	@test plot(3+4im,plotstyle="points",pointsize=3,xrange="[2.95:3.05]",yrange="[3.95:4.045]") == 1
 	@test begin
@@ -77,25 +77,26 @@ using Base.Test
     @test surf(0:9,2:11,(x,y)->x*y) == 1
 	@test surf(0:9,2:11,(x,y)->x*y,title="test",plotstyle="pm3d") == 1
 	# printfigure
+	set(outputfile="$(tempdir())/gastontest")
 	@test begin
 		plot(1:10)
 		printfigure()
 	end == 1
 	@test begin
 		plot(1:10,handle=2)
-		printfigure(2,"png")
+		printfigure(handle=2,term="png")
 		closefigure()
 	end == 2
 	@test begin
 		plot(1:10)
-		printfigure("eps")
+		printfigure(term="eps")
 	end == 1
-	@test printfigure("pdf") == 1
+	@test printfigure(term="pdf") == 1
 	@test begin
 		set(print_size="640,480")
-		printfigure("svg")
+		printfigure(term="svg")
 	end == 1
-	@test printfigure("gif") == 1
+	@test printfigure(term="gif") == 1
 	# build a multiple-plot figure manually
 	@test begin
 		ac = Gaston.AxesConf(title="T")

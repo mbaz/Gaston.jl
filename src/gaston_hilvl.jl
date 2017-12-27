@@ -327,58 +327,28 @@ surf(x::Coord,y::Coord,f::Function;args...) = surf(x,y,meshgrid(x,y,f);args...)
 surf(Z::Matrix;args...) = surf(1:size(Z)[2],1:size(Z)[1],Z;args...)
 
 # print a figure to a file
-function printfigure(args...)
-    global gnuplot_state
-    global gaston_config
+function printfigure(;handle=gnuplot_state.current,
+					 term="pdf",
+					 outputfile=gaston_config.outputfile)
 
     # disable this command in IJulia
     # TODO: see if it's desirable and/or possible to re-enable it
-
 	gnuplot_state.isjupyter && error("printfigure command disabled in Jupyter notebook.")
 
-    # if args is empty, print current figure in pdf
-    if isempty(args)
-        term = "pdf"
-        h = gnuplot_state.current
-    elseif length(args) == 1
-        a = args[1]
-        if isa(a, Int)
-            # if a is an integer, it's the figure handle.
-            h = a
-        elseif isa(a, AbstractString)
-            # if a is a string, it's the term type
-            h = gnuplot_state.current
-            term = a
-        else
-            error("Wrong arguments.")
-        end
-    elseif length(args) == 2
-        a = args[1]
-        if isa(a, Int)
-            h = a
-        else
-            error("Wrong arguments.")
-        end
-        term = args[2]
-        if term ∉ supported_fileterms
-            error("Wrong arguments.")
-        end
-    end
+    findfigure(handle) == 0 && error("Requested figure does not exist.")
+	isempty(outputfile) && error("Please specify an output filename.")
+	term ∈ supported_fileterms || error("Unsupported filetype $(term).")
 
-    # make sure requested figure exists
-    if findfigure(h) == 0
-        error("Requested figure does not exist.")
-    end
-
+	set(outputfile=outputfile)
     # save terminal
     saveterm = gaston_config.terminal
     # set temporary terminal and replot
     set(terminal=term)
-    figure(h)
+    figure(handle)
     set(terminal=saveterm)
     # gnuplot is weird: this command is needed to close the output file
     gnuplot_send("set output")
 
-    return h
+    return handle
 end
 
