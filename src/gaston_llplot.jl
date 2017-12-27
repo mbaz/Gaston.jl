@@ -141,25 +141,33 @@ function llplot()
     gnuplot_send("print \"X\"\n")
 
 	# Loop until we read data from either gnuplot's stdout or stdin
+	i = 0
+	done = false
 	while true
+		sleep(0.05)  # 50 milliseconds
+		i = i+1
 		yield()  # let async tasks run
 		if !isempty(gnuplot_state.gp_stdout)
-			# We got data from stdin, meaning the plot went well.
+			# We got data from stdin, meaning gnuplot finished executing our commands
 			gnuplot_state.gp_stdout = ""
 			gnuplot_state.gp_error = false
-			break
+			done = true
 		end
 		if !isempty(gnuplot_state.gp_stderr)
 			# Gnuplot met trouble while plotting.
 			gnuplot_state.gp_lasterror = gnuplot_state.gp_stderr
 			gnuplot_state.gp_stderr = ""
 			gnuplot_state.gp_error = true
-			break
+			warn("Gnuplot returned an error message:\n$(gnuplot_state.gp_lasterror)")
+		end
+		done && break
+		if i == 20
+			error("Gnuplot is taking too long to respond.")
 		end
 	end
 
-    # If the environment is IJulia, redisplay the figure.
-    if gnuplot_state.isjupyter
+    # If the environment is IJulia and there are no errors, redisplay the figure.
+    if gnuplot_state.isjupyter && !gnuplot_state.gp_error
     	redisplay(figs[c])
 	end
 end

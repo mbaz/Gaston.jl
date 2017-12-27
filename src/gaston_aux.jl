@@ -202,7 +202,7 @@ end
 function Base.show(io::IO, ::MIME"image/png", x::Figure)
 	# The plot is written to /tmp/gaston-ijula.png. Read the file and
 	# write it to io.
-	data = open(read, "$(tempdir())/gaston-ijulia.png","r")
+	data = open(read, gaston_config.jupyterfile,"r")
 	write(io,data)
 end
 
@@ -305,7 +305,11 @@ function termstring(term::AbstractString)
             s = "$s linewidth $(gc.print_linewidth) "
             s = "$s size $(gc.print_size)"
         end
-        ts = "$s \nset output \"$(gc.outputfile)\""
+        if gnuplot_state.isjupyter
+			ts = "$s \nset output\"$(gc.jupyterfile)\""
+		else
+			ts = "$s \nset output \"$(gc.outputfile)\""
+		end
     end
     return ts
 end

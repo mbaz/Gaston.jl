@@ -29,6 +29,7 @@ mutable struct GastonConfig
     terminal::AbstractString
     # for terminals that support filenames
     outputfile::AbstractString
+    jupyterfile::AbstractString
     # for printing to file
     print_color::AbstractString
     print_fontface::AbstractString
@@ -40,7 +41,7 @@ end
 function GastonConfig()
 	gc = GastonConfig(
 		# CurveConf
-		"","lines","","",1,0.5,
+		"","lines","blue","",1,0.5,
 		# AxesConf
 		"Untitled","x","y","z","empty","off","inside vertical right top","",
 		"[*:*]","[*:*]","[*:*]",
@@ -48,12 +49,13 @@ function GastonConfig()
 		"wxt",
 		# output file name
 		"",
+		# IJulia file name
+		"$(tempdir())/gaston-ijulia.png",
 		# print parameters
 		"color", "Sans", 12, 0.5, 1, "640,480"
 	)
 	# Determine if current display supports PNG; this allows IJulia support.
 	if gnuplot_state.isjupyter
-		gc.outputfile = "$(tempdir())/gaston-ijulia.png"
 		gc.terminal = "png"
 		gc.print_fontsize = 20
 	end
