@@ -331,6 +331,11 @@ function printfigure(args...)
     global gnuplot_state
     global gaston_config
 
+    # disable this command in IJulia
+    # TODO: see if it's desirable and/or possible to re-enable it
+
+	gnuplot_state.isjupyter && error("printfigure command disabled in Jupyter notebook.")
+
     # if args is empty, print current figure in pdf
     if isempty(args)
         term = "pdf"
