@@ -2,7 +2,7 @@
 ##
 ## This file is distributed under the 2-clause BSD License.
 
-# types and constructors
+# All types and constructors are defined here.
 
 # Structs to define a figure
 
@@ -34,7 +34,7 @@ ErrorCoords(l::Vector,h::Vector) = ErrorCoords(true,l,h)
 
 ## Curves
 # Curve configuration
-type CurveConf
+struct CurveConf
     legend::AbstractString          # legend text
     plotstyle::AbstractString
     color::AbstractString           # one of gnuplot's builtin colors --

@@ -2,6 +2,9 @@
 ##
 ## This file is distributed under the 2-clause BSD License.
 
+# Auxiliary, non-exported functions are declared here.
+
+# Initialize gnuplot and pipes
 function gnuplot_init()
     global gnuplot_state
 
@@ -51,7 +54,7 @@ end
 	end
 end
 
-# close gnuplot pipe
+# close gnuplot pipes
 function gnuplot_exit(x...)
     global gnuplot_state
 
@@ -64,11 +67,11 @@ function gnuplot_exit(x...)
     # reset gnuplot_state
     gnuplot_state.running = false
     gnuplot_state.current = nothing
-    gnuplot_state.figs = Any[]
+    gnuplot_state.figs = Figure[]
     return 0
 end
 
-# Return index to figure with handle 'c'. If no such figure exists, returns 0.
+# Return index to figure with handle `c`. If no such figure exists, returns 0.
 function findfigure(c)
     global gnuplot_state
     i = 0
@@ -81,6 +84,16 @@ function findfigure(c)
     return i
 end
 
+# remove a figure's data without closing it
+function clearfigure(h::Int)
+    global gnuplot_state
+
+    f = findfigure(h)
+    if f != 0
+        gnuplot_state.figs[f] = Figure(h)
+    end
+end
+
 # Return the next available handle (smallest non-used positive integer)
 function nexthandle()
 	isempty(gnuplot_state.figs) && return 1
@@ -91,7 +104,7 @@ function nexthandle()
 	end
 end
 
-# Push configuration or a curve to a figure. The handle is assumed valid.
+# Push configuration, axes or curves to a figure. The handle is assumed valid.
 function push_figure!(handle,args...)
 	index = findfigure(handle)
 	for c in args
@@ -139,6 +152,76 @@ function pointtype(x::AbstractString)
     return 1
 end
 
+# create a Z-coordinate matrix from x, y coordinates and a function
+function meshgrid(x,y,f)
+    Z = zeros(length(x),length(y))
+    for k = 1:length(x)
+        Z[k,:] = [ f(i,j) for i=x[k], j=y ]
+    end
+    return Z
+end
+
+# create x,y coordinates for a histogram, from a sample vector, using a number
+# of bins
+function hist(s,bins)
+    # When adding an element s to a bin, we use an iequality m < s <= M.
+    # In order to account for elements s==m, we need to special-case
+    # the computation for the first bin
+    ms = minimum(s)
+    Ms = maximum(s)
+    bins = max(bins, 1)
+    if Ms == ms
+        # compute a "natural" scale
+        g = (10.0^floor(log10(abs(ms)+eps()))) / 2
+        ms, Ms = ms - g, ms + g
+    end
+    delta = (Ms-ms)/bins
+    x = ms:delta:Ms
+    y = zeros(bins)
+    # this is special-cased because we want to include the minimum in the
+    # first bin
+    y[1] = sum(ms .<= s .<= x[2])
+    for i in 2:length(x)-2
+        y[i] = sum(x[i] .< s .<= x[i+1])
+    end
+    # this is special-cased because there is no guarantee that x[end] == Ms
+    # (because of how ranges work)
+    if length(y) > 1 y[end] = sum(x[end-1] .< s .<= Ms) end
+
+    if bins != 1
+        # We want the left bin to start at ms and the right bin to end at Ms
+        x = (ms+delta/2):delta:Ms
+    else
+        # add two empty bins on the sides to provide a scale to gnuplot
+        x = (ms-delta/2):delta:(ms+delta/2)
+        y = [0.0, y[1], 0.0]
+    end
+    return x,y
+end
+
+function Base.show(io::IO, ::MIME"image/png", x::Figure)
+	# The plot is written to /tmp/gaston-ijula.png. Read the file and
+	# write it to io.
+	data = open(read, "$(tempdir())/gaston-ijulia.png","r")
+	write(io,data)
+end
+
+# Execute command `cmd`, and return a tuple `(in, out, err, r)`, where
+# `in`, `out`, `err` are pipes to the process' STDIN, STDOUT, and STDERR, and
+# `r` is a process descriptor.
+function popen3(cmd::Cmd)
+    pin = Base.Pipe()
+    out = Base.Pipe()
+    err = Base.Pipe()
+    r = spawn(cmd, (pin, out, err))
+    Base.close_pipe_sync(out.in)
+    Base.close_pipe_sync(err.in)
+    Base.close_pipe_sync(pin.out)
+    Base.start_reading(out.out)
+    Base.start_reading(err.out)
+    return (pin.in, out.out, err.out, r)
+end
+
 # return configuration string for a single plot
 function linestr_single(conf::CurveConf)
     s = ""
@@ -180,44 +263,6 @@ function linestr(curves::Vector{Curve}, cmd::AbstractString, file::AbstractStrin
         end
     end
     return s
-end
-
-# create a Z-coordinate matrix from x, y coordinates and a function
-function meshgrid(x,y,f)
-    Z = zeros(length(x),length(y))
-    for k = 1:length(x)
-        Z[k,:] = [ f(i,j) for i=x[k], j=y ]
-    end
-    return Z
-end
-
-# dereference CurveConf, by adding a method to copy()
-function copy(conf::CurveConf)
-    new = CurveConf()
-    new.legend = conf.legend
-    new.plotstyle = conf.plotstyle
-    new.color = conf.color
-    new.marker = conf.marker
-    new.linewidth = conf.linewidth
-    new.pointsize = conf.pointsize
-    return new
-end
-
-# dereference AxesConf
-function copy(conf::AxesConf)
-    new = AxesConf()
-    new.title = conf.title
-    new.xlabel = conf.xlabel
-    new.ylabel = conf.ylabel
-    new.zlabel = conf.zlabel
-    new.fill = conf.fill
-    new.grid = conf.grid
-    new.box = conf.box
-    new.axis = conf.axis
-    new.xrange = conf.xrange
-    new.yrange = conf.yrange
-    new.zrange = conf.zrange
-    return new
 end
 
 # Build a "set term" string appropriate for the terminal type
@@ -324,63 +369,14 @@ function gnuplot_send_fig_config(config)
     end
 end
 
-# create x,y coordinates for a histogram, from a sample vector, using a number
-# of bins
-function hist(s,bins)
-    # When adding an element s to a bin, we use an iequality m < s <= M.
-    # In order to account for elements s==m, we need to special-case
-    # the computation for the first bin
-    ms = minimum(s)
-    Ms = maximum(s)
-    bins = max(bins, 1)
-    if Ms == ms
-        # compute a "natural" scale
-        g = (10.0^floor(log10(abs(ms)+eps()))) / 2
-        ms, Ms = ms - g, ms + g
+# write commands to gnuplot's pipe
+function gnuplot_send(s::AbstractString)
+    gin = gnuplot_state.fid[1] # gnuplot STDIN
+    w = write(gin, string(s,"\n"))
+    # check that data was accepted by the pipe
+    if !(w > 0)
+        println("Something went wrong writing to gnuplot STDIN.")
+        return
     end
-    delta = (Ms-ms)/bins
-    x = ms:delta:Ms
-    y = zeros(bins)
-    # this is special-cased because we want to include the minimum in the
-    # first bin
-    y[1] = sum(ms .<= s .<= x[2])
-    for i in 2:length(x)-2
-        y[i] = sum(x[i] .< s .<= x[i+1])
-    end
-    # this is special-cased because there is no guarantee that x[end] == Ms
-    # (because of how ranges work)
-    if length(y) > 1 y[end] = sum(x[end-1] .< s .<= Ms) end
-
-    if bins != 1
-        # We want the left bin to start at ms and the right bin to end at Ms
-        x = (ms+delta/2):delta:Ms
-    else
-        # add two empty bins on the sides to provide a scale to gnuplot
-        x = (ms-delta/2):delta:(ms+delta/2)
-        y = [0.0, y[1], 0.0]
-    end
-    return x,y
-end
-
-function Base.show(io::IO, ::MIME"image/png", x::Figure)
-	# The plot is written to /tmp/gaston-ijula.png. Read the file and
-	# write it to io.
-	data = open(read, "$(tempdir())/gaston-ijulia.png","r")
-	write(io,data)
-end
-
-# Execute command `cmd`, and return a tuple `(in, out, err, r)`, where
-# `in`, `out`, `err` are pipes to the process' STDIN, STDOUT, and STDERR, and
-# `r` is a process descriptor.
-function popen3(cmd::Cmd)
-    pin = Base.Pipe()
-    out = Base.Pipe()
-    err = Base.Pipe()
-    r = spawn(cmd, (pin, out, err))
-    Base.close_pipe_sync(out.in)
-    Base.close_pipe_sync(err.in)
-    Base.close_pipe_sync(pin.out)
-    Base.start_reading(out.out)
-    Base.start_reading(err.out)
-    return (pin.in, out.out, err.out, r)
+    flush(gin)
 end

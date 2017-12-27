@@ -2,6 +2,8 @@
 ##
 ## This file is distributed under the 2-clause BSD License.
 
+# This file contains exported, high-level commands
+
 function closefigure(x...)
     global gnuplot_state
     global gaston_config
@@ -46,16 +48,6 @@ function closeall()
 		closed = closed + 1
 	end
 	return closed
-end
-
-# remove a figure's data without closing it
-function clearfigure(h::Int)
-    global gnuplot_state
-
-    f = findfigure(h)
-    if f != 0
-        gnuplot_state.figs[f] = Figure(h)
-    end
 end
 
 # Select or create a figure. When called with no arguments, create a new

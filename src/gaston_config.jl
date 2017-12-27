@@ -2,6 +2,8 @@
 ##
 ## This file is distributed under the 2-clause BSD License.
 
+# This file contains configuration-related functions and types
+
 # Structure to keep Gaston's configuration
 mutable struct GastonConfig
     # default CurveConf values

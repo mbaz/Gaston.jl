@@ -18,17 +18,15 @@ end
 # load files
 include("gaston_types.jl")
 include("gaston_aux.jl")
-include("gaston_lowlvl.jl")
-include("gaston_midlvl.jl")
+include("gaston_llplot.jl")
 include("gaston_hilvl.jl")
 include("gaston_config.jl")
-include("gaston_demo.jl")
 
 # set up global variables
 # global variable that stores gnuplot's state
 gnuplot_state = GnuplotState(false,nothing,[],"","","",false,Figure[])
 
-# when gnuplot_state goes out of scope, close the pipe
+# when gnuplot_state goes out of scope, exit gnuplot
 finalizer(gnuplot_state,gnuplot_exit)
 
 # global variable that stores Gaston's configuration
