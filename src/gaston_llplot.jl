@@ -3,7 +3,7 @@
 ## This file is distributed under the 2-clause BSD License.
 
 # llplot() is our workhorse plotting function
-function llplot()
+function llplot(gpcom="")
     global gnuplot_state
     global gaston_config
 
@@ -27,6 +27,9 @@ function llplot()
     # Build terminal setup string and send it to gnuplot
     ts = termstring(gaston_config.terminal)
     gnuplot_send(ts)
+
+    # Send user command to gnuplot
+	!isempty(gpcom) && gnuplot_send(gpcom)
 
     # datafile filename
     (filename,f) = mktemp()

@@ -104,6 +104,7 @@ function plot(x::Coord,y::Coord;
 			 financial       = FinancialCoords(),
 			 err             = ErrorCoords(),
 			 handle          = gnuplot_state.current,
+			 gpcom           = ""
 			)
 	# validation
 	@assert valid_label(legend) "Legend must be a string."
@@ -137,7 +138,7 @@ function plot(x::Coord,y::Coord;
 	cc = CurveConf(legend,plotstyle,color,marker,linewidth,pointsize)
 	c = Curve(x,y,financial,err,cc)
 	push_figure!(handle,ac,c)
-	llplot()
+	llplot(gpcom)
 	return handle
 end
 plot(y::Coord;args...) = plot(1:length(y),y;args...)
@@ -190,7 +191,8 @@ function histogram(data::Coord;
 				   box       = gaston_config.box,
 				   xrange    = gaston_config.xrange,
 				   yrange    = gaston_config.yrange,
-				   handle    = gnuplot_state.current
+				   handle    = gnuplot_state.current,
+				   gpcom           = ""
 				   )
 	# validation
 	@assert valid_label(legend) "Legend must be a string."
@@ -225,17 +227,18 @@ function histogram(data::Coord;
 	c = Curve(x,y,cc)
 	f = Figure(handle,ac,[c],false)
 	push_figure!(handle,ac,c)
-	llplot()
+	llplot(gpcom)
 	return handle
 end
 
 # image plots
 function imagesc(x::Coord,y::Coord,Z::Coord;
-				 title = gaston_config.title,
+				 title  = gaston_config.title,
 				 xlabel = gaston_config.xlabel,
 				 ylabel = gaston_config.ylabel,
-				 clim = [0,255],
-				 handle = gnuplot_state.current
+				 clim   = [0,255],
+				 handle = gnuplot_state.current,
+				 gpcom  = ""
 				 )
 	# validation
 	@assert valid_label(title) "Title must be a string."
@@ -265,7 +268,7 @@ function imagesc(x::Coord,y::Coord,Z::Coord;
 	c = Curve(x,y,Z,cc)
 
 	push_figure!(handle,ac,c)
-	llplot()
+	llplot(gpcom)
 	return handle
 end
 imagesc(Z::Coord;args...) = imagesc(1:size(Z)[2],1:size(Z)[1],Z;args...)
@@ -286,7 +289,9 @@ function surf(x::Coord,y::Coord,Z::Coord;
 			  xrange    = gaston_config.xrange,
 			  yrange    = gaston_config.yrange,
 			  zrange    = gaston_config.zrange,
-			  handle    = gnuplot_state.current)
+			  handle    = gnuplot_state.current,
+			  gpcom     = ""
+			  )
 	# validation
 	@assert valid_label(legend) "Legend must be a string."
 	@assert valid_3Dplotstyle(plotstyle) "Non-recognized plotstyle."
@@ -320,7 +325,7 @@ function surf(x::Coord,y::Coord,Z::Coord;
 				   pointsize = pointsize)
 	c = Curve(x,y,Z,cc)
 	push_figure!(handle,ac,c)
-	llplot()
+	llplot(gpcom)
 	return handle
 end
 surf(x::Coord,y::Coord,f::Function;args...) = surf(x,y,meshgrid(x,y,f);args...)
