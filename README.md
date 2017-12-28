@@ -1,38 +1,39 @@
 Gaston: Julia plotting using gnuplot
 ==================================== 
 
-Gaston provides an interface to plot using gnuplot.
+Gaston is a [Julia](https://julialang.org)  package for plotting. It provides an interface to [gnuplot](https://gnuplot.info), a powerful but old-fashioned plotting package available on all major platforms.
 
 Why use Gaston?
 --------------
 
-The julia plotting ecosystem has improved a lot in the last couple of years. With plenty of powerful packages to choose from, why use Gaston? These are some Gaston features that may be attractive to you:
+Why use Gaston, when there are plenty of modern, powerful alternatives such as Plots.jl and Gadfly.jl?  These are some Gaston features that may be attractive to you:
 
-1. Easy and fast plotting to the screen or inside an IJulia notebook.
-1. Multiple plots on the screen at the same time.
-1. Syntax familiar to Matlab and Octave users.
-1. No dependencies except GnuPlot itself.
-1. Focus on simplicity and speed. I use Gaston when I need to plot something quickly. If I need publication-quality plots, I use PGFPlots.
-1. Support for 3D plots, with mouse zoom, rotation, etc.
-1. Support for many of the types of plots that GnuPlot supports: histograms, images, financial bars, etc.
-1. Easy saving of plots to a file, supporting many file formats.
+1. Emphasis on fast, simple plotting to the screen or in a Jupyter notebook.
+1. Since the code is so simple (less than 1,500 lines, with no dependencies beyond Julia Base), it loads in less than a second, even without precompilation.
+1. Support for 2D, 3D, histogram and image plots, with mouse zoom, rotation, etc.
+1. Support for error bars and finance bars.
+1. Syntax not too different from that of Matlab and Octave.
+1. Capable of handling multiple plots on the screen at the same time.
+1. Easy saving of plots to a file, supporting the more common file formats.
 
-Having said that, Gaston also shares GnuPlot's limitations. The main one is that GnuPlot is not a library; it is designed to be used interactively. Gaston simulates a user typing interactive commands in a GnuPlot session; we try to be as robust as possible, but this set up is always fragile.
+My philosophy is that plotting to the screen should be fast and non-ugly. Publication-quality plots are the domain of TiKZ and pgfplots.
+
+Having said that, Gaston also shares GnuPlot's limitations. The main one is that gnuplot is not a library; it is designed to be used interactively. Gaston simulates a user typing interactive commands in a gnuplot session. While Gaston provides many safeguards, there is always the possibility that something goes wrong and a restart is required.
 
 Installation
 ------------
 
-Gaston requires GnuPlot to be installed in your system. It has been tested
-with versions 4.6 and above. Gaston also requires Julia v0.5.
+Gaston requires gnuplot to be installed in your system. It has been tested
+with versions 4.6 and above, and version 5.2 is recommended. Gaston also requires Julia v0.6.
 
-To install using Julia's packaging system, run `Pkg.add("Gaston")`.
+To install Gaston using Julia's packaging system, run `Pkg.add("Gaston")`.
 
 Documentation
 -------------
 
-To build the PDF documentation, cd into the doc/ subdirectory and type
-'make help'. You can download the pre-build documentation from
-https://bitbucket.org/mbaz/gaston/downloads
+There is a tutorial availabe [here]().
+
+Reference documentation is available [here]().
 
 A note on OSX
 -------------
@@ -49,23 +50,11 @@ terminal. You can verify if your version of gnuplot supports it by issuing
 
     gnuplot -e "set term" | grep wxt
 
-Again, if no output is printed, your gnuplot does not support wxt. In this
-case, you need to run this command before any other Gaston command:
+A further alternative is the qt terminal. If it is not supported, then you either need to install a gnuplot version with support for modern terminals, or revert to the x11 terminal with:
 
     set_terminal("x11")
 
-x11 is a fallback terminal with less bells and whistles than wxt or aqua.
-
-If you want to save your plots to a file, please see [this discussion first](https://github.com/mbaz/Gaston.jl/issues/4).
-
-Demo
-----
-
-Gaston includes a demo that showcases its current capabilities:
-
-    julia> gaston_demo()
-
-This function is defined in Gaston/src/gaston\_demo.jl.
+x11 is a fallback terminal with less bells and whistles than qt, wxt or aqua.
 
 Tests
 -----
