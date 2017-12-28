@@ -37,6 +37,8 @@ mutable struct GastonConfig
     print_fontscale::Real
     print_linewidth::Real
     print_size::AbstractString
+    # prefix for temp data files
+    tmpprefix::AbstractString
 end
 function GastonConfig()
 	gc = GastonConfig(
@@ -52,7 +54,9 @@ function GastonConfig()
 		# IJulia file name
 		"$(tempdir())/gaston-ijulia.png",
 		# print parameters
-		"color", "Sans", 12, 0.5, 1, "640,480"
+		"color", "Sans", 12, 0.5, 1, "640,480",
+		# tmp file prefix
+		randstring(8)
 	)
 	# Determine if current display supports PNG; this allows IJulia support.
 	if gnuplot_state.isjupyter

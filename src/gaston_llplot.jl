@@ -13,11 +13,11 @@ function llplot(gpcom="")
         println("No current figure")
         return
     end
-    figs = gnuplot_state.figs
-    config = figs[c].conf
+	fig = gnuplot_state.figs[c]
+    config = fig.conf
 
     # if figure has no data, stop here
-    if isempty(figs[c].curves[1].x)
+    if isempty(fig.isempty)
         return
     end
 
@@ -31,18 +31,21 @@ function llplot(gpcom="")
     # Send user command to gnuplot
 	!isempty(gpcom) && gnuplot_send(gpcom)
 
-    # datafile filename
-    (filename,f) = mktemp()
+    # Datafile filename. This is where we store the coordinates to plot.
+    # This file is then read by gnuplot to do the actual plotting. One file
+    # per figure handle is used; this avoids polutting /tmp with too many files.
+    filename = "$(tempdir())/gaston-$(gaston_config.tmpprefix)-$(fig.handle)"
+	f = open(filename,"w")
 
     # Send appropriate coordinates and data to gnuplot, depending on
     # whether we are doing 2-d, 3-d or image plots.
 
     # 2-d plot: Z is empty or plostyle is {,rgb}image
-    if isempty(figs[c].curves[1].Z) ||
-        figs[c].curves[1].conf.plotstyle == "image" ||
-        figs[c].curves[1].conf.plotstyle == "rgbimage"
+    if isempty(fig.curves[1].Z) ||
+        fig.curves[1].conf.plotstyle == "image" ||
+        fig.curves[1].conf.plotstyle == "rgbimage"
         # create data file
-        for i in figs[c].curves
+        for i in fig.curves
             ps = i.conf.plotstyle
             if ps == "errorbars" || ps == "errorlines"
                 if isempty(i.E.yhigh)
@@ -107,14 +110,14 @@ function llplot(gpcom="")
         # send figure configuration to gnuplot
         gnuplot_send_fig_config(config)
         # send plot command to gnuplot
-        gnuplot_send(linestr(figs[c].curves, "plot", filename))
+        gnuplot_send(linestr(fig.curves, "plot", filename))
 
     # 3-d plot: Z is not empty and plotstyle is not {,rgb}image
-    elseif !isempty(figs[c].curves[1].Z) &&
-            figs[c].curves[1].conf.plotstyle != "image" &&
-            figs[c].curves[1].conf.plotstyle != "rgbimage"
+    elseif !isempty(fig.curves[1].Z) &&
+            fig.curves[1].conf.plotstyle != "image" &&
+            fig.curves[1].conf.plotstyle != "rgbimage"
         # create data file
-        for i in figs[c].curves
+        for i in fig.curves
 			# data is written to tmparr, which is then written to disk
 			tmparr = zeros(1, 3)
 			tmparr_row_index = 1
@@ -133,7 +136,7 @@ function llplot(gpcom="")
         # send figure configuration to gnuplot
         gnuplot_send_fig_config(config)
         # send command to gnuplot
-        gnuplot_send(linestr(figs[c].curves, "splot",filename))
+        gnuplot_send(linestr(fig.curves, "splot",filename))
     end
     # Wait until gnuplot is finished plotting before returning. To do this,
     # we make gnuplot output "X\n" in its stdout. Gnuplot will only get to
@@ -171,6 +174,6 @@ function llplot(gpcom="")
 
     # If the environment is IJulia and there are no errors, redisplay the figure.
     if gnuplot_state.isjupyter && !gnuplot_state.gp_error
-    	redisplay(figs[c])
+    	redisplay(fig)
 	end
 end
