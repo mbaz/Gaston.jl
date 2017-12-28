@@ -31,9 +31,9 @@ To install Gaston using Julia's packaging system, run `Pkg.add("Gaston")`.
 Documentation
 -------------
 
-There is a tutorial availabe [here]().
+There is a tutorial availabe [here](https://nbviewer.jupyter.org/github/mbaz/Gaston.jl/blob/master/doc/gaston-tutorial.ipynb).
 
-Reference documentation is available [here]().
+Additional reference documentation is forthcoming.
 
 A note on OSX
 -------------
