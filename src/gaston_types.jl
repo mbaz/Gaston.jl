@@ -86,7 +86,8 @@ mutable struct AxesConf
     axis::AbstractString       # normal, semilog{x,y}, loglog
     xrange::AbstractString     # xrange
     yrange::AbstractString     # yrange
-    zrange::AbstractString     # zrange
+	zrange::AbstractString     # zrange
+	palette::AbstractString    # palette
 end
 # Constructor with default values (stored in gaston_config)
 AxesConf(;
@@ -100,8 +101,9 @@ AxesConf(;
 	  axis   = gaston_config.axis,
 	  xrange =  gaston_config.xrange,
 	  yrange =  gaston_config.yrange,
-	  zrange =  gaston_config.zrange
-	  ) = AxesConf(title,xlabel,ylabel,zlabel,fill,grid,box,axis,xrange,yrange,zrange)
+	  zrange =  gaston_config.zrange,
+	  palette = gaston_config.palette
+	  ) = AxesConf(title,xlabel,ylabel,zlabel,fill,grid,box,axis,xrange,yrange,zrange,palette)
 
 # At the top level, a figure is a handle, an axes configuration, and a
 # set of curves.

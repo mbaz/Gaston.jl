@@ -121,6 +121,7 @@ using Base.Test
 	@test set(marker="ecircle") == nothing
 	@test set(linewidth=3) == nothing
 	@test set(pointsize=3) == nothing
+	@test set(palette="gray") == nothing
 	@test set(title="A") == nothing
 	@test set(xlabel="A") == nothing
 	@test set(ylabel="A") == nothing
