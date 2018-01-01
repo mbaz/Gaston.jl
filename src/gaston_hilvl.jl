@@ -144,8 +144,8 @@ end
 plot(y::Coord;args...) = plot(1:length(y),y;args...)
 plot(x::Real,y::Real;args...) = plot([x],[y];args...)  # plot a single point
 # plot complex inputs
-plot(c::Complex{T} where T<:Number;args...) = plot(real(c),imag(c);args...)
-plot(c::Vector{Complex{T}} where T<:Number;args...) = plot(real(c),imag(c);args...)
+plot(c::Complex;args...) = plot(real(c),imag(c);args...)
+plot(c::Vector{<:Complex};args...) = plot(real(c),imag(c);args...)
 
 # Add a curve to an existing figure
 function plot!(x::Coord,y::Coord;
@@ -177,6 +177,9 @@ function plot!(x::Coord,y::Coord;
 	return handle
 end
 plot!(y::Coord;args...) = plot!(1:length(y),y;args...)
+plot!(x::Real,y::Real;args...) = plot!([x],[y];args...)
+plot!(c::Complex;args...) = plot!(real(c),imag(c);args...)
+plot!(c::Vector{<:Complex};args...) = plot!(real(c),imag(c);args...)
 
 function histogram(data::Coord;
 				   bins::Int = 10,
