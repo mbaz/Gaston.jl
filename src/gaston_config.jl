@@ -52,7 +52,7 @@ function GastonConfig()
 		# output file name
 		"",
 		# IJulia file name
-		"$(tempdir())/gaston-ijulia.png",
+        joinpath(tempdir(), "gaston-ijulia.png"),
 		# print parameters
 		"color", "Sans", 12, 0.5, 1, "640,480",
 		# tmp file prefix
