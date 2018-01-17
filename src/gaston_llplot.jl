@@ -34,7 +34,7 @@ function llplot(gpcom="")
     # Datafile filename. This is where we store the coordinates to plot.
     # This file is then read by gnuplot to do the actual plotting. One file
     # per figure handle is used; this avoids polutting /tmp with too many files.
-    filename = "$(tempdir())/gaston-$(gaston_config.tmpprefix)-$(fig.handle)"
+    filename = joinpath(tempdir(), "gaston-$(gaston_config.tmpprefix)-$(fig.handle)")
 	f = open(filename,"w")
 
     # Send appropriate coordinates and data to gnuplot, depending on

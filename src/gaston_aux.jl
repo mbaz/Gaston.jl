@@ -306,9 +306,9 @@ function termstring(term::AbstractString)
             s = "$s size $(gc.print_size)"
         end
         if gnuplot_state.isjupyter
-			ts = "$s \nset output\"$(gc.jupyterfile)\""
+			ts = "$s \nset output '$(gc.jupyterfile)'"
 		else
-			ts = "$s \nset output \"$(gc.outputfile)\""
+			ts = "$s \nset output '$(gc.outputfile)'"
 		end
     end
     return ts
