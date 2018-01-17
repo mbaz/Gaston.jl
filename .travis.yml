@@ -1,7 +1,7 @@
 # Documentation: http://docs.travis-ci.com/user/languages/julia/
 language: julia
 julia:
-  - 0.6
+  - 0.5
 os:
   - linux
 notifications:
