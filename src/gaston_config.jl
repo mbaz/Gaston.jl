@@ -40,12 +40,13 @@ mutable struct GastonConfig
     # prefix for temp data files
     tmpprefix::AbstractString
 end
+
 function GastonConfig()
 	gc = GastonConfig(
 		# CurveConf
 		"","lines","blue","",1,0.5,
 		# AxesConf
-		"Untitled","x","y","z","empty","off","inside vertical right top","",
+		"","","","","empty","off","inside vertical right top","",
 		"[*:*]","[*:*]","[*:*]",
 		# terminal
 		"wxt",
