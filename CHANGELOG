@@ -1,3 +1,36 @@
+version 0.7.1
+
+	* Use empty string as defaults for axis labels and title
+	* Add missing `plot!()` commands
+	* Update .travis.yml
+	* Fix tempdir problem in Windows
+	* Update changelog
+
+version 0.7
+
+	* Require Julia 0.6
+	* New tutorial
+	* New syntax for plotting
+	* New `set` command to set defaults
+	* Add support for plotting complex vectors
+	* Improve and add tests
+	* Many internal fixes and code optimization
+
+version 0.6
+
+	* Add support for grids
+	* Fix deprecations
+	* Restore histogram functionality broken by Julia update
+	* Remove support for Julia 0.3
+
+version 0.5.7
+
+	* Update tests to use Julia's infrastructure
+
+version 0.5.6
+
+	* Require Julia 0.5.
+
 version 0.5.5
 
 Update syntax again. Convert into a Julia package.
