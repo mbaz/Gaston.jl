@@ -10,21 +10,21 @@ function gnuplot_init()
 
     pr = (0,0,0,0) # stdin, stdout, stderr, pid
     try
-		pr = popen3(`gnuplot`)
+        pr = popen3(`gnuplot`)
     catch
         error("There was a problem starting up gnuplot.")
     end
     # It's possible that `popen3` runs successfully, but gnuplot exits
     # immediately. Double-check that gnuplot is running at this point.
     if Base.process_running(pr[4])
-	    gnuplot_state.running = true
-	    gnuplot_state.fid = pr
-		# Start tasks to read and write gnuplot's pipes
-		yield()  # get async tasks started (code blocks without this line)
-		notify(StartPipes)
-	else
+        gnuplot_state.running = true
+        gnuplot_state.fid = pr
+        # Start tasks to read and write gnuplot's pipes
+        yield()  # get async tasks started (code blocks without this line)
+        notify(StartPipes)
+    else
         error("There was a problem starting up gnuplot.")
-	end
+    end
 end
 
 # Async tasks to read/write to gnuplot's pipes.
@@ -32,26 +32,26 @@ const StartPipes = Condition()  # signal to start reading pipes
 
 # This task reads all characters available from gnuplot's stdout.
 @async while true
-	wait(StartPipes)
-	pout = gnuplot_state.fid[2]
-	while true
-		if !isopen(pout)
-			break
-		end
-		gnuplot_state.gp_stdout = string(readavailable(pout))
-	end
+    wait(StartPipes)
+    pout = gnuplot_state.fid[2]
+    while true
+        if !isopen(pout)
+            break
+        end
+        gnuplot_state.gp_stdout = string(readavailable(pout))
+    end
 end
 
 # This task reads all characters available from gnuplot's stderr.
 @async while true
-	wait(StartPipes)
-	perr = gnuplot_state.fid[3]
-	while true
-		if !isopen(perr)
-			break
-		end
-		gnuplot_state.gp_stderr = ascii(String(readavailable(perr)))
-	end
+    wait(StartPipes)
+    perr = gnuplot_state.fid[3]
+    while true
+        if !isopen(perr)
+            break
+        end
+        gnuplot_state.gp_stderr = ascii(String(readavailable(perr)))
+    end
 end
 
 # close gnuplot pipes
@@ -96,28 +96,28 @@ end
 
 # Return the next available handle (smallest non-used positive integer)
 function nexthandle()
-	isempty(gnuplot_state.figs) && return 1
-	handles = [f.handle for f in gnuplot_state.figs]
-	mh = maximum(handles)
-	for i = 1:mh+1
-		!in(i,handles) && return i
-	end
+    isempty(gnuplot_state.figs) && return 1
+    handles = [f.handle for f in gnuplot_state.figs]
+    mh = maximum(handles)
+    for i = 1:mh+1
+        !in(i,handles) && return i
+    end
 end
 
 # Push configuration, axes or curves to a figure. The handle is assumed valid.
 function push_figure!(handle,args...)
-	index = findfigure(handle)
-	for c in args
-		isa(c, AxesConf) && (gnuplot_state.figs[index].conf = c)
-		if isa(c, Curve)
-			if gnuplot_state.figs[index].isempty
-				gnuplot_state.figs[index].curves = [c]
-			else
-				push!(gnuplot_state.figs[index].curves,c)
-			end
-			gnuplot_state.figs[index].isempty = false
-		end
-	end
+    index = findfigure(handle)
+    for c in args
+        isa(c, AxesConf) && (gnuplot_state.figs[index].conf = c)
+        if isa(c, Curve)
+            if gnuplot_state.figs[index].isempty
+                gnuplot_state.figs[index].curves = [c]
+            else
+                push!(gnuplot_state.figs[index].curves,c)
+            end
+            gnuplot_state.figs[index].isempty = false
+        end
+    end
 end
 
 # convert marker string description to gnuplot's expected number
@@ -200,10 +200,10 @@ function hist(s,bins)
 end
 
 function Base.show(io::IO, ::MIME"image/png", x::Figure)
-	# The plot is written to /tmp/gaston-ijula.png. Read the file and
-	# write it to io.
-	data = open(read, gaston_config.jupyterfile,"r")
-	write(io,data)
+    # The plot is written to /tmp/gaston-ijula.png. Read the file and
+    # write it to io.
+    data = open(read, gaston_config.jupyterfile,"r")
+    write(io,data)
 end
 
 # Execute command `cmd`, and return a tuple `(in, out, err, r)`, where
@@ -306,28 +306,28 @@ function termstring(term::AbstractString)
             s = "$s size $(gc.print_size)"
         end
         if gnuplot_state.isjupyter
-			ts = "$s \nset output '$(gc.jupyterfile)'"
-		else
-			ts = "$s \nset output '$(gc.outputfile)'"
-		end
+            ts = "$s \nset output '$(gc.jupyterfile)'"
+        else
+            ts = "$s \nset output '$(gc.outputfile)'"
+        end
     end
     return ts
 end
 
 # send gnuplot the current figure's configuration
 function gnuplot_send_fig_config(config)
-	# fill style
-	if config.fill != ""
-		gnuplot_send(string("set style fill ",config.fill))
-	end
-	# grid
-	if config.grid != ""
-		if config.grid == "on"
-			gnuplot_send(string("set grid"))
-		else
-			gnuplot_send(string("unset grid"))
-		end
-	end
+    # fill style
+    if config.fill != ""
+        gnuplot_send(string("set style fill ",config.fill))
+    end
+    # grid
+    if config.grid != ""
+        if config.grid == "on"
+            gnuplot_send(string("set grid"))
+        else
+            gnuplot_send(string("unset grid"))
+        end
+    end
     # legend box
     if config.box != ""
         gnuplot_send(string("set key ",config.box))

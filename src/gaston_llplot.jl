@@ -13,7 +13,7 @@ function llplot(gpcom="")
         println("No current figure")
         return
     end
-	fig = gnuplot_state.figs[c]
+    fig = gnuplot_state.figs[c]
     config = fig.conf
 
     # if figure has no data, stop here
@@ -29,13 +29,14 @@ function llplot(gpcom="")
     gnuplot_send(ts)
 
     # Send user command to gnuplot
-	!isempty(gpcom) && gnuplot_send(gpcom)
+    !isempty(gpcom) && gnuplot_send(gpcom)
 
     # Datafile filename. This is where we store the coordinates to plot.
     # This file is then read by gnuplot to do the actual plotting. One file
     # per figure handle is used; this avoids polutting /tmp with too many files.
-    filename = joinpath(tempdir(), "gaston-$(gaston_config.tmpprefix)-$(fig.handle)")
-	f = open(filename,"w")
+    filename = joinpath(tempdir(),
+                        "gaston-$(gaston_config.tmpprefix)-$(fig.handle)")
+    f = open(filename,"w")
 
     # Send appropriate coordinates and data to gnuplot, depending on
     # whether we are doing 2-d, 3-d or image plots.
@@ -55,48 +56,48 @@ function llplot(gpcom="")
                     # ylow, yhigh (double error coordinate)
                     writedlm(f,[i.x i.y i.E.ylow i.E.yhigh],' ')
                 end
-			elseif ps == "financebars"
-            	# data is written to tmparr, which is then written to disk
-            	tmparr = zeros(length(i.x),5)
+            elseif ps == "financebars"
+                # data is written to tmparr, which is then written to disk
+                tmparr = zeros(length(i.x),5)
                 # output matrix
                 for col = 1:length(i.x)
-					tmparr[col,1] = i.x[col]
-					tmparr[col,2] = i.F.open[col]
-					tmparr[col,3] = i.F.low[col]
-					tmparr[col,4] = i.F.high[col]
-					tmparr[col,5] = i.F.close[col]
+                    tmparr[col,1] = i.x[col]
+                    tmparr[col,2] = i.F.open[col]
+                    tmparr[col,3] = i.F.low[col]
+                    tmparr[col,4] = i.F.high[col]
+                    tmparr[col,5] = i.F.close[col]
                 end
-				writedlm(f,tmparr,' ')
+                writedlm(f,tmparr,' ')
             elseif ps == "image"
-            	# data is written to tmparr, which is then written to disk
-            	tmparr = zeros(length(i.x)*length(i.y),3)
+                # data is written to tmparr, which is then written to disk
+                tmparr = zeros(length(i.x)*length(i.y),3)
                 tmparr_row_index = 1  # index into tmparr row
                 # output matrix
                 for row = 1:length(i.y)
                     x = length(i.x)
                     for col = 1:length(i.x)
-                    	tmparr[tmparr_row_index,1] = i.x[col]
-                    	tmparr[tmparr_row_index,2] = i.x[row]
-                    	tmparr[tmparr_row_index,3] = i.Z[row,col]
-                    	tmparr_row_index = tmparr_row_index+1
+                        tmparr[tmparr_row_index,1] = i.x[col]
+                        tmparr[tmparr_row_index,2] = i.x[row]
+                        tmparr[tmparr_row_index,3] = i.Z[row,col]
+                        tmparr_row_index = tmparr_row_index+1
                         x = x-1
                     end
                 end
-				writedlm(f,tmparr,' ')
+                writedlm(f,tmparr,' ')
             elseif ps == "rgbimage"
-            	# data is written to tmparr, which is then written to disk
-            	tmparr = zeros(length(i.x)*length(i.y), 5)
-            	tmparr_row_index = 1
+                # data is written to tmparr, which is then written to disk
+                tmparr = zeros(length(i.x)*length(i.y), 5)
+                tmparr_row_index = 1
                 # output matrix
                 for col = 1:length(i.x)
                     y = length(i.y)
                     for row = 1:length(i.y)
-                    	tmparr[tmparr_row_index,1] = i.x[col]
-                    	tmparr[tmparr_row_index,2] = i.y[row]
-                    	tmparr[tmparr_row_index,3] = i.Z[y,col,1]
-                    	tmparr[tmparr_row_index,4] = i.Z[y,col,2]
-                    	tmparr[tmparr_row_index,5] = i.Z[y,col,3]
-                    	tmparr_row_index = tmparr_row_index+1
+                        tmparr[tmparr_row_index,1] = i.x[col]
+                        tmparr[tmparr_row_index,2] = i.y[row]
+                        tmparr[tmparr_row_index,3] = i.Z[y,col,1]
+                        tmparr[tmparr_row_index,4] = i.Z[y,col,2]
+                        tmparr[tmparr_row_index,5] = i.Z[y,col,3]
+                        tmparr_row_index = tmparr_row_index+1
                         y = y-1
                     end
                 end
@@ -118,15 +119,15 @@ function llplot(gpcom="")
             fig.curves[1].conf.plotstyle != "rgbimage"
         # create data file
         for i in fig.curves
-			# data is written to tmparr, which is then written to disk
-			tmparr = zeros(1, 3)
-			tmparr_row_index = 1
+            # data is written to tmparr, which is then written to disk
+            tmparr = zeros(1, 3)
+            tmparr_row_index = 1
             for row in 1:length(i.x)
                 for col in 1:length(i.y)
-					tmparr[1,1] = i.x[row]
-					tmparr[1,2] = i.y[col]
-					tmparr[1,3] = i.Z[row,col]
-					writedlm(f,tmparr,' ')
+                    tmparr[1,1] = i.x[row]
+                    tmparr[1,2] = i.y[col]
+                    tmparr[1,3] = i.Z[row,col]
+                    writedlm(f,tmparr,' ')
                 end
                 write(f,"\n")
             end
@@ -146,34 +147,35 @@ function llplot(gpcom="")
     gnuplot_send("set print \"-\"\n")
     gnuplot_send("print \"X\"\n")
 
-	# Loop until we read data from either gnuplot's stdout or stdin
-	i = 0
-	done = false
-	while true
-		sleep(0.05)  # 50 milliseconds
-		i = i+1
-		yield()  # let async tasks run
-		if !isempty(gnuplot_state.gp_stdout)
-			# We got data from stdin, meaning gnuplot finished executing our commands
-			gnuplot_state.gp_stdout = ""
-			gnuplot_state.gp_error = false
-			done = true
-		end
-		if !isempty(gnuplot_state.gp_stderr)
-			# Gnuplot met trouble while plotting.
-			gnuplot_state.gp_lasterror = gnuplot_state.gp_stderr
-			gnuplot_state.gp_stderr = ""
-			gnuplot_state.gp_error = true
-			warn("Gnuplot returned an error message:\n$(gnuplot_state.gp_lasterror)")
-		end
-		done && break
-		if i == 20
-			error("Gnuplot is taking too long to respond.")
-		end
-	end
+    # Loop until we read data from either gnuplot's stdout or stdin
+    i = 0
+    done = false
+    while true
+        sleep(0.05)  # 50 milliseconds
+        i = i+1
+        yield()  # let async tasks run
+        if !isempty(gnuplot_state.gp_stdout)
+            # We got data from stdin: gnuplot finished executing our commands
+            gnuplot_state.gp_stdout = ""
+            gnuplot_state.gp_error = false
+            done = true
+        end
+        if !isempty(gnuplot_state.gp_stderr)
+            # Gnuplot met trouble while plotting.
+            gnuplot_state.gp_lasterror = gnuplot_state.gp_stderr
+            gnuplot_state.gp_stderr = ""
+            gnuplot_state.gp_error = true
+            warn("Gnuplot returned an error message:\n
+                 $(gnuplot_state.gp_lasterror)")
+        end
+        done && break
+        if i == 20
+            error("Gnuplot is taking too long to respond.")
+        end
+    end
 
     # If the environment is IJulia and there are no errors, redisplay the figure.
     if gnuplot_state.isjupyter && !gnuplot_state.gp_error
-    	redisplay(fig)
-	end
+        redisplay(fig)
+    end
 end

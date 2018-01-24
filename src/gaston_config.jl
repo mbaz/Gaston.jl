@@ -42,113 +42,113 @@ mutable struct GastonConfig
 end
 
 function GastonConfig()
-	gc = GastonConfig(
-		# CurveConf
-		"","lines","blue","",1,0.5,
-		# AxesConf
-		"","","","","empty","off","inside vertical right top","",
-		"[*:*]","[*:*]","[*:*]",
-		# terminal
-		"wxt",
-		# output file name
-		"",
-		# IJulia file name
+    gc = GastonConfig(
+        # CurveConf
+        "","lines","blue","",1,0.5,
+        # AxesConf
+        "","","","","empty","off","inside vertical right top","",
+        "[*:*]","[*:*]","[*:*]",
+        # terminal
+        "wxt",
+        # output file name
+        "",
+        # IJulia file name
         joinpath(tempdir(), "gaston-ijulia.png"),
-		# print parameters
-		"color", "Sans", 12, 0.5, 1, "640,480",
-		# tmp file prefix
-		randstring(8)
-	)
-	# Determine if current display supports PNG; this allows IJulia support.
-	if gnuplot_state.isjupyter
-		gc.terminal = "png"
-		gc.print_fontsize = 20
-	end
-	return gc
+        # print parameters
+        "color", "Sans", 12, 0.5, 1, "640,480",
+        # tmp file prefix
+        randstring(8)
+    )
+    # Determine if current display supports PNG; this allows IJulia support.
+    if gnuplot_state.isjupyter
+        gc.terminal = "png"
+        gc.print_fontsize = 20
+    end
+    return gc
 end
 
 # Set any of Gaston's configuration variables
 # This function assumes that gaston_config exists
 function set(;legend         = gaston_config.legend,
-			 plotstyle       = gaston_config.plotstyle,
-			 color           = gaston_config.color,
-			 marker          = gaston_config.marker,
-			 linewidth       = gaston_config.linewidth,
-			 pointsize       = gaston_config.pointsize,
-			 title           = gaston_config.title,
-			 xlabel          = gaston_config.xlabel,
-			 ylabel          = gaston_config.ylabel,
-			 zlabel          = gaston_config.zlabel,
-			 fill            = gaston_config.fill,
-			 grid            = gaston_config.grid,
-			 box             = gaston_config.box,
-			 axis            = gaston_config.axis,
-			 xrange          = gaston_config.xrange,
-			 yrange          = gaston_config.yrange,
-			 zrange          = gaston_config.zrange,
-			 terminal        = gaston_config.terminal,
-			 outputfile      = gaston_config.outputfile,
-			 print_color     = gaston_config.print_color,
-			 print_fontface  = gaston_config.print_fontface,
-			 print_fontscale = gaston_config.print_fontscale,
-			 print_linewidth = gaston_config.print_linewidth,
-			 print_size      = gaston_config.print_size)
-	# Validate paramaters
-	@assert valid_label(legend) "Legend must be a string."
-	@assert valid_plotstyle(plotstyle) "Plotstyle $(plotstyle) not supported."
-	@assert valid_label(color) "Color must be a string."
-	@assert valid_marker(marker) "Marker $(marker) not supported."
-	@assert valid_number(linewidth) "Invalid linewdith."
-	@assert valid_number(pointsize) "Invalid pointsize."
-	@assert valid_label(title) "Title must be a string."
-	@assert valid_label(xlabel) "xlabel must be a string."
-	@assert valid_label(ylabel) "ylabel must be a string."
-	@assert valid_label(zlabel) "zlabel must be a string."
-	@assert valid_fill(fill) "Fill style $(fill) not supported."
-	@assert valid_grid(grid) "Grid style $(grid) not supported."
-	@assert valid_label(box) "box must be a string."
-	@assert valid_axis(axis) "Axis $(axis) not supported."
-	@assert valid_range(xrange) "Range $(xrange) not supported."
+             plotstyle       = gaston_config.plotstyle,
+             color           = gaston_config.color,
+             marker          = gaston_config.marker,
+             linewidth       = gaston_config.linewidth,
+             pointsize       = gaston_config.pointsize,
+             title           = gaston_config.title,
+             xlabel          = gaston_config.xlabel,
+             ylabel          = gaston_config.ylabel,
+             zlabel          = gaston_config.zlabel,
+             fill            = gaston_config.fill,
+             grid            = gaston_config.grid,
+             box             = gaston_config.box,
+             axis            = gaston_config.axis,
+             xrange          = gaston_config.xrange,
+             yrange          = gaston_config.yrange,
+             zrange          = gaston_config.zrange,
+             terminal        = gaston_config.terminal,
+             outputfile      = gaston_config.outputfile,
+             print_color     = gaston_config.print_color,
+             print_fontface  = gaston_config.print_fontface,
+             print_fontscale = gaston_config.print_fontscale,
+             print_linewidth = gaston_config.print_linewidth,
+             print_size      = gaston_config.print_size)
+    # Validate paramaters
+    @assert valid_label(legend) "Legend must be a string."
+    @assert valid_plotstyle(plotstyle) "Plotstyle $(plotstyle) not supported."
+    @assert valid_label(color) "Color must be a string."
+    @assert valid_marker(marker) "Marker $(marker) not supported."
+    @assert valid_number(linewidth) "Invalid linewdith."
+    @assert valid_number(pointsize) "Invalid pointsize."
+    @assert valid_label(title) "Title must be a string."
+    @assert valid_label(xlabel) "xlabel must be a string."
+    @assert valid_label(ylabel) "ylabel must be a string."
+    @assert valid_label(zlabel) "zlabel must be a string."
+    @assert valid_fill(fill) "Fill style $(fill) not supported."
+    @assert valid_grid(grid) "Grid style $(grid) not supported."
+    @assert valid_label(box) "box must be a string."
+    @assert valid_axis(axis) "Axis $(axis) not supported."
+    @assert valid_range(xrange) "Range $(xrange) not supported."
     @assert valid_range(yrange) "Range $(yrange) not supported."
     @assert valid_range(zrange) "Range $(yrange) not supported."
-	@assert valid_terminal(terminal) "Terminal type $(terminal) not supported."
-	@assert valid_label(outputfile) "Outputfile must be a string."
-	@assert valid_label(print_color) "print_color must be a string."
-	@assert valid_label(print_fontface) "print_fontface must be a string."
-	@assert valid_number(print_fontscale) "Invalid value of print_fontscale"
-	@assert valid_number(print_linewidth) "Invalid value of print_linewidth"
-	@assert valid_label(print_size) "print_size must be a string."
+    @assert valid_terminal(terminal) "Terminal type $(terminal) not supported."
+    @assert valid_label(outputfile) "Outputfile must be a string."
+    @assert valid_label(print_color) "print_color must be a string."
+    @assert valid_label(print_fontface) "print_fontface must be a string."
+    @assert valid_number(print_fontscale) "Invalid value of print_fontscale"
+    @assert valid_number(print_linewidth) "Invalid value of print_linewidth"
+    @assert valid_label(print_size) "print_size must be a string."
 
-	gaston_config.legend            = legend
-	gaston_config.plotstyle         = plotstyle
-	gaston_config.color             = color
-	gaston_config.marker            = marker
-	gaston_config.linewidth         = linewidth
-	gaston_config.pointsize         = pointsize
-	gaston_config.title             = title
-	gaston_config.xlabel            = xlabel
-	gaston_config.ylabel            = ylabel
-	gaston_config.zlabel            = zlabel
-	gaston_config.fill              = fill
-	gaston_config.grid              = grid
-	gaston_config.box               = box
-	gaston_config.axis              = axis
-	gaston_config.xrange            = xrange
-	gaston_config.yrange            = yrange
-	gaston_config.zrange            = zrange
-	gaston_config.outputfile        = outputfile
-	gaston_config.print_color       = print_color
-	gaston_config.print_fontface    = print_fontface
-	gaston_config.print_fontscale   = print_fontscale
-	gaston_config.print_linewidth   = print_linewidth
-	gaston_config.print_size        = print_size
-	# don't change terminal inside jupyter
-	if terminal != "png" && gnuplot_state.isjupyter
-		warn("Terminal cannot be changed in a Jupyter notebook.")
-	else
-		gaston_config.terminal = terminal
-	end
-	return nothing
+    gaston_config.legend            = legend
+    gaston_config.plotstyle         = plotstyle
+    gaston_config.color             = color
+    gaston_config.marker            = marker
+    gaston_config.linewidth         = linewidth
+    gaston_config.pointsize         = pointsize
+    gaston_config.title             = title
+    gaston_config.xlabel            = xlabel
+    gaston_config.ylabel            = ylabel
+    gaston_config.zlabel            = zlabel
+    gaston_config.fill              = fill
+    gaston_config.grid              = grid
+    gaston_config.box               = box
+    gaston_config.axis              = axis
+    gaston_config.xrange            = xrange
+    gaston_config.yrange            = yrange
+    gaston_config.zrange            = zrange
+    gaston_config.outputfile        = outputfile
+    gaston_config.print_color       = print_color
+    gaston_config.print_fontface    = print_fontface
+    gaston_config.print_fontscale   = print_fontscale
+    gaston_config.print_linewidth   = print_linewidth
+    gaston_config.print_size        = print_size
+    # don't change terminal inside jupyter
+    if terminal != "png" && gnuplot_state.isjupyter
+        warn("Terminal cannot be changed in a Jupyter notebook.")
+    else
+        gaston_config.terminal = terminal
+    end
+    return nothing
 end
 
 #
@@ -160,15 +160,15 @@ const supported_screenterms = ["qt", "wxt", "x11", "aqua"]
 const supported_fileterms = ["svg", "gif", "png", "pdf", "eps"]
 const supported_terminals = vcat(supported_screenterms,supported_fileterms)
 const supported_2Dplotstyles = ["lines", "linespoints", "points",
-		"impulses", "boxes", "errorlines", "errorbars", "dots", "steps",
-		"fsteps", "fillsteps", "financebars"]
+        "impulses", "boxes", "errorlines", "errorbars", "dots", "steps",
+        "fsteps", "fillsteps", "financebars"]
 const supported_3Dplotstyles = ["lines", "linespoints", "points",
-		"impulses", "pm3d", "image", "rgbimage", "dots"]
+        "impulses", "pm3d", "image", "rgbimage", "dots"]
 const supported_plotstyles = vcat(supported_2Dplotstyles, supported_3Dplotstyles)
 const supported_axis = ["", "normal", "semilogx", "semilogy", "loglog"]
 const supported_markers = ["", "+", "x", "*", "esquare", "fsquare",
-		"ecircle", "fcircle", "etrianup", "ftrianup", "etriandn",
-		"ftriandn", "edmd", "fdmd"]
+        "ecircle", "fcircle", "etrianup", "ftrianup", "etriandn",
+        "ftriandn", "edmd", "fdmd"]
 const supported_fillstyles = ["","empty","solid","pattern"]
 const supported_grids = ["", "on", "off"]
 
@@ -214,12 +214,13 @@ end
 
 # Validate coordinates
 function valid_coords(x,y;err=ErrorCoords(),fin=FinancialCoords())
-	length(x) != length(y) && return false
-	(err.valid && length(x) != length(err.ylow)) && return false
-	(err.valid && !isempty(err.yhigh) && length(x) != length(err.yhigh)) && return false
-	(fin.valid && length(x) != length(fin.open)) && return false
-	(fin.valid && length(x) != length(fin.low)) && return false
-	(fin.valid && length(x) != length(fin.high)) && return false
-	(fin.valid && length(x) != length(fin.close)) && return false
-	return true
+    length(x) != length(y) && return false
+    (err.valid && length(x) != length(err.ylow)) && return false
+    (err.valid && !isempty(err.yhigh) && length(x) !=
+        length(err.yhigh)) && return false
+    (fin.valid && length(x) != length(fin.open)) && return false
+    (fin.valid && length(x) != length(fin.low)) && return false
+    (fin.valid && length(x) != length(fin.high)) && return false
+    (fin.valid && length(x) != length(fin.close)) && return false
+    return true
 end

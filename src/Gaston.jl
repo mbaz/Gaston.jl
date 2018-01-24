@@ -5,8 +5,8 @@
 module Gaston
 
 export closefigure, closeall, figure,
-		plot, plot!, histogram, imagesc, surf,
-		printfigure, set
+       plot, plot!, histogram, imagesc, surf,
+       printfigure, set
 
 import Base.show
 
@@ -24,7 +24,8 @@ include("gaston_config.jl")
 
 # set up global variables
 # global variable that stores gnuplot's state
-gnuplot_state = GnuplotState(false,nothing,[],"","","",false,Figure[],displayable("image/png"))
+gnuplot_state = GnuplotState(false,nothing,[],"","","",false,
+                             Figure[],displayable("image/png"))
 
 # when gnuplot_state goes out of scope, exit gnuplot
 finalizer(gnuplot_state,gnuplot_exit)
