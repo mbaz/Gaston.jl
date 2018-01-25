@@ -167,7 +167,7 @@ function llplot(gpcom="")
 			warn("Gnuplot returned an error message:\n$(gnuplot_state.gp_lasterror)")
 		end
 		done && break
-		if i == 20
+		if i == 2000
 			error("Gnuplot is taking too long to respond.")
 		end
 	end
