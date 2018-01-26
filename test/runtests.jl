@@ -199,3 +199,17 @@ end
 	@test_throws AssertionError set(print_size=10)
 	closeall()
 end
+
+@testset "linestyle tests" begin
+    closeall()
+    @test plot(1:10) == 1 # solid
+    @test plot(1:10, linestyle="") == 1 # solid
+    @test plot(1:10, linestyle="-") == 1 # dashed
+    @test plot(1:10, linestyle=".") == 1 # dotted
+    @test plot(1:10, linestyle="_") == 1 # em-dashed
+    @test plot(1:10, linestyle="- ._. ") == 1 # complex pattern
+    @test_throws AssertionError plot(1:10, linestyle=" ") # only spaces not allowed
+    @test_throws AssertionError plot(1:10, linestyle="-=") # = is not allowed in pattern
+    closeall()
+end
+

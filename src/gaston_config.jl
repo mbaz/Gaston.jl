@@ -12,6 +12,7 @@ mutable struct GastonConfig
     color::AbstractString
     marker::AbstractString
     linewidth::Real
+    linestyle::AbstractString
     pointsize::Real
     # default AxesConf values
     title::AbstractString
@@ -45,7 +46,7 @@ end
 function GastonConfig()
     gc = GastonConfig(
 	# CurveConf
-	"","lines","blue","",1,0.5,
+	"","lines","blue","",1,"",0.5,
 	# AxesConf
 	"","","","","empty","off","inside vertical right top","",
 	"[*:*]","[*:*]","[*:*]","",
@@ -75,6 +76,7 @@ function set(;legend         = gaston_config.legend,
              color           = gaston_config.color,
              marker          = gaston_config.marker,
              linewidth       = gaston_config.linewidth,
+             linestyle       = gaston_config.linestyle,
              pointsize       = gaston_config.pointsize,
              title           = gaston_config.title,
              xlabel          = gaston_config.xlabel,
@@ -121,12 +123,15 @@ function set(;legend         = gaston_config.legend,
     @assert valid_number(print_fontscale) "Invalid value of print_fontscale"
     @assert valid_number(print_linewidth) "Invalid value of print_linewidth"
     @assert valid_label(print_size) "print_size must be a string."
+    @assert valid_linestyle(linestyle) string("Line style pattern accepts: space, dash,",
+                                              " underscore and dot")
 
     gaston_config.legend            = legend
     gaston_config.plotstyle         = plotstyle
     gaston_config.color             = color
     gaston_config.marker            = marker
     gaston_config.linewidth         = linewidth
+    gaston_config.linestyle         = linestyle
     gaston_config.pointsize         = pointsize
     gaston_config.title             = title
     gaston_config.xlabel            = xlabel
@@ -186,6 +191,15 @@ valid_fill(s) = s ∈ supported_fillstyles
 valid_grid(s) = s ∈ supported_grids
 valid_axis(s) = s ∈ supported_axis
 valid_terminal(s) = s ∈ supported_terminals
+
+function valid_linestyle(s)
+    s == "" && return true # allow empty string
+    c = collect(s)
+    # make sure only allowed characters are passed
+    issubset(c, Set([' ', '-', '_', '.'])) || return false
+    # but do not allow spaces only
+    unique(c) != [' ']
+end
 
 # Validate that a given range follows gnuplot's syntax.
 function valid_range(s::AbstractString)

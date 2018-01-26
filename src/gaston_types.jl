@@ -41,6 +41,7 @@ struct CurveConf
                                     # run 'show colornames' inside gnuplot
     marker::AbstractString          # point type
     linewidth::Real
+    linestyle::AbstractString
     pointsize::Real
 end
 # Convenience constructor
@@ -50,8 +51,9 @@ CurveConf(;
           color     = gaston_config.color,
           marker    = gaston_config.marker,
           linewidth = gaston_config.linewidth,
+          linestyle = gaston_config.linestyle,
           pointsize = gaston_config.pointsize
-         ) = CurveConf(legend,plotstyle,color,marker,linewidth,pointsize)
+         ) = CurveConf(legend,plotstyle,color,marker,linewidth,linestyle,pointsize)
 
 # A curve is a set of coordinates and a configuration
 mutable struct Curve

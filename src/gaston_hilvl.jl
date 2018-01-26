@@ -91,6 +91,7 @@ function plot(x::Coord,y::Coord;
              color           = gaston_config.color,
              marker          = gaston_config.marker,
              linewidth       = gaston_config.linewidth,
+             linestyle       = gaston_config.linestyle,
              pointsize       = gaston_config.pointsize,
              title           = gaston_config.title,
              xlabel          = gaston_config.xlabel,
@@ -123,6 +124,8 @@ function plot(x::Coord,y::Coord;
     @assert valid_range(xrange) "Range $(xrange) not supported."
     @assert valid_range(yrange) "Range $(yrange) not supported."
     @assert valid_coords(x,y,err=err,fin=financial) "Input vectors must have the same number of elements."
+    @assert valid_linestyle(linestyle) string("Line style pattern accepts:",
+                                              " space, dash, underscore and dot")
 
     handle = figure(handle,false)
     clearfigure(handle)
@@ -135,7 +138,7 @@ function plot(x::Coord,y::Coord;
                   axis = axis,
                   xrange = xrange,
                   yrange = yrange)
-    cc = CurveConf(legend,plotstyle,color,marker,linewidth,pointsize)
+    cc = CurveConf(legend,plotstyle,color,marker,linewidth,linestyle,pointsize)
     c = Curve(x,y,financial,err,cc)
     push_figure!(handle,ac,c)
     llplot(gpcom)
@@ -154,6 +157,7 @@ function plot!(x::Coord,y::Coord;
              color           = gaston_config.color,
              marker          = gaston_config.marker,
              linewidth       = gaston_config.linewidth,
+             linestyle       = gaston_config.linestyle,
              pointsize       = gaston_config.pointsize,
              financial       = FinancialCoords(),
              err             = ErrorCoords(),
@@ -168,9 +172,11 @@ function plot!(x::Coord,y::Coord;
     @assert valid_number(linewidth) "Invalid linewidth $linewidth."
     @assert valid_number(pointsize) "Invalid pointsize $pointsize."
     @assert valid_coords(x,y,err=err,fin=financial) "Input vectors must have the same number of elements."
+    @assert valid_linestyle(linestyle) string("Line style pattern accepts:",
+                                              " space, dash, underscore and dot")
 
     handle = figure(handle,false)
-    cc = CurveConf(legend,plotstyle,color,marker,linewidth,pointsize)
+    cc = CurveConf(legend,plotstyle,color,marker,linewidth,linestyle, pointsize)
     c = Curve(x,y,financial,err,cc)
     push_figure!(handle,c)
     llplot()
