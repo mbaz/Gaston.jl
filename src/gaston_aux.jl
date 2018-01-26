@@ -371,6 +371,10 @@ function gnuplot_send_fig_config(config)
     if config.zrange != ""
         gnuplot_send(string("set zrange ",config.zrange))
     end
+
+    if config.palette != ""
+        gnuplot_send(string("set palette ",config.palette))
+    end
 end
 
 # write commands to gnuplot's pipe

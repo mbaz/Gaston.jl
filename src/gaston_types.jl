@@ -103,9 +103,10 @@ AxesConf(;
       axis   = gaston_config.axis,
       xrange =  gaston_config.xrange,
       yrange =  gaston_config.yrange,
-      zrange =  gaston_config.zrange
+      zrange =  gaston_config.zrange,
+      palette::AbstractString    # palette
       ) = AxesConf(title,xlabel,ylabel,zlabel,fill,grid,
-                   box,axis,xrange,yrange,zrange)
+                   box,axis,xrange,yrange,zrange,palette)
 
 # At the top level, a figure is a handle, an axes configuration, and a
 # set of curves.
