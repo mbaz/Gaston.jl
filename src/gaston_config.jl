@@ -25,6 +25,7 @@ mutable struct GastonConfig
     xrange::AbstractString
     yrange::AbstractString
     zrange::AbstractString
+    palette::AbstractString
     # default terminal type
     terminal::AbstractString
     # for terminals that support filenames
@@ -43,16 +44,16 @@ end
 
 function GastonConfig()
     gc = GastonConfig(
-        # CurveConf
-        "","lines","blue","",1,0.5,
-        # AxesConf
-        "","","","","empty","off","inside vertical right top","",
-        "[*:*]","[*:*]","[*:*]",
-        # terminal
-        "wxt",
-        # output file name
-        "",
-        # IJulia file name
+	# CurveConf
+	"","lines","blue","",1,0.5,
+	# AxesConf
+	"","","","","empty","off","inside vertical right top","",
+	"[*:*]","[*:*]","[*:*]","",
+	# terminal
+	"wxt",
+	# output file name
+	"",
+	# IJulia file name
         joinpath(tempdir(), "gaston-ijulia.png"),
         # print parameters
         "color", "Sans", 12, 0.5, 1, "640,480",
@@ -86,6 +87,7 @@ function set(;legend         = gaston_config.legend,
              xrange          = gaston_config.xrange,
              yrange          = gaston_config.yrange,
              zrange          = gaston_config.zrange,
+             palette         = gaston_config.palette,
              terminal        = gaston_config.terminal,
              outputfile      = gaston_config.outputfile,
              print_color     = gaston_config.print_color,
@@ -111,6 +113,7 @@ function set(;legend         = gaston_config.legend,
     @assert valid_range(xrange) "Range $(xrange) not supported."
     @assert valid_range(yrange) "Range $(yrange) not supported."
     @assert valid_range(zrange) "Range $(yrange) not supported."
+    @assert valid_label(palette) "Invalid palette."
     @assert valid_terminal(terminal) "Terminal type $(terminal) not supported."
     @assert valid_label(outputfile) "Outputfile must be a string."
     @assert valid_label(print_color) "print_color must be a string."
@@ -136,6 +139,7 @@ function set(;legend         = gaston_config.legend,
     gaston_config.xrange            = xrange
     gaston_config.yrange            = yrange
     gaston_config.zrange            = zrange
+    gaston_config.palette           = palette
     gaston_config.outputfile        = outputfile
     gaston_config.print_color       = print_color
     gaston_config.print_fontface    = print_fontface
