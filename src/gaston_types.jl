@@ -90,21 +90,22 @@ mutable struct AxesConf
     xrange::AbstractString     # xrange
     yrange::AbstractString     # yrange
     zrange::AbstractString     # zrange
+    palette::AbstractString    # palette
 end
 # Constructor with default values (stored in gaston_config)
 AxesConf(;
-      title  = gaston_config.title,
-      xlabel = gaston_config.xlabel,
-      ylabel = gaston_config.ylabel,
-      zlabel = gaston_config.zlabel,
-      fill   = gaston_config.fill,
-      grid   = gaston_config.grid,
-      box    = gaston_config.box,
-      axis   = gaston_config.axis,
-      xrange =  gaston_config.xrange,
-      yrange =  gaston_config.yrange,
-      zrange =  gaston_config.zrange,
-      palette::AbstractString    # palette
+      title   = gaston_config.title,
+      xlabel  = gaston_config.xlabel,
+      ylabel  = gaston_config.ylabel,
+      zlabel  = gaston_config.zlabel,
+      fill    = gaston_config.fill,
+      grid    = gaston_config.grid,
+      box     = gaston_config.box,
+      axis    = gaston_config.axis,
+      xrange  =  gaston_config.xrange,
+      yrange  =  gaston_config.yrange,
+      zrange  =  gaston_config.zrange,
+      palette = gaston_config.palette
       ) = AxesConf(title,xlabel,ylabel,zlabel,fill,grid,
                    box,axis,xrange,yrange,zrange,palette)
 
