@@ -235,6 +235,9 @@ function linestr_single(conf::CurveConf)
         s = string(s, "linecolor rgb '", conf.color, "' ")
     end
     s = string(s, "lw ", string(conf.linewidth), " ")
+    if conf.linestyle != ""
+        s = string(s, "dt '", string(conf.linestyle), "' ")
+    end
     # some plotstyles don't allow point specifiers
     cp = conf.plotstyle
     if cp != "lines" && cp != "impulses" && cp != "pm3d" && cp != "image" &&
