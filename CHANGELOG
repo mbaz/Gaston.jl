@@ -1,5 +1,12 @@
+version 0.7.2
+
+    * add `linestyle` option (corresponds to gnuplot's `dashtype`)
+    * update docs
+    * fix indexing bug in image plotting
+
 version 0.7.1
 
+    * add `palette` option
 	* Use empty string as defaults for axis labels and title
 	* Add missing `plot!()` commands
 	* Update .travis.yml
