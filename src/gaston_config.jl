@@ -123,8 +123,8 @@ function set(;legend         = gaston_config.legend,
     @assert valid_number(print_fontscale) "Invalid value of print_fontscale"
     @assert valid_number(print_linewidth) "Invalid value of print_linewidth"
     @assert valid_label(print_size) "print_size must be a string."
-    @assert valid_linestyle(linestyle) string("Line style pattern accepts: space, dash,",
-                                              " underscore and dot")
+    @assert valid_linestyle(linestyle) string("Line style pattern accepts: ",
+            "space, dash, underscore and dot")
 
     gaston_config.legend            = legend
     gaston_config.plotstyle         = plotstyle
