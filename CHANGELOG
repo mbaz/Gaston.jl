@@ -1,3 +1,7 @@
+version 0.7.3
+
+    * fix default size for pdf-like terminals.
+
 version 0.7.2
 
     * add `linestyle` option (corresponds to gnuplot's `dashtype`)
