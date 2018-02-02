@@ -55,11 +55,11 @@ function GastonConfig()
 	# output file name
 	"",
 	# IJulia file name
-        joinpath(tempdir(), "gaston-ijulia.png"),
-        # print parameters
-        "color", "Sans", 12, 0.5, 1, "640,480",
-        # tmp file prefix
-        randstring(8)
+    joinpath(tempdir(), "gaston-ijulia.png"),
+    # print parameters
+    "color", "Sans", 12, 0.5, 1, "640,480",
+    # tmp file prefix
+    randstring(8)
     )
     # Determine if current display supports PNG; this allows IJulia support.
     if gnuplot_state.isjupyter
