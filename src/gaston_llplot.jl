@@ -147,7 +147,10 @@ function llplot(gpcom="")
             i = i+1
             yield()
             if !isempty(gnuplot_state.gp_stdout)
-                println(gnuplot_state.gp_stdout)
+                # only print figure if terminal is not null
+                if gaston_config.terminal != "null"
+                    println(gnuplot_state.gp_stdout)
+                end
                 gnuplot_state.gp_stdout = ""
                 break
             end

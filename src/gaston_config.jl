@@ -167,7 +167,7 @@ end
 
 # list of supported features
 const supported_screenterms = ["qt", "wxt", "x11", "aqua"]
-const supported_textterms = ["dumb"]
+const supported_textterms = ["dumb", "null"]
 const supported_fileterms = ["svg", "gif", "png", "pdf", "eps"]
 const supported_terminals = vcat(supported_screenterms,supported_fileterms,
                                 supported_textterms)

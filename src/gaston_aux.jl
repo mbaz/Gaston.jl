@@ -276,6 +276,8 @@ function termstring(term::AbstractString)
     gc = gaston_config
 
     if term ∈ supported_screenterms || term ∈ supported_textterms
+        # Gaston's "null" terminal is actually "dumb" behind the scenes
+        term == "null" && (term = "dumb")
         ts = "set term $term $(gnuplot_state.current)"
     else
         if term == "pdf"
