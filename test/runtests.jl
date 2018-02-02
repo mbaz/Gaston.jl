@@ -15,6 +15,7 @@ using Base.Test
 
 @testset "Pass expected" begin
 	closeall()
+    set(terminal="null")
 	# figures
 	@test figure() == 1
 	@test figure() == 2
@@ -140,6 +141,7 @@ end
 
 @testset "Failure expected" begin
 	closeall()
+    set(terminal="null")
 	# figure-related
 	@test_throws ErrorException figure("invalid")
 	@test_throws ErrorException figure(1.0)
@@ -202,6 +204,7 @@ end
 
 @testset "linestyle tests" begin
     closeall()
+    set(terminal="null")
     @test plot(1:10) == 1 # solid
     @test plot(1:10, linestyle="") == 1 # solid
     @test plot(1:10, linestyle="-") == 1 # dashed
