@@ -139,6 +139,23 @@ function llplot(gpcom="")
         # send command to gnuplot
         gnuplot_send(linestr(fig.curves, "splot",filename))
     end
+    # If the terminal is text-based, then read gnuplot's stdout and print it.
+    i = 0
+    if gaston_config.terminal ∈ supported_textterms
+        while true
+            sleep(0.05)  # give gnuplot time to plot
+            i = i+1
+            yield()
+            if !isempty(gnuplot_state.gp_stdout)
+                println(gnuplot_state.gp_stdout)
+                gnuplot_state.gp_stdout = ""
+                break
+            end
+            if i == 20
+                error("Gnuplot is taking too long to respond.")
+            end
+        end
+    end
     # Wait until gnuplot is finished plotting before returning. To do this,
     # we make gnuplot output "X\n" in its stdout. Gnuplot will only get to
     # do this when the plot is finished. Otherwise, gnuplot will output

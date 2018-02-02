@@ -38,7 +38,7 @@ const StartPipes = Condition()  # signal to start reading pipes
         if !isopen(pout)
             break
         end
-        gnuplot_state.gp_stdout = string(readavailable(pout))
+        gnuplot_state.gp_stdout = ascii(String(readavailable(pout)))
     end
 end
 
@@ -275,7 +275,7 @@ function termstring(term::AbstractString)
 
     gc = gaston_config
 
-    if term ∈ supported_screenterms
+    if term ∈ supported_screenterms || term ∈ supported_textterms
         ts = "set term $term $(gnuplot_state.current)"
     else
         if term == "pdf"
