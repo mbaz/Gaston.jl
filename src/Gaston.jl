@@ -11,8 +11,10 @@ export closefigure, closeall, figure,
 import Base.show
 
 # before doing anything else, verify gnuplot is present on this system
-if !success(`gnuplot --version`)
-    error("Gaston cannot be loaded: gnuplot is not available on this system.")
+try
+  success(`gnuplot --version`)
+catch
+  error("Gaston cannot be loaded: gnuplot is not available on this system.")
 end
 
 # load files
