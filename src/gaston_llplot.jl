@@ -155,7 +155,17 @@ function llplot(gpcom="")
                 break
             end
             if i == 20
-                error("Gnuplot is taking too long to respond.")
+                if !isempty(gnuplot_state.gp_stderr)
+                    # Gnuplot met trouble while plotting.
+                    gnuplot_state.gp_lasterror = gnuplot_state.gp_stderr
+                    gnuplot_state.gp_stderr = ""
+                    gnuplot_state.gp_error = true
+                    warn("Gnuplot returned an error message:\n
+                         $(gnuplot_state.gp_lasterror)")
+                    break
+                else
+                    error("Gnuplot is taking too long to respond.")
+                end
             end
         end
     end
