@@ -1,7 +1,7 @@
 Gaston: Julia plotting using gnuplot
 ==================================== 
 
-Gaston is a [Julia](https://julialang.org)  package for plotting. It provides an interface to [gnuplot](https://gnuplot.info), a powerful but old-fashioned plotting package available on all major platforms.
+Gaston is a [Julia](https://julialang.org)  package for plotting. It provides an interface to [gnuplot](http://gnuplot.info), a powerful but old-fashioned plotting package available on all major platforms.
 
 Why use Gaston?
 --------------
