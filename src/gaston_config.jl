@@ -31,7 +31,6 @@ mutable struct GastonConfig
     terminal::AbstractString
     # for terminals that support filenames
     outputfile::AbstractString
-    jupyterfile::AbstractString
     # for printing to file
     print_color::AbstractString
     print_fontface::AbstractString
@@ -54,8 +53,6 @@ function GastonConfig()
 	"wxt",
 	# output file name
 	"",
-	# IJulia file name
-    joinpath(tempdir(), "gaston-ijulia.png"),
     # print parameters
     "color", "Sans", 12, 0.5, 1, "5in,3in",
     # tmp file prefix
@@ -63,7 +60,7 @@ function GastonConfig()
     )
     # Determine if current display supports PNG; this allows IJulia support.
     if gnuplot_state.isjupyter
-        gc.terminal = "png"
+        gc.terminal = "ijulia"
         gc.print_size = "640,480"
         gc.print_fontsize = 20
     end
@@ -153,7 +150,7 @@ function set(;legend         = gaston_config.legend,
     gaston_config.print_linewidth   = print_linewidth
     gaston_config.print_size        = print_size
     # don't change terminal inside jupyter
-    if terminal != "png" && gnuplot_state.isjupyter
+    if terminal != "ijulia" && gnuplot_state.isjupyter
         warn("Terminal cannot be changed in a Jupyter notebook.")
     else
         gaston_config.terminal = terminal
@@ -168,7 +165,7 @@ end
 # list of supported features
 const supported_screenterms = ["qt", "wxt", "x11", "aqua"]
 const supported_textterms = ["dumb", "null", "sixelgd"]
-const supported_fileterms = ["svg", "gif", "png", "pdf", "eps"]
+const supported_fileterms = ["ijulia", "svg", "gif", "png", "pdf", "eps"]
 const supported_terminals = vcat(supported_screenterms,supported_fileterms,
                                 supported_textterms)
 const supported_2Dplotstyles = ["lines", "linespoints", "points",

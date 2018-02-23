@@ -199,11 +199,15 @@ function hist(s,bins)
     return x,y
 end
 
-function Base.show(io::IO, ::MIME"image/png", x::Figure)
-    # The plot is written to /tmp/gaston-ijula.png. Read the file and
-    # write it to io.
-    data = open(read, gaston_config.jupyterfile,"r")
-    write(io,data)
+#function Base.show(io::IO, ::MIME"image/png", x::Figure)
+#    # The plot is written to /tmp/gaston-ijula.png. Read the file and
+#    # write it to io.
+#    data = open(read, gaston_config.jupyterfile,"r")
+#    write(io,data)
+#end
+
+function Base.show(io::IO, ::MIME"image/svg+xml", x::Figure)
+    write(io,x.svgdata)
 end
 
 # Execute command `cmd`, and return a tuple `(in, out, err, r)`, where
@@ -278,6 +282,7 @@ function termstring(term::AbstractString)
     if term ∈ supported_screenterms || term ∈ supported_textterms
         # Gaston's "null" terminal is actually "dumb" behind the scenes
         term == "null" && (term = "dumb")
+
         ts = "set term $term $(gnuplot_state.current)"
     else
         if term == "pdf"
@@ -304,16 +309,16 @@ function termstring(term::AbstractString)
             s = "$s fontscale $(gc.print_fontscale) "
             s = "$s linewidth $(gc.print_linewidth) "
             s = "$s size $(gc.print_size)"
-        elseif term == "svg"
+        elseif term == "svg" || term == "ijulia"
             s = "set term svg "
             s = "$s font \"$(gc.print_fontface),$(gc.print_fontsize)\" "
             s = "$s linewidth $(gc.print_linewidth) "
             s = "$s size $(gc.print_size)"
         end
-        if gnuplot_state.isjupyter
-            ts = "$s \nset output '$(gc.jupyterfile)'"
-        else
+        if term != "ijulia"
             ts = "$s \nset output '$(gc.outputfile)'"
+        else
+            ts = s
         end
     end
     return ts

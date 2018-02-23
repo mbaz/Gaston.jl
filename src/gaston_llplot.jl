@@ -141,15 +141,18 @@ function llplot(gpcom="")
     end
     # If the terminal is text-based, then read gnuplot's stdout and print it.
     i = 0
-    if gaston_config.terminal ∈ supported_textterms
+    if (gaston_config.terminal ∈ supported_textterms) || gaston_config.terminal == "ijulia"
         while true
             sleep(0.05)  # give gnuplot time to plot
             i = i+1
             yield()
             if !isempty(gnuplot_state.gp_stdout)
-                # only print figure if terminal is not null
-                if gaston_config.terminal != "null"
+                # print figure if terminal is "dumb"
+                if gaston_config.terminal == "dumb"
                     println(gnuplot_state.gp_stdout)
+                # store output if terminal is "ijulia"
+                elseif gaston_config.terminal == "ijulia"
+                    fig.svgdata = gnuplot_state.gp_stdout
                 end
                 gnuplot_state.gp_stdout = ""
                 break

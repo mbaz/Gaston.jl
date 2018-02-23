@@ -234,7 +234,7 @@ function histogram(data::Coord;
                    color = color,
                    linewidth = linewidth)
     c = Curve(x,y,cc)
-    f = Figure(handle,ac,[c],false)
+    f = Figure(handle,ac,[c],false,"")
     push_figure!(handle,ac,c)
     llplot(gpcom)
     return handle
