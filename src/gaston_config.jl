@@ -4,6 +4,10 @@
 
 # This file contains configuration-related functions and types
 
+if VERSION >= v"0.7-"
+    using Random
+end
+
 # Structure to keep Gaston's configuration
 mutable struct GastonConfig
     # default CurveConf values
@@ -227,9 +231,16 @@ function valid_range(s::AbstractString)
     # range regex
     rx = Regex("^\\s*($er|$fr)\\s*\$")
 
-    if isempty(s) || ismatch(rx, s)
-        return true
+    if VERSION >= v"0.7-"
+        if isempty(s) || contains(s, rx)
+            return true
+        end
+    else
+        if isempty(s) || ismatch(rx, s)
+            return true
+        end
     end
+    
     return false
 end
 
