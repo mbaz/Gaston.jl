@@ -30,6 +30,9 @@ end
 # Async tasks to read/write to gnuplot's pipes.
 const StartPipes = Condition()  # signal to start reading pipes
 
+const ChanStdOut = Channel{String}(10)
+const ChanStdErr = Channel{String}(10)
+
 # This task reads all characters available from gnuplot's stdout.
 @async while true
     wait(StartPipes)
@@ -38,7 +41,9 @@ const StartPipes = Condition()  # signal to start reading pipes
         if !isopen(pout)
             break
         end
-        gnuplot_state.gp_stdout = String(readavailable(pout))
+        #gnuplot_state.gp_stdout = String(readavailable(pout))
+        data = String(readavailable(pout))
+        put!(ChanStdOut, data)
     end
 end
 
@@ -50,7 +55,9 @@ end
         if !isopen(perr)
             break
         end
-        gnuplot_state.gp_stderr = String(readavailable(perr))
+        #gnuplot_state.gp_stderr = String(readavailable(perr))
+        data = String(readavailable(perr))
+        put!(ChanStdErr, data)
     end
 end
 
@@ -108,14 +115,17 @@ end
 function push_figure!(handle,args...)
     index = findfigure(handle)
     for c in args
-        isa(c, AxesConf) && (gnuplot_state.figs[index].conf = c)
-        if isa(c, Curve)
+        if isa(c,AxesConf)
+            gnuplot_state.figs[index].conf = c
+        elseif isa(c, Curve)
             if gnuplot_state.figs[index].isempty
                 gnuplot_state.figs[index].curves = [c]
             else
                 push!(gnuplot_state.figs[index].curves,c)
             end
             gnuplot_state.figs[index].isempty = false
+        elseif isa(c, AbstractString)
+            gnuplot_state.figs[index].gpcom = c
         end
     end
 end
@@ -207,8 +217,20 @@ end
 #end
 
 function Base.show(io::IO, ::MIME"image/svg+xml", x::Figure)
-    write(io,x.svgdata)
+    llplot()
+    write(io,x.svg)
 end
+
+#function Base.show(io::IO, ::MIME"image/svg+xml", x::Figure)
+#    println("show 2")
+#    write(io,x.svg)
+#end
+
+#function Base.show(io::IO, ::MIME"image/svg+xml", x::Figure)
+#    println("show 2")
+#    llplot()
+#    write(io,x.svg)
+#end
 
 # Execute command `cmd`, and return a tuple `(in, out, err, r)`, where
 # `in`, `out`, `err` are pipes to the process' STDIN, STDOUT, and STDERR, and

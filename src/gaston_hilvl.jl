@@ -140,9 +140,13 @@ function plot(x::Coord,y::Coord;
                   yrange = yrange)
     cc = CurveConf(legend,plotstyle,color,marker,linewidth,linestyle,pointsize)
     c = Curve(x,y,financial,err,cc)
-    push_figure!(handle,ac,c)
-    llplot(gpcom)
-    return handle
+    push_figure!(handle,ac,c,gpcom)
+    if isjupyter
+        return gnuplot_state.figs[findfigure(handle)]
+    else
+        llplot()
+        return handle
+    end
 end
 plot(y::Coord;args...) = plot(1:length(y),y;args...)
 plot(x::Real,y::Real;args...) = plot([x],[y];args...)  # plot a single point
@@ -179,8 +183,7 @@ function plot!(x::Coord,y::Coord;
     cc = CurveConf(legend,plotstyle,color,marker,linewidth,linestyle, pointsize)
     c = Curve(x,y,financial,err,cc)
     push_figure!(handle,c)
-    llplot()
-    return handle
+    return gnuplot_state.figs[findfigure(handle)]
 end
 plot!(y::Coord;args...) = plot!(1:length(y),y;args...)
 plot!(x::Real,y::Real;args...) = plot!([x],[y];args...)
@@ -236,8 +239,7 @@ function histogram(data::Coord;
     c = Curve(x,y,cc)
     f = Figure(handle,ac,[c],false,"")
     push_figure!(handle,ac,c)
-    llplot(gpcom)
-    return handle
+    return gnuplot_state.figs[findfigure(handle)]
 end
 
 # image plots
@@ -277,8 +279,7 @@ function imagesc(x::Coord,y::Coord,Z::Coord;
     c = Curve(x,y,Z,cc)
 
     push_figure!(handle,ac,c)
-    llplot(gpcom)
-    return handle
+    return gnuplot_state.figs[findfigure(handle)]
 end
 imagesc(Z::Coord;args...) = imagesc(1:size(Z)[2],1:size(Z)[1],Z;args...)
 
@@ -334,8 +335,7 @@ function surf(x::Coord,y::Coord,Z::Coord;
                    pointsize = pointsize)
     c = Curve(x,y,Z,cc)
     push_figure!(handle,ac,c)
-    llplot(gpcom)
-    return handle
+    return gnuplot_state.figs[findfigure(handle)]
 end
 surf(x::Coord,y::Coord,f::Function;args...) = surf(x,y,meshgrid(x,y,f);args...)
 surf(Z::Matrix;args...) = surf(1:size(Z)[2],1:size(Z)[1],Z;args...)

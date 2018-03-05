@@ -26,7 +26,10 @@ include("gaston_config.jl")
 
 # set up global variables
 # global variable that stores gnuplot's state
-isjupyter = isdefined(Main, :IJulia) && Main.IJulia.inited
+isjupyter = false
+if isdefined(Main, :IJulia) && Main.IJulia.inited
+    isjupyter = true
+end
 gnuplot_state = GnuplotState(false,nothing,[],"","","",false,
                              Figure[],isjupyter)
 
