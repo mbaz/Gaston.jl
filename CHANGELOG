@@ -1,3 +1,9 @@
+version 0.7.4
+
+    * Add support for `dumb` text terminal
+    * Add a `null` terminal that does not display anything
+    * Tests for 0.7 pass
+
 version 0.7.3
 
     * fix default size for pdf-like terminals.
