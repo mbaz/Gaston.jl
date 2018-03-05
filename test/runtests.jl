@@ -102,7 +102,9 @@ end
 		set(print_size="640,480")
 		printfigure(term="svg")
 	end == 1
-	# @test printfigure(term="gif") == 1 # This test does not pass: temporarily disabled
+    if !is_windows()
+        @test printfigure(term="gif") == 1 # This test does not pass in Windows
+    end
 	# build a multiple-plot figure manually
 	@test begin
 		ac = Gaston.AxesConf(title="T")
@@ -134,7 +136,9 @@ end
 	@test set(zlabel="A") == nothing
 	@test set(fill="solid") == nothing
 	@test set(grid="on") == nothing
-	# @test set(terminal="x11") == nothing # This test does not pass: temporarily disabled
+    if !is_windows()
+        @test set(terminal="x11") == nothing # This test does not pass in Windows
+    end
 	@test set(outputfile="A") == nothing
 	@test set(print_color="red") == nothing
 	@test set(print_fontface="A") == nothing
