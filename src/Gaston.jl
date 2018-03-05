@@ -30,7 +30,12 @@ gnuplot_state = GnuplotState(false,nothing,[],"","","",false,
                              Figure[],displayable("image/png"))
 
 # when gnuplot_state goes out of scope, exit gnuplot
-finalizer(gnuplot_state,gnuplot_exit)
+if VERSION >= v"0.7-"
+  finalizer(gnuplot_exit, gnuplot_state)
+else
+  finalizer(gnuplot_state, gnuplot_exit)
+end
+
 
 # global variable that stores Gaston's configuration
 gaston_config = GastonConfig()
