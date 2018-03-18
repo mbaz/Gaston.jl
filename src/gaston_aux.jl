@@ -209,28 +209,24 @@ function hist(s,bins)
     return x,y
 end
 
-#function Base.show(io::IO, ::MIME"image/png", x::Figure)
-#    # The plot is written to /tmp/gaston-ijula.png. Read the file and
-#    # write it to io.
-#    data = open(read, gaston_config.jupyterfile,"r")
-#    write(io,data)
-#end
+function Base.show(io::IO, ::MIME"text/plain", x::Figure)
+    if !isjupyter
+        llplot()
+        term = gaston_config.terminal
+        if term == "null"
+            return nothing
+        elseif term == "dumb"
+            print(x.svg)
+        else
+            return nothing
+        end
+    end
+end
 
 function Base.show(io::IO, ::MIME"image/svg+xml", x::Figure)
     llplot()
     write(io,x.svg)
 end
-
-#function Base.show(io::IO, ::MIME"image/svg+xml", x::Figure)
-#    println("show 2")
-#    write(io,x.svg)
-#end
-
-#function Base.show(io::IO, ::MIME"image/svg+xml", x::Figure)
-#    println("show 2")
-#    llplot()
-#    write(io,x.svg)
-#end
 
 # Execute command `cmd`, and return a tuple `(in, out, err, r)`, where
 # `in`, `out`, `err` are pipes to the process' STDIN, STDOUT, and STDERR, and
