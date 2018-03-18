@@ -213,7 +213,12 @@ function popen3(cmd::Cmd)
     pin = Base.Pipe()
     out = Base.Pipe()
     err = Base.Pipe()
-    r = spawn(cmd, (pin, out, err))
+    if VERSION < v"0.7-"
+        r = spawn(cmd, (pin, out, err))
+    else
+        r = run(pipeline(cmd, stdin = pin, stdout = out, stderr = err), wait = false)
+    end
+
     Base.close(out.in)
     Base.close(err.in)
     Base.close(pin.out)
