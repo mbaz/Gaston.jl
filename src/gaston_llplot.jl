@@ -144,6 +144,7 @@ function llplot(gpcom="")
         gnuplot_send(linestr(fig.curves, "splot",filename))
     end
     # If the terminal is text-based, then read gnuplot's stdout and print it.
+    imax = 20
     i = 0
     if gaston_config.terminal ∈ supported_textterms
         while true
@@ -158,17 +159,18 @@ function llplot(gpcom="")
                 gnuplot_state.gp_stdout = ""
                 break
             end
-            if i == 20
+            if i == imax
                 if !isempty(gnuplot_state.gp_stderr)
                     # Gnuplot met trouble while plotting.
                     gnuplot_state.gp_lasterror = gnuplot_state.gp_stderr
                     gnuplot_state.gp_stderr = ""
                     gnuplot_state.gp_error = true
-                    warn("Gnuplot returned an error message:\n
+                    @warn("Gnuplot returned an error message:\n
                          $(gnuplot_state.gp_lasterror)")
                     break
                 else
-                    error("Gnuplot is taking too long to respond.")
+                    @warn("Gnuplot is taking too long to respond.")
+                    imax = imax * 2
                 end
             end
         end
@@ -182,6 +184,7 @@ function llplot(gpcom="")
     gnuplot_send("print \"X\"\n")
 
     # Loop until we read data from either gnuplot's stdout or stdin
+    imax = 20
     i = 0
     done = false
     while true
@@ -199,12 +202,13 @@ function llplot(gpcom="")
             gnuplot_state.gp_lasterror = gnuplot_state.gp_stderr
             gnuplot_state.gp_stderr = ""
             gnuplot_state.gp_error = true
-            warn("Gnuplot returned an error message:\n
+            @warn("Gnuplot returned an error message:\n
                  $(gnuplot_state.gp_lasterror)")
         end
         done && break
-        if i == 20
-            error("Gnuplot is taking too long to respond.")
+        if i == imax
+            @warn("Gnuplot is taking too long to respond.")
+            imax = imax * 2
         end
     end
 
