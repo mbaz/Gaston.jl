@@ -162,11 +162,10 @@ function llplot(gpcom="")
             if i == imax
                 if !isempty(gnuplot_state.gp_stderr)
                     # Gnuplot met trouble while plotting.
-                    gnuplot_state.gp_lasterror = gnuplot_state.gp_stderr
+                    gnuplot_state.gp_lasterror = copy(gnuplot_state.gp_stderr)
                     gnuplot_state.gp_stderr = ""
                     gnuplot_state.gp_error = true
-                    @warn("Gnuplot returned an error message:\n
-                         $(gnuplot_state.gp_lasterror)")
+                    error("Gnuplot returned an error message:\n $(gnuplot_state.gp_lasterror)")
                     break
                 else
                     @warn("Gnuplot is taking too long to respond.")
