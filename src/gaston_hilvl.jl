@@ -360,9 +360,12 @@ function printfigure(;handle=gnuplot_state.current,
     # set temporary terminal and replot
     set(terminal=term)
     figure(handle)
-    set(terminal=saveterm)
     # gnuplot is weird: this command is needed to close the output file
     gnuplot_send("set output")
+
+    # restore terminal type and replot
+    set(terminal=saveterm)
+    figure(handle)
 
     return handle
 end
