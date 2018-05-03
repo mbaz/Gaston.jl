@@ -32,9 +32,6 @@ function llplot(gpcom="")
     ts = termstring(gaston_config.terminal)
     gnuplot_send(ts)
 
-    # Send user command to gnuplot
-    !isempty(gpcom) && gnuplot_send(gpcom)
-
     # Datafile filename. This is where we store the coordinates to plot.
     # This file is then read by gnuplot to do the actual plotting. One file
     # per figure handle is used; this avoids polutting /tmp with too many files.
@@ -114,6 +111,8 @@ function llplot(gpcom="")
         close(f)
         # send figure configuration to gnuplot
         gnuplot_send_fig_config(config)
+        # Send user command to gnuplot
+        !isempty(gpcom) && gnuplot_send(gpcom)
         # send plot command to gnuplot
         gnuplot_send(linestr(fig.curves, "plot", filename))
 
@@ -140,6 +139,8 @@ function llplot(gpcom="")
         close(f)
         # send figure configuration to gnuplot
         gnuplot_send_fig_config(config)
+        # Send user command to gnuplot
+        !isempty(gpcom) && gnuplot_send(gpcom)
         # send command to gnuplot
         gnuplot_send(linestr(fig.curves, "splot",filename))
     end
