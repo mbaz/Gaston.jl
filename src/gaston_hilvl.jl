@@ -50,9 +50,10 @@ function closeall()
     return closed
 end
 
-# Select or create a figure. When called with no arguments, create a new
-# figure. Figure handles must be natural numbers.
-# Returns the current figure handle.
+# Select a figure, creating it if it doesn't exist. When called with no
+# arguments or with h=0, create and select a new figure with next available
+# handle.
+# Figure handles must be natural numbers. Returns the current figure handle.
 function figure(h,redraw::Bool)
     global gnuplot_state
     global gaston_config
@@ -72,12 +73,13 @@ function figure(h,redraw::Bool)
     h == 0 && (h = nexthandle())
     # if figure with handle h exists, replot it; otherwise create it
     gnuplot_state.current = h
+    f = Figure(h)
     if !in(h, handles)
         push!(gnuplot_state.figs, Figure(h))
     else
-        if redraw
-            llplot()
-        end
+        # when selecting a pre-existing window, gnuplot requires that it be
+        # redrawn in order to have mouse interactivity.
+        redraw && display(f)
     end
     return h
 end
