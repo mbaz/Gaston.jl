@@ -50,11 +50,17 @@ function closeall()
     return closed
 end
 
-# Select a figure, creating it if it doesn't exist. When called with no
-# arguments or with h=0, create and select a new figure with next available
-# handle.
-# Figure handles must be natural numbers. Returns the current figure handle.
-function figure(h,redraw::Bool)
+#=
+Select a figure, creating it if it doesn't exist. When called with no
+arguments or with h=0, create and select a new figure with next available
+handle. Figure handles must be natural numbers.
+
+When selecting a figure that must not be redrawn (e.g. because it will be
+immediately overwritten), set redraw = false.
+
+Returns the current figure handle.
+ =#
+function figure(h = 0; redraw = true)
     global gnuplot_state
     global gaston_config
 
@@ -71,20 +77,18 @@ function figure(h,redraw::Bool)
 
     # determine figure handle
     h == 0 && (h = nexthandle())
-    # if figure with handle h exists, replot it; otherwise create it
+    # set current figure to h
     gnuplot_state.current = h
-    f = Figure(h)
     if !in(h, handles)
+        # figure does not exist: create it and store it
         push!(gnuplot_state.figs, Figure(h))
     else
         # when selecting a pre-existing window, gnuplot requires that it be
         # redrawn in order to have mouse interactivity.
-        redraw && display(f)
+        redraw && display(Figure(h))
     end
     return h
 end
-figure() = figure(0,true)  # create new figure with next available handle
-figure(h) = figure(h,true) # create/select figure with handle h
 
 # 2D plots
 function plot(x::Coord,y::Coord;
@@ -129,7 +133,7 @@ function plot(x::Coord,y::Coord;
     @assert valid_linestyle(linestyle) string("Line style pattern accepts:",
                                               " space, dash, underscore and dot")
 
-    handle = figure(handle,false)
+    handle = figure(handle, redraw = false)
     clearfigure(handle)
     ac = AxesConf(title = title,
                   xlabel = xlabel,
@@ -176,7 +180,7 @@ function plot!(x::Coord,y::Coord;
     @assert valid_linestyle(linestyle) string("Line style pattern accepts:",
                                               " space, dash, underscore and dot")
 
-    handle = figure(handle,false)
+    handle = figure(handle, redraw = false)
     cc = CurveConf(legend,plotstyle,color,marker,linewidth,linestyle, pointsize)
     c = Curve(x,y,financial,err,cc)
     push_figure!(handle,c)
@@ -217,7 +221,7 @@ function histogram(data::Coord;
     @assert bins > 0 "At least one bin is required."
     @assert norm > 0 "norm must be a positive number."
 
-    handle = figure(handle,false)
+    handle = figure(handle, redraw = false)
     clearfigure(handle)
 
     ac = AxesConf(title = title,
@@ -234,7 +238,6 @@ function histogram(data::Coord;
                    color = color,
                    linewidth = linewidth)
     c = Curve(x,y,cc)
-    #f = Figure(handle,ac,[c],false,"")
     push_figure!(handle,ac,c,gpcom)
     return gnuplot_state.figs[findfigure(handle)]
 end
@@ -257,7 +260,7 @@ function imagesc(x::Coord,y::Coord,Z::Coord;
     @assert length(y) == size(Z)[1] "Invalid coordinates."
     @assert 2 <= ndims(Z) <= 3 "Z must have two or three dimensions."
 
-    handle = figure(handle,false)
+    handle = figure(handle, redraw = false)
     clearfigure(handle)
 
     ndims(Z) == 2 ? plotstyle = "image" : plotstyle = "rgbimage"
@@ -317,7 +320,7 @@ function surf(x::Coord,y::Coord,Z::Coord;
     @assert length(y) == size(Z)[2] "Invalid coordinates."
     @assert ndims(Z) == 2 "Z must have two dimensions."
 
-    handle = figure(handle,false)
+    handle = figure(handle, redraw = false)
     clearfigure(handle)
     ac = AxesConf(title = title,
                   xlabel = xlabel,
