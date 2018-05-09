@@ -212,14 +212,10 @@ end
 function Base.show(io::IO, ::MIME"text/plain", x::Figure)
     if !isjupyter
         llplot()
-        term = gaston_config.terminal
-        if term == "null"
-            return nothing
-        elseif term == "dumb"
+        if gaston_config.terminal == "dumb"
             print(x.svg)
-        else
-            return nothing
         end
+        return nothing
     end
 end
 

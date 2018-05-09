@@ -196,45 +196,46 @@ function llplot()
                 end
             end
         end
-    elseif (gaston_config.terminal ∈ supported_textterms)
+    else
+        gnuplot_send("printerr \"GastonDone\"\n")
+        err = ""
         attempt_stderr = 20
         attempt_stdout = 100
         stderr_count = 0
         sleep_interval = 0.05
-        flag = false
         sleep(sleep_interval)
-        while true
-            stderr_count = stderr_count + 1
-            stderr_count > attempt_stderr &&
-            error("Gnuplot is taking too long to respond.")
-            if isready(ChanStdErr)
-                err = take!(ChanStdErr)
-                if err == "GastonDone\n"
+        if isready(ChanStdErr)
+            while isready(ChanStdErr)
+                err = err * take!(ChanStdErr)
+                sleep(sleep_interval)
+            end
+            if err == "GastonDone\n"
+                if (gaston_config.terminal ∈ supported_textterms)
                     stdout_count = 0
-                    while true
-                        stdout_count = stdout_count + 1
-                        stdout_count > attempt_stdout &&
-                        error("Gnuplot is taking too long to respond.")
-                        sleep(sleep_interval)  # yield and give gnuplot time to plot
-                        if isready(ChanStdOut)
-                            fig.svg = take!(ChanStdOut)
-                            flag = true
-                            break
-                        else
-                            continue
+                    svgdata = ""
+                    if isready(ChanStdOut)
+                        while isready(ChanStdOut)
+                            svgdata = svgdata * take!(ChanStdOut)
+                            sleep(sleep_interval)
                         end
+                        fig.svg = svgdata
+                    else
+                        stdout_count = stdout_count + 1
+                        stdout_count > attempt_stdout && error("Gnuplot is taking too long to respond.")
+                        sleep(sleep_interval)
                     end
-                else
-                    # Gnuplot met trouble while plotting.
-                    gnuplot_state.gp_lasterror = err
-                    gnuplot_state.gp_error = true
-                    warn("Gnuplot returned an error message:\n  $err)")
-                    break
                 end
             else
-                yield()
+                # Gnuplot met trouble while plotting.
+                gnuplot_state.gp_lasterror = err
+                gnuplot_state.gp_error = true
+                warn("Gnuplot returned an error message:\n  $err)")
             end
-            flag && break
+        else
+            sleep(sleep_interval)
+            stderr_count = stderr_count + 1
+            stderr_count > attempt_stderr && error("Gnuplot is taking too long to respond.")
         end
     end
+    return nothing
 end
