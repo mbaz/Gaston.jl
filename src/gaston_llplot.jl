@@ -144,73 +144,103 @@ function llplot(gpcom="")
         # send command to gnuplot
         gnuplot_send(linestr(fig.curves, "splot",filename))
     end
-    # If the terminal is text-based, then read gnuplot's stdout and print it.
-    i = 0
-    if gaston_config.terminal ∈ supported_textterms
-        while true
-            sleep(0.05)  # give gnuplot time to plot
-            i = i+1
-            yield()
-            if !isempty(gnuplot_state.gp_stdout)
-                # only print figure if terminal is not null
-                if gaston_config.terminal != "null"
-                    println(gnuplot_state.gp_stdout)
-                end
-                gnuplot_state.gp_stdout = ""
-                break
-            end
-            if i == 20
-                if !isempty(gnuplot_state.gp_stderr)
-                    # Gnuplot met trouble while plotting.
-                    gnuplot_state.gp_lasterror = gnuplot_state.gp_stderr
-                    gnuplot_state.gp_stderr = ""
-                    gnuplot_state.gp_error = true
-                    warn("Gnuplot returned an error message:\n
-                         $(gnuplot_state.gp_lasterror)")
-                    break
-                else
-                    error("Gnuplot is taking too long to respond.")
-                end
-            end
-        end
-    end
     # Wait until gnuplot is finished plotting before returning. To do this,
-    # we make gnuplot output "X\n" in its stdout. Gnuplot will only get to
+    # we make gnuplot output "GastonDone\n" in its stdout. Gnuplot will only
+    # get to
     # do this when the plot is finished. Otherwise, gnuplot will output
     # something in its stderr. In either case, we know that the plot is
     # finished and can carry on.
-    gnuplot_send("set print \"-\"\n")
-    gnuplot_send("print \"X\"\n")
+    #gnuplot_send("set print \"-\"\n")
+    #gnuplot_send("printerr \"GastonDone\"\n")
 
-    # Loop until we read data from either gnuplot's stdout or stdin
-    i = 0
-    done = false
-    while true
-        sleep(0.05)  # 50 milliseconds
-        i = i+1
-        yield()  # let async tasks run
-        if !isempty(gnuplot_state.gp_stdout)
-            # We got data from stdin: gnuplot finished executing our commands
-            gnuplot_state.gp_stdout = ""
-            gnuplot_state.gp_error = false
-            done = true
-        end
-        if !isempty(gnuplot_state.gp_stderr)
+    # Now we take several different actions depending on whether we're in Jupyter
+    # or not, and the terminal type.
+    # If Jupyter:
+    #   Attempt reading STDOUT `attempts` times; continue reading until
+    #       we detect "GastonDone" at the end, and return the figure.
+    #   If STDOUT remains empty, check STDERR
+    #   If STDERR is not empty, warn with error message
+    #   else warn that gnuplot is taking too long
+    # If not Jupyter:
+    #   Attempt reading STDOUT `attempts` times
+    #   If STDOUT == "GastonDone", we're done
+    #   If STDOUT remains empty, check STDERR
+    #   If STDERR is not empty, warn with error message
+    #   else warn that gnuplot is taking too long
+    # If the terminal is text-based, then read and store gnuplot's stdout
+    if isjupyter
+        attempt_stdout = 1000
+        sleep_interval = 0.05
+        stdout_count = 0
+        svgdata = ""
+        gnuplot_state.gp_error = false
+        # give pipe-readers a chance
+        sleep(sleep_interval)
+        if isready(ChanStdErr)
             # Gnuplot met trouble while plotting.
-            gnuplot_state.gp_lasterror = gnuplot_state.gp_stderr
-            gnuplot_state.gp_stderr = ""
+            err = take!(ChanStdErr)
+            gnuplot_state.gp_lasterror = err
             gnuplot_state.gp_error = true
-            warn("Gnuplot returned an error message:\n
-                 $(gnuplot_state.gp_lasterror)")
+            warn("Gnuplot returned an error message:\n  $err)")
+        else
+            while true
+                stdout_count = stdout_count + 1
+                stdout_count > attempt_stdout &&
+                error("Gnuplot is taking too long to respond.")
+                if isready(ChanStdOut)
+                    svgdata = svgdata * take!(ChanStdOut)
+                    if svgdata[end-7:end-2] == "</svg>"
+                        fig.svg = svgdata
+                        break
+                    else
+                        continue
+                    end
+                    yield()
+                else
+                    sleep(sleep_interval)
+                end
+            end
         end
-        done && break
-        if i == 20
-            error("Gnuplot is taking too long to respond.")
+    else
+        gnuplot_send("printerr \"GastonDone\"\n")
+        err = ""
+        attempt_stderr = 20
+        attempt_stdout = 100
+        stderr_count = 0
+        sleep_interval = 0.05
+        sleep(sleep_interval)
+        if isready(ChanStdErr)
+            while isready(ChanStdErr)
+                err = err * take!(ChanStdErr)
+                sleep(sleep_interval)
+            end
+            if err == "GastonDone\n"
+                if (gaston_config.terminal ∈ supported_textterms)
+                    stdout_count = 0
+                    svgdata = ""
+                    if isready(ChanStdOut)
+                        while isready(ChanStdOut)
+                            svgdata = svgdata * take!(ChanStdOut)
+                            sleep(sleep_interval)
+                        end
+                        fig.svg = svgdata
+                    else
+                        stdout_count = stdout_count + 1
+                        stdout_count > attempt_stdout && error("Gnuplot is taking too long to respond.")
+                        sleep(sleep_interval)
+                    end
+                end
+            else
+                # Gnuplot met trouble while plotting.
+                gnuplot_state.gp_lasterror = err
+                gnuplot_state.gp_error = true
+                warn("Gnuplot returned an error message:\n  $err)")
+            end
+        else
+            sleep(sleep_interval)
+            stderr_count = stderr_count + 1
+            stderr_count > attempt_stderr && error("Gnuplot is taking too long to respond.")
         end
     end
-
-    # If the environment is IJulia and there are no errors, redisplay the figure.
-    if gnuplot_state.isjupyter && !gnuplot_state.gp_error
-        redisplay(fig)
-    end
+    return nothing
 end

@@ -26,8 +26,12 @@ include("gaston_config.jl")
 
 # set up global variables
 # global variable that stores gnuplot's state
+isjupyter = false
+if isdefined(Main, :IJulia) && Main.IJulia.inited
+    isjupyter = true
+end
 gnuplot_state = GnuplotState(false,nothing,[],"","","",false,
-                             Figure[],displayable("image/png"))
+                             Figure[],isjupyter)
 
 # when gnuplot_state goes out of scope, exit gnuplot
 if VERSION >= v"0.7-"
