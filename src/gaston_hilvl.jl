@@ -249,12 +249,16 @@ function imagesc(x::Coord,y::Coord,Z::Coord;
                  ylabel = gaston_config.ylabel,
                  clim   = [0,255],
                  handle = gnuplot_state.current,
+                 xrange = gaston_config.xrange,
+                 yrange = gaston_config.yrange,
                  gpcom  = ""
                  )
     # validation
     @assert valid_label(title) "Title must be a string."
     @assert valid_label(xlabel) "xlabel must be a string."
     @assert valid_label(ylabel) "ylabel must be a string."
+    @assert valid_range(xrange) "Range $(xrange) not supported."
+    @assert valid_range(yrange) "Range $(yrange) not supported."
     @assert length(clim) == 2 "clim must be a 2-element vector."
     @assert length(x) == size(Z)[2] "Invalid coordinates."
     @assert length(y) == size(Z)[1] "Invalid coordinates."
@@ -267,7 +271,9 @@ function imagesc(x::Coord,y::Coord,Z::Coord;
 
     ac = AxesConf(title = title,
                   xlabel = xlabel,
-                  ylabel = ylabel)
+                  ylabel = ylabel,
+                  xrange = xrange,
+                  yrange = yrange)
     cc = CurveConf(plotstyle=plotstyle)
 
     if ndims(Z) == 3
