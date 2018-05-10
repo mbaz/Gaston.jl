@@ -7,7 +7,7 @@ if VERSION >= v"0.7-"
 end
 
 # llplot() is our workhorse plotting function
-function llplot(gpcom="")
+function llplot()
     global gnuplot_state
     global gaston_config
 
@@ -112,7 +112,7 @@ function llplot(gpcom="")
         # send figure configuration to gnuplot
         gnuplot_send_fig_config(config)
         # Send user command to gnuplot
-        !isempty(gpcom) && gnuplot_send(gpcom)
+        !isempty(fig.gpcom) && gnuplot_send(fig.gpcom)
         # send plot command to gnuplot
         gnuplot_send(linestr(fig.curves, "plot", filename))
 
@@ -140,7 +140,7 @@ function llplot(gpcom="")
         # send figure configuration to gnuplot
         gnuplot_send_fig_config(config)
         # Send user command to gnuplot
-        !isempty(gpcom) && gnuplot_send(gpcom)
+        !isempty(fig.gpcom) && gnuplot_send(fig.gpcom)
         # send command to gnuplot
         gnuplot_send(linestr(fig.curves, "splot",filename))
     end
@@ -150,8 +150,6 @@ function llplot(gpcom="")
     # do this when the plot is finished. Otherwise, gnuplot will output
     # something in its stderr. In either case, we know that the plot is
     # finished and can carry on.
-    #gnuplot_send("set print \"-\"\n")
-    #gnuplot_send("printerr \"GastonDone\"\n")
 
     # Now we take several different actions depending on whether we're in Jupyter
     # or not, and the terminal type.
