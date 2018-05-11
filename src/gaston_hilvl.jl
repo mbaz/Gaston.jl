@@ -322,9 +322,9 @@ function surf(x::Coord,y::Coord,Z::Coord;
     @assert valid_range(xrange) "Range $(xrange) not supported."
     @assert valid_range(yrange) "Range $(yrange) not supported."
     @assert valid_range(zrange) "Range $(zrange) not supported."
+    @assert ndims(Z) == 2 "Z must have two dimensions."
     @assert length(x) == size(Z)[1] "Invalid coordinates."
     @assert length(y) == size(Z)[2] "Invalid coordinates."
-    @assert ndims(Z) == 2 "Z must have two dimensions."
 
     handle = figure(handle, redraw = false)
     clearfigure(handle)
