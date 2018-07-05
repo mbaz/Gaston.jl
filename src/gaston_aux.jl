@@ -30,6 +30,9 @@ end
 # Async tasks to read/write to gnuplot's pipes.
 const StartPipes = Condition()  # signal to start reading pipes
 
+const ChanStdOut = Channel{String}(10)
+const ChanStdErr = Channel{String}(10)
+
 # This task reads all characters available from gnuplot's stdout.
 @async while true
     wait(StartPipes)
@@ -38,7 +41,9 @@ const StartPipes = Condition()  # signal to start reading pipes
         if !isopen(pout)
             break
         end
-        gnuplot_state.gp_stdout = String(readavailable(pout))
+        #gnuplot_state.gp_stdout = String(readavailable(pout))
+        data = String(readavailable(pout))
+        put!(ChanStdOut, data)
     end
 end
 
@@ -50,7 +55,9 @@ end
         if !isopen(perr)
             break
         end
-        gnuplot_state.gp_stderr = String(readavailable(perr))
+        #gnuplot_state.gp_stderr = String(readavailable(perr))
+        data = String(readavailable(perr))
+        put!(ChanStdErr, data)
     end
 end
 
@@ -108,14 +115,17 @@ end
 function push_figure!(handle,args...)
     index = findfigure(handle)
     for c in args
-        isa(c, AxesConf) && (gnuplot_state.figs[index].conf = c)
-        if isa(c, Curve)
+        if isa(c,AxesConf)
+            gnuplot_state.figs[index].conf = c
+        elseif isa(c, Curve)
             if gnuplot_state.figs[index].isempty
                 gnuplot_state.figs[index].curves = [c]
             else
                 push!(gnuplot_state.figs[index].curves,c)
             end
             gnuplot_state.figs[index].isempty = false
+        elseif isa(c, AbstractString)
+            gnuplot_state.figs[index].gpcom = c
         end
     end
 end
@@ -199,11 +209,19 @@ function hist(s,bins)
     return x,y
 end
 
-function Base.show(io::IO, ::MIME"image/png", x::Figure)
-    # The plot is written to /tmp/gaston-ijula.png. Read the file and
-    # write it to io.
-    data = open(read, gaston_config.jupyterfile,"r")
-    write(io,data)
+function Base.show(io::IO, ::MIME"text/plain", x::Figure)
+    if !isjupyter
+        llplot()
+        if gaston_config.terminal == "dumb"
+            print(x.svg)
+        end
+        return nothing
+    end
+end
+
+function Base.show(io::IO, ::MIME"image/svg+xml", x::Figure)
+    llplot()
+    write(io,x.svg)
 end
 
 # Execute command `cmd`, and return a tuple `(in, out, err, r)`, where
@@ -283,6 +301,7 @@ function termstring(term::AbstractString)
     if term ∈ supported_screenterms || term ∈ supported_textterms
         # Gaston's "null" terminal is actually "dumb" behind the scenes
         term == "null" && (term = "dumb")
+
         ts = "set term $term $(gnuplot_state.current)"
     else
         if term == "pdf"
@@ -309,16 +328,16 @@ function termstring(term::AbstractString)
             s = "$s fontscale $(gc.print_fontscale) "
             s = "$s linewidth $(gc.print_linewidth) "
             s = "$s size $(gc.print_size)"
-        elseif term == "svg"
+        elseif term == "svg" || term == "ijulia"
             s = "set term svg "
             s = "$s font \"$(gc.print_fontface),$(gc.print_fontsize)\" "
             s = "$s linewidth $(gc.print_linewidth) "
             s = "$s size $(gc.print_size)"
         end
-        if gnuplot_state.isjupyter
-            ts = "$s \nset output '$(gc.jupyterfile)'"
-        else
+        if term != "ijulia"
             ts = "$s \nset output '$(gc.outputfile)'"
+        else
+            ts = s
         end
     end
     return ts
