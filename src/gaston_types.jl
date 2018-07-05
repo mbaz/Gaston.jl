@@ -123,9 +123,11 @@ mutable struct Figure
     conf::AxesConf               # figure configuration
     curves::Vector{Curve}        # a vector of curves
     isempty::Bool                # a flag to indicate if figure is empty
+    svg::AbstractString          # SVG data returned by gnuplot (used in IJulia)
+    gpcom::AbstractString        # a gnuplot command to run before plotting
 end
 # Construct an empty figure with given handle
-Figure(handle) = Figure(handle,AxesConf(),Curve[],true)
+Figure(handle) = Figure(handle,AxesConf(),Curve[],true,"","")
 
 # We need a global variable to keep track of gnuplot's state
 mutable struct GnuplotState
