@@ -155,7 +155,7 @@ function set(;legend         = gaston_config.legend,
     gaston_config.print_size        = print_size
     # don't change terminal inside jupyter
     if terminal != "ijulia" && gnuplot_state.isjupyter
-        warn("Terminal cannot be changed in a Jupyter notebook.")
+        @warn("Terminal cannot be changed in a Jupyter notebook.")
     else
         gaston_config.terminal = terminal
     end

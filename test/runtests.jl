@@ -183,7 +183,7 @@ end
               printfigure(term="svg")
               Gaston.gnuplot_state.gp_error
           end == false
-if !is_windows()
+if !Sys.iswindows()
     @test begin
               printfigure(term="gif")
               Gaston.gnuplot_state.gp_error
@@ -221,7 +221,7 @@ end
     @test set(zlabel="A") == nothing
     @test set(fill="solid") == nothing
     @test set(grid="on") == nothing
-    if !is_windows()
+    if !Sys.iswindows()
         @test set(terminal="x11") == nothing # This test does not pass in Windows
     end
     @test set(terminal="x11") == nothing
