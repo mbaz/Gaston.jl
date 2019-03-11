@@ -7,6 +7,11 @@ function llplot()
     global gnuplot_state
     global gaston_config
 
+    # reset error handling
+    err = ""
+    gnuplot_state.gp_lasterror = err
+    gnuplot_state.gp_error = false
+
     # select current figure
     c = findfigure(gnuplot_state.current)
     if c == 0

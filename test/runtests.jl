@@ -175,16 +175,20 @@ end
               Gaston.gnuplot_state.gp_error
           end == false
     @test begin
+              plot(1:10)
               printfigure(term="pdf") == 1
               Gaston.gnuplot_state.gp_error
           end == false
     @test begin
+              plot(1:10)
               set(print_size="640,480")
               printfigure(term="svg")
               Gaston.gnuplot_state.gp_error
           end == false
 if !Sys.iswindows()
     @test begin
+              plot(1:10)
+              set(print_size="640,480")
               printfigure(term="gif")
               Gaston.gnuplot_state.gp_error
           end == false
