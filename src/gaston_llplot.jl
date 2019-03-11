@@ -172,7 +172,6 @@ function llplot()
         sleep_interval = 0.05
         stdout_count = 0
         svgdata = ""
-        gnuplot_state.gp_error = false
         # give pipe-readers a chance
         sleep(sleep_interval)
         if isready(ChanStdErr)
@@ -184,8 +183,7 @@ function llplot()
         else
             while true
                 stdout_count = stdout_count + 1
-                stdout_count > attempt_stdout &&
-                error("Gnuplot is taking too long to respond.")
+                stdout_count > attempt_stdout && error("Gnuplot is taking too long to respond.")
                 if isready(ChanStdOut)
                     svgdata = svgdata * take!(ChanStdOut)
                     if svgdata[end-7:end-2] == "</svg>"
@@ -201,45 +199,57 @@ function llplot()
             end
         end
     else
-        gnuplot_send("printerr \"GastonDone\"\n")
-        err = ""
         attempt_stderr = 20
         attempt_stdout = 100
-        stderr_count = 0
         sleep_interval = 0.05
+        sleep_increment = 1.2
+
+        gnuplot_send("printerr \"GastonDone\"\n")
         sleep(sleep_interval)
-        if isready(ChanStdErr)
-            while isready(ChanStdErr)
-                err = err * take!(ChanStdErr)
-                sleep(sleep_interval)
-            end
-            if err == "GastonDone\n"
-                if (gaston_config.terminal ∈ supported_textterms)
-                    stdout_count = 0
-                    svgdata = ""
-                    if isready(ChanStdOut)
-                        while isready(ChanStdOut)
-                            svgdata = svgdata * take!(ChanStdOut)
-                            sleep(sleep_interval)
-                        end
-                        fig.svg = svgdata
-                    else
-                        stdout_count = stdout_count + 1
-                        stdout_count > attempt_stdout && error("Gnuplot is taking too long to respond.")
-                        sleep(sleep_interval)
-                    end
-                end
+
+        si = sleep_interval
+        count = 0
+        while true
+            if !isready(ChanStdErr)
+                sleep(si)
+                si = sleep_increment * si
+                count = count + 1
+                count > attempt_stderr && error("Gnuplot is taking too long to respond.")
             else
-                # Gnuplot met trouble while plotting.
-                gnuplot_state.gp_lasterror = err
-                gnuplot_state.gp_error = true
-                @warn("Gnuplot returned an error message:\n  $err)")
+                si = sleep_interval
+                while isready(ChanStdErr)
+                    err = err * take!(ChanStdErr)
+                    sleep(si)
+                    si = sleep_increment * si
+                end
+                break
+            end
+        end
+
+        si = sleep_interval
+        count = 0
+        if err == "GastonDone\n"
+            if (gaston_config.terminal ∈ supported_textterms)
+                svgdata = ""
+                if isready(ChanStdOut)
+                    while isready(ChanStdOut)
+                        svgdata = svgdata * take!(ChanStdOut)
+                        sleep(si)
+                        si = sleep_increment * si
+                    end
+                    fig.svg = svgdata
+                else
+                    count = count + 1
+                    count > attempt_stdout && error("Gnuplot is taking too long to respond.")
+                end
             end
         else
-            sleep(sleep_interval)
-            stderr_count = stderr_count + 1
-            stderr_count > attempt_stderr && error("Gnuplot is taking too long to respond.")
+            # Gnuplot met trouble while plotting.
+            gnuplot_state.gp_lasterror = err
+            gnuplot_state.gp_error = true
+            @warn("Gnuplot returned an error message:\n  $err)")
         end
     end
+
     return nothing
 end
