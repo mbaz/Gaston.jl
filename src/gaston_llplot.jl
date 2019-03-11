@@ -2,10 +2,6 @@
 ##
 ## This file is distributed under the 2-clause BSD License.
 
-if VERSION >= v"0.7-"
-    using DelimitedFiles
-end
-
 # llplot() is our workhorse plotting function
 function llplot()
     global gnuplot_state

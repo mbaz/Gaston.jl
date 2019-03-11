@@ -11,6 +11,9 @@ export closefigure, closeall, figure,
 
 import Base.show
 
+using Random
+using DelimitedFiles
+
 # before doing anything else, verify gnuplot is present on this system
 try
   success(`gnuplot --version`)
@@ -35,11 +38,7 @@ gnuplot_state = GnuplotState(false,nothing,[],"","","",false,
                              Figure[],isjupyter)
 
 # when gnuplot_state goes out of scope, exit gnuplot
-if VERSION >= v"0.7-"
-  finalizer(gnuplot_exit, gnuplot_state)
-else
-  finalizer(gnuplot_state, gnuplot_exit)
-end
+finalizer(gnuplot_exit, gnuplot_state)
 
 
 # global variable that stores Gaston's configuration

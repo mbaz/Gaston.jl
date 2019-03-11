@@ -4,10 +4,6 @@
 
 # This file contains configuration-related functions and types
 
-if VERSION >= v"0.7-"
-    using Random
-end
-
 # Structure to keep Gaston's configuration
 mutable struct GastonConfig
     # default CurveConf values

@@ -7,11 +7,7 @@
 # Structs to define a figure
 
 ## Coordinates
-if VERSION >= v"0.7-"
-    Coord = Union{AbstractRange{T},Array{T}} where T <: Real
-else
-    Coord = Union{Range{T},Array{T}} where T <: Real
-end
+Coord = Union{AbstractRange{T},Array{T}} where T <: Real
 
 
 # storage for financial coordinates
