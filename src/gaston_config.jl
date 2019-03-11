@@ -229,7 +229,7 @@ function valid_range(s::AbstractString)
     rx = Regex("^\\s*($er|$fr)\\s*\$")
 
     if VERSION >= v"0.7-"
-        if isempty(s) || contains(s, rx)
+        if isempty(s) || occursin(rx, s)
             return true
         end
     else
