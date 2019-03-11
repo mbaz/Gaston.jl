@@ -179,7 +179,7 @@ function llplot()
             err = take!(ChanStdErr)
             gnuplot_state.gp_lasterror = err
             gnuplot_state.gp_error = true
-            warn("Gnuplot returned an error message:\n  $err)")
+            @warn("Gnuplot returned an error message:\n  $err)")
         else
             while true
                 stdout_count = stdout_count + 1
@@ -232,7 +232,7 @@ function llplot()
                 # Gnuplot met trouble while plotting.
                 gnuplot_state.gp_lasterror = err
                 gnuplot_state.gp_error = true
-                warn("Gnuplot returned an error message:\n  $err)")
+                @warn("Gnuplot returned an error message:\n  $err)")
             end
         else
             sleep(sleep_interval)
