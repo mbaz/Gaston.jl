@@ -3,6 +3,12 @@ Gaston: Julia plotting using gnuplot
 
 Gaston is a [Julia](https://julialang.org)  package for plotting. It provides an interface to [gnuplot](http://gnuplot.info), a powerful but old-fashioned plotting package available on all major platforms.
 
+Current stable release is 0.9.0. To run Gaston with Julia 0.6.x, release 0.7.4 is recommended. Note, however, that release 0.7.4 is no longer under maintenance.
+
+| **Build Status** |
+|:----------------:|
+| [![][travis-img]][travis-url] |
+
 Why use Gaston?
 --------------
 
@@ -23,10 +29,11 @@ Having said that, Gaston also shares GnuPlot's limitations. The main one is that
 Installation
 ------------
 
-Gaston requires gnuplot to be installed in your system. It has been tested
-with versions 4.6 and above, and version 5.2 is recommended. Gaston also requires Julia v0.6.
+Gaston requires gnuplot to be installed in your system. It has been tested with versions 5.0 and above, and version 5.2 is recommended. Gaston also requires Julia v1.1.
 
-To install Gaston using Julia's packaging system, run `Pkg.add("Gaston")`.
+To install Gaston using Julia's packaging system, enter Julia's package manager prompt with `]`, and run
+
+    (v1.1) pkg> add Gaston
 
 Documentation
 -------------
@@ -60,8 +67,11 @@ Tests
 -----
 
 Gaston includes many tests, wich you can run to make sure your installation is
-working properly. To run the tests, do
+working properly. To run the tests, enter Julia's package manager with `]` and run
 
-    julia> Pkg.test("Gaston")
+    (v1.1) pkg> test Gaston
 
 All tests should pass.
+
+[travis-url]: https://api.travis-ci.org/mbaz/Gaston.jl
+[travis-img]: https://api.travis-ci.org/mbaz/Gaston.jl.svg?tag=v0.9.0
