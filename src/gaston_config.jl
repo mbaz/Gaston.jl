@@ -224,16 +224,10 @@ function valid_range(s::AbstractString)
     # range regex
     rx = Regex("^\\s*($er|$fr)\\s*\$")
 
-    if VERSION >= v"0.7-"
-        if isempty(s) || occursin(rx, s)
-            return true
-        end
-    else
-        if isempty(s) || ismatch(rx, s)
-            return true
-        end
+    if isempty(s) || occursin(rx, s)
+        return true
     end
-    
+
     return false
 end
 
