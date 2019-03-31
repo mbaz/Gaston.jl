@@ -50,7 +50,7 @@ function GastonConfig()
 	"","","","","empty","off","inside vertical right top","",
 	"[*:*]","[*:*]","[*:*]","",
 	# terminal
-	"wxt",
+	"qt",
 	# output file name
 	"",
     # print parameters
@@ -59,7 +59,7 @@ function GastonConfig()
     randstring(8)
     )
     # Determine if current display supports PNG; this allows IJulia support.
-    if gnuplot_state.isjupyter
+    if isjupyter
         gc.terminal = "ijulia"
         gc.print_size = "640,480"
         gc.print_fontsize = 20
@@ -150,7 +150,7 @@ function set(;legend         = gaston_config.legend,
     gaston_config.print_linewidth   = print_linewidth
     gaston_config.print_size        = print_size
     # don't change terminal inside jupyter
-    if terminal != "ijulia" && gnuplot_state.isjupyter
+    if terminal != "ijulia" && isjupyter
         @warn("Terminal cannot be changed in a Jupyter notebook.")
     else
         gaston_config.terminal = terminal

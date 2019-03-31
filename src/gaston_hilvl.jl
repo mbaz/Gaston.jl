@@ -64,9 +64,6 @@ function figure(h = 0; redraw = true)
     global gnuplot_state
     global gaston_config
 
-    # see if we need to set up gnuplot
-    gnuplot_state.running || gnuplot_init()
-
     # build vector of handles
     handles = [f.handle for f in gnuplot_state.figs]
 
@@ -353,8 +350,7 @@ function printfigure(;handle=gnuplot_state.current,
 
     # disable this command in IJulia
     # TODO: see if it's desirable and/or possible to re-enable it
-    gnuplot_state.isjupyter &&
-        error("printfigure command disabled in Jupyter notebook.")
+    isjupyter && error("printfigure command disabled in Jupyter notebook.")
 
     findfigure(handle) == 0 && error("Requested figure does not exist.")
     isempty(outputfile) && error("Please specify an output filename.")

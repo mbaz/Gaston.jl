@@ -207,23 +207,20 @@ function llplot()
         gnuplot_send("printerr \"GastonDone\"\n")
         sleep(sleep_interval)
 
-        si = sleep_interval
-        count = 0
-        while true
-            if !isready(ChanStdErr)
+        if isready(ChanStdErr)
+            err = take!(ChanStdErr)
+        else # wait for stderr
+            count = 0
+            si = sleep_interval
+            while !isready(ChanStdErr)
+                println("count = $count")
                 sleep(si)
                 si = sleep_increment * si
                 count = count + 1
-                count > attempt_stderr && error("Gnuplot is taking too long to respond.")
-            else
-                si = sleep_interval
-                while isready(ChanStdErr)
-                    err = err * take!(ChanStdErr)
-                    sleep(si)
-                    si = sleep_increment * si
-                end
-                break
+                count > attempt_stderr &&
+                    error("Gnuplot is taking too long to respond.")
             end
+            err = take!(ChanStdErr)
         end
 
         si = sleep_interval

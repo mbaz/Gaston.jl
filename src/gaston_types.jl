@@ -9,7 +9,6 @@
 ## Coordinates
 Coord = Union{AbstractRange{T},Array{T}} where T <: Real
 
-
 # storage for financial coordinates
 struct FinancialCoords
     valid::Bool
@@ -127,13 +126,13 @@ Figure(handle) = Figure(handle,AxesConf(),Curve[],true,"","")
 
 # We need a global variable to keep track of gnuplot's state
 mutable struct GnuplotState
-    running::Bool                # true when gnuplot is already running
     current                      # current figure -- "pointer" to figs
-    fid                          # pipe streams id
-    gp_stdout::AbstractString    # store gnuplot's stdout
-    gp_stderr::AbstractString    # store gnuplot's stderr
-    gp_lasterror::AbstractString # store gnuplot's last error output
+    process                      # the gnuplot process
+    gp_stdout::String            # last data read from gnuplot's stdout
+    gp_stderr::String            # last data read from  gnuplot's stderr
+    gp_lasterror::String         # gnuplot's last error output
     gp_error::Bool               # true if last command resulted in gp error
     figs::Array{Figure}          # storage for all figures
-    isjupyter::Bool              # true if running inside a jupyter notebook
 end
+
+GnuplotState() = GnuplotState(nothing,nothing,"","","",false,Figure[])

@@ -28,23 +28,22 @@ include("gaston_llplot.jl")
 include("gaston_hilvl.jl")
 include("gaston_config.jl")
 
-# set up global variables
-# global variable that stores gnuplot's state
+# determine if running in an IJulia notebook
 isjupyter = false
 if isdefined(Main, :IJulia) && Main.IJulia.inited
     isjupyter = true
 end
-gnuplot_state = GnuplotState(false,nothing,[],"","","",false,
-                             Figure[],isjupyter)
+
+# initialize internal state
+gnuplot_state = GnuplotState()
 
 # when gnuplot_state goes out of scope, exit gnuplot
 finalizer(gnuplot_exit, gnuplot_state)
 
-
-# global variable that stores Gaston's configuration
+# initialize default configuration
 gaston_config = GastonConfig()
 
-# get started
-gnuplot_init()
+# load initialization file
+include("gaston_init.jl")
 
 end

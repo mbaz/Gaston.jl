@@ -4,78 +4,11 @@
 
 # Auxiliary, non-exported functions are declared here.
 
-# Initialize gnuplot and pipes
-function gnuplot_init()
-    global gnuplot_state
-
-    pr = (0,0,0,0) # stdin, stdout, stderr, pid
-    try
-        pr = popen3(`gnuplot`)
-    catch
-        error("There was a problem starting up gnuplot.")
-    end
-    # It's possible that `popen3` runs successfully, but gnuplot exits
-    # immediately. Double-check that gnuplot is running at this point.
-    if Base.process_running(pr[4])
-        gnuplot_state.running = true
-        gnuplot_state.fid = pr
-        # Start tasks to read and write gnuplot's pipes
-        yield()  # get async tasks started (code blocks without this line)
-        notify(StartPipes)
-    else
-        error("There was a problem starting up gnuplot.")
-    end
-end
-
-# Async tasks to read/write to gnuplot's pipes.
-const StartPipes = Condition()  # signal to start reading pipes
-
-const ChanStdOut = Channel{String}(10)
-const ChanStdErr = Channel{String}(10)
-
-# This task reads all characters available from gnuplot's stdout.
-@async while true
-    wait(StartPipes)
-    pout = gnuplot_state.fid[2]
-    while true
-        if !isopen(pout)
-            break
-        end
-        #gnuplot_state.gp_stdout = String(readavailable(pout))
-        data = String(readavailable(pout))
-        put!(ChanStdOut, data)
-    end
-end
-
-# This task reads all characters available from gnuplot's stderr.
-@async while true
-    wait(StartPipes)
-    perr = gnuplot_state.fid[3]
-    while true
-        if !isopen(perr)
-            break
-        end
-        #gnuplot_state.gp_stderr = String(readavailable(perr))
-        data = String(readavailable(perr))
-        put!(ChanStdErr, data)
-    end
-end
-
 # close gnuplot pipes
 function gnuplot_exit(x...)
-    global gnuplot_state
-
-    if gnuplot_state.running
-        # close pipe
-        close(gnuplot_state.fid[1])
-        close(gnuplot_state.fid[2])
-        close(gnuplot_state.fid[3])
+    for p in [gstdin, gstdout, gstderr]
+        close(p)
     end
-    # reset gnuplot_state
-    gnuplot_state.running = false
-    gnuplot_state.current = nothing
-    gnuplot_state.figs = Figure[]
-    return 0
 end
 
 # Return index to figure with handle `c`. If no such figure exists, returns 0.
@@ -224,23 +157,6 @@ function Base.show(io::IO, ::MIME"image/svg+xml", x::Figure)
     write(io,x.svg)
 end
 
-# Execute command `cmd`, and return a tuple `(in, out, err, r)`, where
-# `in`, `out`, `err` are pipes to the process' STDIN, STDOUT, and STDERR, and
-# `r` is a process descriptor.
-function popen3(cmd::Cmd)
-    pin = Base.Pipe()
-    out = Base.Pipe()
-    err = Base.Pipe()
-    r = run(pipeline(cmd, stdin = pin, stdout = out, stderr = err), wait = false)
-
-    Base.close(out.in)
-    Base.close(err.in)
-    Base.close(pin.out)
-    Base.start_reading(out.out)
-    Base.start_reading(err.out)
-    return (pin.in, out.out, err.out, r)
-end
-
 # return configuration string for a single plot
 function linestr_single(conf::CurveConf)
     s = ""
@@ -281,7 +197,7 @@ function linestr(curves::Vector{Curve}, cmd::AbstractString, file::AbstractStrin
         for i in curves[2:end]
             index += 1
             s = string(s, ", '", file, "' ", " i ", string(index)," ",
-                linestr_single(i.conf))
+                       linestr_single(i.conf))
         end
     end
     return s
@@ -404,12 +320,11 @@ end
 
 # write commands to gnuplot's pipe
 function gnuplot_send(s::AbstractString)
-    gin = gnuplot_state.fid[1] # gnuplot STDIN
-    w = write(gin, string(s,"\n"))
+    w = write(gstdin, string(s,"\n"))
     # check that data was accepted by the pipe
     if !(w > 0)
         println("Something went wrong writing to gnuplot STDIN.")
         return
     end
-    flush(gin)
+    flush(gstdin)
 end
