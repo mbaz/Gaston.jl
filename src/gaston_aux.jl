@@ -145,7 +145,7 @@ end
 function Base.show(io::IO, ::MIME"text/plain", x::Figure)
     if !isjupyter
         llplot()
-        if gaston_config.terminal == "dumb"
+        if gaston_config.terminal == "dumb" || gaston_config.terminal == "sixelgd"
             print(x.svg)
         end
         return nothing
@@ -212,9 +212,17 @@ function termstring(term::AbstractString)
 
     if term ∈ supported_screenterms || term ∈ supported_textterms
         # Gaston's "null" terminal is actually "dumb" behind the scenes
-        term == "null" && (term = "dumb")
-
-        ts = "set term $term $(gnuplot_state.current)"
+        if term == "null"
+            term = "dumb"
+            ts = "set term $term $(gnuplot_state.current)"
+        end
+        if term == "sixelgd"
+            ts = "set term sixelgd "
+            ts = "$ts font $(gc.print_fontface) $(gc.print_fontsize) "
+            ts = "$ts fontscale $(gc.print_fontscale) "
+            ts = "$ts linewidth $(gc.print_linewidth) "
+            ts = "$ts size $(gc.print_size)"
+        end
     else
         if term == "pdf"
             s = "set term pdfcairo enhanced transparent $(gc.print_color) "
