@@ -82,7 +82,8 @@ function figure(h = 0; redraw = true)
     else
         # when selecting a pre-existing window, gnuplot requires that it be
         # redrawn in order to have mouse interactivity.
-        redraw && display(Figure(h))
+        #redraw && display(Figure(h))
+        redraw && display(gnuplot_state.figs[h])
     end
     return h
 end

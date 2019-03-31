@@ -7,11 +7,6 @@ function llplot()
     global gnuplot_state
     global gaston_config
 
-    # reset error handling
-    err = ""
-    gnuplot_state.gp_lasterror = err
-    gnuplot_state.gp_error = false
-
     # select current figure
     c = findfigure(gnuplot_state.current)
     if c == 0
@@ -199,6 +194,11 @@ function llplot()
             end
         end
     else
+        # reset error handling
+        err = ""
+        gnuplot_state.gp_lasterror = err
+        gnuplot_state.gp_error = false
+
         attempt_stderr = 20
         attempt_stdout = 100
         sleep_interval = 0.05
@@ -207,44 +207,53 @@ function llplot()
         gnuplot_send("printerr \"GastonDone\"\n")
         sleep(sleep_interval)
 
-        if isready(ChanStdErr)
-            err = take!(ChanStdErr)
-        else # wait for stderr
-            count = 0
-            si = sleep_interval
-            while !isready(ChanStdErr)
-                println("count = $count")
-                sleep(si)
-                si = sleep_increment * si
-                count = count + 1
-                count > attempt_stderr &&
-                    error("Gnuplot is taking too long to respond.")
-            end
-            err = take!(ChanStdErr)
-        end
-
+        # wait for stderr channel to be ready
         si = sleep_interval
         count = 0
-        if err == "GastonDone\n"
-            if (gaston_config.terminal ∈ supported_textterms)
-                svgdata = ""
-                if isready(ChanStdOut)
-                    while isready(ChanStdOut)
-                        svgdata = svgdata * take!(ChanStdOut)
-                        sleep(si)
-                        si = sleep_increment * si
-                    end
-                    fig.svg = svgdata
-                else
-                    count = count + 1
-                    count > attempt_stdout && error("Gnuplot is taking too long to respond.")
-                end
-            end
-        else
-            # Gnuplot met trouble while plotting.
+        while !isready(ChanStdErr)
+            sleep(si)
+            si = sleep_increment * si
+            count = count + 1
+            count > attempt_stderr &&
+                error("Gnuplot is taking too long to respond.")
+        end
+        # read all data in channel
+        si = sleep_interval
+        while isready(ChanStdErr)
+            err = err * take!(ChanStdErr)
+            sleep(si)
+            si = sleep_increment * si
+        end
+
+        # check for errors while plotting
+        if err != "GastonDone\n"
             gnuplot_state.gp_lasterror = err
             gnuplot_state.gp_error = true
             @warn("Gnuplot returned an error message:\n  $err)")
+        end
+
+        # if there was no error and text terminal, read all data from stdout
+        if err == "GastonDone\n"
+            if (gaston_config.terminal ∈ supported_textterms)
+                # wait for stdout to be ready
+                si = sleep_interval
+                count = 0
+                while !isready(ChanStdOut)
+                    sleep(si)
+                    si = sleep_increment * si
+                    count = count + 1
+                    count > attempt_stdout &&
+                        error("Gnuplot is taking too long to respond.")
+                end
+                svgdata = ""
+                si = sleep_interval
+                while isready(ChanStdOut)
+                    svgdata = svgdata * take!(ChanStdOut)
+                    sleep(si)
+                    si = sleep_increment * si
+                end
+                fig.svg = svgdata
+            end
         end
     end
 
