@@ -18,7 +18,7 @@ Why use Gaston, when there are plenty of modern, powerful alternatives such as P
 
 1. Emphasis on fast, simple plotting to the screen or in a Jupyter notebook.
 1. Support for 2D, 3D, histogram and image plots, with mouse zoom, rotation, etc.
-1. Can plot to multiple windows, or inline using sixel.
+1. Can plot to multiple windows, or inline using ascii characters or sixels.
 1. Can save plots to PDF, SVG, EPS, PNG or GIF files.
 1. Since the code is so simple (less than 1,500 lines, with no dependencies beyond Julia Base), it loads quickly, even without precompilation.
 1. Support for error bars and finance bars.
