@@ -25,8 +25,7 @@ function llplot()
     gnuplot_send("\nreset\n")
 
     # Build terminal setup string and send it to gnuplot
-    ts = termstring(gaston_config.terminal)
-    gnuplot_send(ts)
+    gnuplot_send(termstring())
 
     # Datafile filename. This is where we store the coordinates to plot.
     # This file is then read by gnuplot to do the actual plotting. One file
@@ -183,7 +182,7 @@ function llplot()
 
     # if there was no error and text terminal, read all data from stdout
     if err == "GastonDone\n"
-        if (gaston_config.terminal ∈ supported_textterms)
+        if (gaston_config.terminal ∈ term_text)
             # wait for stdout to be ready
             si = sleep_interval
             count = 0

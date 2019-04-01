@@ -7,39 +7,41 @@
 # Structure to keep Gaston's configuration
 mutable struct GastonConfig
     # default CurveConf values
-    legend::AbstractString
-    plotstyle::AbstractString
-    color::AbstractString
-    marker::AbstractString
+    legend::String
+    plotstyle::String
+    color::String
+    marker::String
     linewidth::Real
-    linestyle::AbstractString
+    linestyle::String
     pointsize::Real
     # default AxesConf values
-    title::AbstractString
-    xlabel::AbstractString
-    ylabel::AbstractString
-    zlabel::AbstractString
-    fill::AbstractString
-    grid::AbstractString
-    box::AbstractString
-    axis::AbstractString
-    xrange::AbstractString
-    yrange::AbstractString
-    zrange::AbstractString
-    palette::AbstractString
+    title::String
+    xlabel::String
+    ylabel::String
+    zlabel::String
+    fill::String
+    grid::String
+    box::String
+    axis::String
+    xrange::String
+    yrange::String
+    zrange::String
+    palette::String
     # default terminal type
-    terminal::AbstractString
+    terminal::String
     # for terminals that support filenames
-    outputfile::AbstractString
+    outputfile::String
     # for printing to file
-    print_color::AbstractString
-    print_fontface::AbstractString
+    print_color::String
+    print_fontface::String
     print_fontsize::Real
     print_fontscale::Real
     print_linewidth::Real
-    print_size::AbstractString
+    print_size::String     # user-configured print size
+    print_size_in::String  # some terminals specify size in inches
+    print_size_pix::String # ... and some in pixels
     # prefix for temp data files
-    tmpprefix::AbstractString
+    tmpprefix::String
 end
 
 function GastonConfig()
@@ -54,14 +56,13 @@ function GastonConfig()
 	# output file name
 	"",
     # print parameters
-    "color", "Sans", 12, 0.5, 1, "5in,3in",
+    "color", "Sans", 12, 0.5, 1, "", "5in,3in", "800,600",
     # tmp file prefix
     randstring(8)
     )
     # set terminal if running inside a Jupyter notebook
     if isjupyter
         gc.terminal = "ijulia"
-        gc.print_size = "640,480"
         gc.print_fontsize = 20
     end
     return gc
@@ -94,7 +95,9 @@ function set(;legend         = gaston_config.legend,
              print_fontface  = gaston_config.print_fontface,
              print_fontscale = gaston_config.print_fontscale,
              print_linewidth = gaston_config.print_linewidth,
-             print_size      = gaston_config.print_size)
+             print_size      = gaston_config.print_size,
+             print_size_in   = gaston_config.print_size_in,
+             print_size_pix  = gaston_config.print_size_pix)
     # Validate paramaters
     @assert valid_label(legend) "Legend must be a string."
     @assert valid_plotstyle(plotstyle) "Plotstyle $(plotstyle) not supported."
@@ -121,6 +124,8 @@ function set(;legend         = gaston_config.legend,
     @assert valid_number(print_fontscale) "Invalid value of print_fontscale"
     @assert valid_number(print_linewidth) "Invalid value of print_linewidth"
     @assert valid_label(print_size) "print_size must be a string."
+    @assert valid_label(print_size_in) "print_size_in must be a string."
+    @assert valid_label(print_size_pix) "print_size_pix must be a string."
     @assert valid_linestyle(linestyle) string("Line style pattern accepts: ",
             "space, dash, underscore and dot")
 
@@ -149,25 +154,44 @@ function set(;legend         = gaston_config.legend,
     gaston_config.print_fontscale   = print_fontscale
     gaston_config.print_linewidth   = print_linewidth
     gaston_config.print_size        = print_size
+    gaston_config.print_size_in     = print_size_in
+    gaston_config.print_size_pix    = print_size_pix
     # don't change terminal inside jupyter
     if terminal != "ijulia" && isjupyter
         @warn("Terminal cannot be changed in a Jupyter notebook.")
+        gaston_config.terminal = "ijulia"
     else
         gaston_config.terminal = terminal
     end
     return nothing
 end
 
-#
-# Validation functions
-#
+### Encode terminal capabilities
+# supports multiple windows
+const term_window = ["qt", "wxt", "x11", "aqua"]
+# outputs text
+const term_text = ["dumb", "null", "sixelgd", "ijulia"]
+# outputs to a file
+const term_file = ["svg", "gif", "png", "pdf", "eps"]
+# size and units
+const term_sup_size = ["qt", "wxt", "x11", "sixel", "svg", "gif", "png",
+                        "pdf", "eps"]
+const term_size_in = ["pdf", "eps"]
+const term_size_pix = ["qt", "wxt", "x11", "sixelgd", "ijulia",
+                        "svg", "gif", "png"]
+# font
+const term_sup_font = ["qt", "wxt", "x11", "aqua", "sixel", "svg", "gif",
+                       "png", "pdf", "eps"]
+# font scaling
+const term_sup_fontscale = ["wxt", "sixel", "gif", "png", "pdf", "eps"]
+# linewidth
+const term_sup_lw = ["qt", "wxt", "x11", "aqua", "sixel", "svg", "gif",
+                     "png", "pdf", "eps"]
 
-# list of supported features
-const supported_screenterms = ["qt", "wxt", "x11", "aqua"]
-const supported_textterms = ["dumb", "null", "sixelgd", "ijulia"]
-const supported_fileterms = ["svg", "gif", "png", "pdf", "eps"]
-const supported_terminals = vcat(supported_screenterms,supported_fileterms,
-                                supported_textterms)
+# List of valid configuration values
+const supported_terminals = ["qt", "wxt", "x11", "aqua", "dumb", "null",
+                             "sixelgd", "ijulia", "svg", "gif", "png", "pdf",
+                             "eps"]
 const supported_2Dplotstyles = ["lines", "linespoints", "points",
         "impulses", "boxes", "errorlines", "errorbars", "dots", "steps",
         "fsteps", "fillsteps", "financebars"]
@@ -181,6 +205,11 @@ const supported_markers = ["", "+", "x", "*", "esquare", "fsquare",
 const supported_fillstyles = ["","empty","solid","pattern"]
 const supported_grids = ["", "on", "off"]
 
+#
+# Validation functions
+#
+
+valid_terminal(s) = s ∈ supported_terminals
 valid_plotstyle(s) = s ∈ supported_plotstyles
 valid_2Dplotstyle(s) = s ∈ supported_2Dplotstyles
 valid_3Dplotstyle(s) = s ∈ supported_3Dplotstyles

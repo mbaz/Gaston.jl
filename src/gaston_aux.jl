@@ -204,43 +204,52 @@ function linestr(curves::Vector{Curve}, cmd::AbstractString, file::AbstractStrin
 end
 
 # Build a "set term" string appropriate for the terminal type
-function termstring(term::AbstractString)
+function termstring()
     global gnuplot_state
     global gaston_config
 
     gc = gaston_config
+    term = gaston_config.terminal
+    termname = term
+    term == "null" && (termname = "dumb")
+    term == "ijulia" && (termname = "svg")
+    term == "pdf" && (termname = "pdfcairo")
+    term == "eps" && (termname = "epscairo")
 
-    if term ∈ (supported_screenterms ∪ supported_textterms)
-        # Gaston's "null" terminal is actually "dumb" behind the scenes
-        term == "null" && (term = "dumb")
-        ts = "set term $term $(gnuplot_state.current)"
-        if term == "sixelgd"
-            ts = "set term sixelgd "
-            ts = "$ts font $(gc.print_fontface) $(gc.print_fontsize) "
-            ts = "$ts fontscale $(gc.print_fontscale) "
-            ts = "$ts linewidth $(gc.print_linewidth) "
-            ts = "$ts size $(gc.print_size)"
-        end
-        if term == "ijulia"
-            ts = "set term svg "
-            ts = "$ts font \"$(gc.print_fontface),$(gc.print_fontsize)\" "
-            ts = "$ts linewidth $(gc.print_linewidth) "
-            ts = "$ts size $(gc.print_size)"
-        end
+    ts = "set term $termname "
+
+    if term ∈ term_window
+        ts = ts*string(gnuplot_state.current)*" "
     end
-    if term ∈ supported_fileterms
-        term == "pdf" &&
-            (s = "set term pdfcairo enhanced transparent $(gc.print_color) ")
-        term == "eps" && (s = "set term epscairo $(gc.print_color) ")
-        term == "png" && (s = "set term pngcairo $(gc.print_color) ")
-        term == "gif" && (s = "set term gif ")
-        term == "svg" && (s = "set term svg ")
-        s = "$s font \"$(gc.print_fontface),$(gc.print_fontsize)\" "
-        s = "$s fontscale $(gc.print_fontscale) "
-        s = "$s linewidth $(gc.print_linewidth) "
-        s = "$s size $(gc.print_size)"
-        ts = "$s \nset output '$(gc.outputfile)'"
+
+    if term ∈ term_sup_font
+        ts = ts*" font \"$(gc.print_fontface),$(gc.print_fontsize)\" "
     end
+
+    if term ∈ term_sup_fontscale
+        ts = ts*" fontscale $(gc.print_fontscale) "
+    end
+
+    if term ∈ term_sup_lw
+        ts = ts*" linewidth $(gc.print_linewidth) "
+    end
+
+    if term ∈ term_sup_size
+        if gc.print_size == ""  # use appropriate default size
+            term ∈ term_size_in && (size = gc.print_size_in)
+            term ∈ term_size_pix && (size = gc.print_size_pix)
+        else
+            size = gc.print_size  # use user-provided size
+        end
+        ts = ts*" size $size "
+    end
+
+    if term ∈ term_file
+        # verify that user has set an output file
+        gc.outputfile == "" && error("Plotting to file, but no file name given. Use `set(outputfile=\"filename\")` to configure the output file name.")
+        ts = ts*"\nset output \"$(gc.outputfile)\" "
+    end
+
     return ts
 end
 

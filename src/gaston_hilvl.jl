@@ -22,7 +22,7 @@ function closefigure(x...)
 
     # only inform gnuplot if term type is screen
     term = gaston_config.terminal
-    term ∈ supported_screenterms && gnuplot_send("set term $term $handle close")
+    term ∈ term_window && gnuplot_send("set term $term $handle close")
 
     # remove figure
     filter!(h->h.handle!=handle,gnuplot_state.figs)
@@ -355,7 +355,7 @@ function printfigure(;handle=gnuplot_state.current,
 
     findfigure(handle) == 0 && error("Requested figure does not exist.")
     isempty(outputfile) && error("Please specify an output filename.")
-    term ∈ supported_fileterms || error("Unsupported filetype $(term).")
+    term ∈ term_file || error("Unsupported filetype $(term).")
 
     set(outputfile=outputfile)
     # save terminal
