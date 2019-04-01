@@ -210,12 +210,10 @@ function termstring(term::AbstractString)
 
     gc = gaston_config
 
-    if term ∈ supported_screenterms || term ∈ supported_textterms
+    if term ∈ (supported_screenterms ∪ supported_textterms)
         # Gaston's "null" terminal is actually "dumb" behind the scenes
-        if term == "null"
-            term = "dumb"
-            ts = "set term $term $(gnuplot_state.current)"
-        end
+        term == "null" && (term = "dumb")
+        ts = "set term $term $(gnuplot_state.current)"
         if term == "sixelgd"
             ts = "set term sixelgd "
             ts = "$ts font $(gc.print_fontface) $(gc.print_fontsize) "
@@ -223,42 +221,25 @@ function termstring(term::AbstractString)
             ts = "$ts linewidth $(gc.print_linewidth) "
             ts = "$ts size $(gc.print_size)"
         end
-    else
-        if term == "pdf"
-            s = "set term pdfcairo enhanced transparent $(gc.print_color) "
-            s = "$s font \"$(gc.print_fontface),$(gc.print_fontsize)\" "
-            s = "$s fontscale $(gc.print_fontscale) "
-            s = "$s linewidth $(gc.print_linewidth) "
-            s = "$s size $(gc.print_size)"
-        elseif term == "eps"
-            s = "set term epscairo $(gc.print_color) "
-            s = "$s font \"$(gc.print_fontface),$(gc.print_fontsize)\" "
-            s = "$s fontscale $(gc.print_fontscale) "
-            s = "$s linewidth $(gc.print_linewidth) "
-            s = "$s size $(gc.print_size)"
-        elseif term == "png"
-            s = "set term pngcairo $(gc.print_color) "
-            s = "$s font \"$(gc.print_fontface),$(gc.print_fontsize)\" "
-            s = "$s fontscale $(gc.print_fontscale) "
-            s = "$s linewidth $(gc.print_linewidth) "
-            s = "$s size $(gc.print_size)"
-        elseif term == "gif"
-            s = "set term gif "
-            s = "$s font $(gc.print_fontface) $(gc.print_fontsize) "
-            s = "$s fontscale $(gc.print_fontscale) "
-            s = "$s linewidth $(gc.print_linewidth) "
-            s = "$s size $(gc.print_size)"
-        elseif term == "svg" || term == "ijulia"
-            s = "set term svg "
-            s = "$s font \"$(gc.print_fontface),$(gc.print_fontsize)\" "
-            s = "$s linewidth $(gc.print_linewidth) "
-            s = "$s size $(gc.print_size)"
+        if term == "ijulia"
+            ts = "set term svg "
+            ts = "$ts font \"$(gc.print_fontface),$(gc.print_fontsize)\" "
+            ts = "$ts linewidth $(gc.print_linewidth) "
+            ts = "$ts size $(gc.print_size)"
         end
-        if term != "ijulia"
-            ts = "$s \nset output '$(gc.outputfile)'"
-        else
-            ts = s
-        end
+    end
+    if term ∈ supported_fileterms
+        term == "pdf" &&
+            (s = "set term pdfcairo enhanced transparent $(gc.print_color) ")
+        term == "eps" && (s = "set term epscairo $(gc.print_color) ")
+        term == "png" && (s = "set term pngcairo $(gc.print_color) ")
+        term == "gif" && (s = "set term gif ")
+        term == "svg" && (s = "set term svg ")
+        s = "$s font \"$(gc.print_fontface),$(gc.print_fontsize)\" "
+        s = "$s fontscale $(gc.print_fontscale) "
+        s = "$s linewidth $(gc.print_linewidth) "
+        s = "$s size $(gc.print_size)"
+        ts = "$s \nset output '$(gc.outputfile)'"
     end
     return ts
 end

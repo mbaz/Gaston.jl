@@ -58,7 +58,7 @@ function GastonConfig()
     # tmp file prefix
     randstring(8)
     )
-    # Determine if current display supports PNG; this allows IJulia support.
+    # set terminal if running inside a Jupyter notebook
     if isjupyter
         gc.terminal = "ijulia"
         gc.print_size = "640,480"
@@ -164,8 +164,8 @@ end
 
 # list of supported features
 const supported_screenterms = ["qt", "wxt", "x11", "aqua"]
-const supported_textterms = ["dumb", "null", "sixelgd"]
-const supported_fileterms = ["ijulia", "svg", "gif", "png", "pdf", "eps"]
+const supported_textterms = ["dumb", "null", "sixelgd", "ijulia"]
+const supported_fileterms = ["svg", "gif", "png", "pdf", "eps"]
 const supported_terminals = vcat(supported_screenterms,supported_fileterms,
                                 supported_textterms)
 const supported_2Dplotstyles = ["lines", "linespoints", "points",

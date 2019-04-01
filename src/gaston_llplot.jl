@@ -140,122 +140,71 @@ function llplot()
         # send command to gnuplot
         gnuplot_send(linestr(fig.curves, "splot",filename))
     end
-    # Wait until gnuplot is finished plotting before returning. To do this,
-    # we make gnuplot output "GastonDone\n" in its stdout. Gnuplot will only
-    # get to
-    # do this when the plot is finished. Otherwise, gnuplot will output
-    # something in its stderr. In either case, we know that the plot is
-    # finished and can carry on.
 
-    # Now we take several different actions depending on whether we're in Jupyter
-    # or not, and the terminal type.
-    # If Jupyter:
-    #   Attempt reading STDOUT `attempts` times; continue reading until
-    #       we detect "GastonDone" at the end, and return the figure.
-    #   If STDOUT remains empty, check STDERR
-    #   If STDERR is not empty, warn with error message
-    #   else warn that gnuplot is taking too long
-    # If not Jupyter:
-    #   Attempt reading STDOUT `attempts` times
-    #   If STDOUT == "GastonDone", we're done
-    #   If STDOUT remains empty, check STDERR
-    #   If STDERR is not empty, warn with error message
-    #   else warn that gnuplot is taking too long
-    # If the terminal is text-based, then read and store gnuplot's stdout
-    if isjupyter
-        attempt_stdout = 1000
-        sleep_interval = 0.05
-        stdout_count = 0
-        svgdata = ""
-        # give pipe-readers a chance
-        sleep(sleep_interval)
-        if isready(ChanStdErr)
-            # Gnuplot met trouble while plotting.
-            err = take!(ChanStdErr)
-            gnuplot_state.gp_lasterror = err
-            gnuplot_state.gp_error = true
-            @warn("Gnuplot returned an error message:\n  $err)")
-        else
-            while true
-                stdout_count = stdout_count + 1
-                stdout_count > attempt_stdout && error("Gnuplot is taking too long to respond.")
-                if isready(ChanStdOut)
-                    svgdata = svgdata * take!(ChanStdOut)
-                    if svgdata[end-7:end-2] == "</svg>"
-                        fig.svg = svgdata
-                        break
-                    else
-                        continue
-                    end
-                    yield()
-                else
-                    sleep(sleep_interval)
-                end
-            end
-        end
-    else
-        # reset error handling
-        err = ""
+    # Make sure gnuplot is done; if terminal is text, read data
+    # reset error handling
+    err = ""
+    gnuplot_state.gp_lasterror = err
+    gnuplot_state.gp_error = false
+
+    attempt_stderr = 20
+    attempt_stdout = 100
+    sleep_interval = 0.05
+    sleep_increment = 1.2
+
+    gnuplot_send("printerr \"GastonDone\"\n")
+    sleep(sleep_interval)
+
+    # wait for stderr channel to be ready
+    si = sleep_interval
+    count = 0
+    while !isready(ChanStdErr)
+        sleep(si)
+        si = sleep_increment * si
+        count = count + 1
+        count > attempt_stderr &&
+        error("Gnuplot is taking too long to respond.")
+    end
+
+    # read all data in channel
+    si = sleep_interval
+    while isready(ChanStdErr)
+        err = err * take!(ChanStdErr)
+        sleep(si)
+        si = sleep_increment * si
+    end
+
+    # check for errors while plotting
+    if err != "GastonDone\n"
         gnuplot_state.gp_lasterror = err
-        gnuplot_state.gp_error = false
+        gnuplot_state.gp_error = true
+        @warn("Gnuplot returned an error message:\n  $err)")
+    end
 
-        attempt_stderr = 20
-        attempt_stdout = 100
-        sleep_interval = 0.05
-        sleep_increment = 1.2
-
-        gnuplot_send("printerr \"GastonDone\"\n")
-        sleep(sleep_interval)
-
-        # wait for stderr channel to be ready
-        si = sleep_interval
-        count = 0
-        while !isready(ChanStdErr)
-            sleep(si)
-            si = sleep_increment * si
-            count = count + 1
-            count > attempt_stderr &&
+    # if there was no error and text terminal, read all data from stdout
+    if err == "GastonDone\n"
+        if (gaston_config.terminal ∈ supported_textterms)
+            # wait for stdout to be ready
+            si = sleep_interval
+            count = 0
+            while !isready(ChanStdOut)
+                sleep(si)
+                si = sleep_increment * si
+                count = count + 1
+                count > attempt_stdout &&
                 error("Gnuplot is taking too long to respond.")
-        end
-        # read all data in channel
-        si = sleep_interval
-        while isready(ChanStdErr)
-            err = err * take!(ChanStdErr)
-            sleep(si)
-            si = sleep_increment * si
-        end
-
-        # check for errors while plotting
-        if err != "GastonDone\n"
-            gnuplot_state.gp_lasterror = err
-            gnuplot_state.gp_error = true
-            @warn("Gnuplot returned an error message:\n  $err)")
-        end
-
-        # if there was no error and text terminal, read all data from stdout
-        if err == "GastonDone\n"
-            if (gaston_config.terminal ∈ supported_textterms)
-                # wait for stdout to be ready
-                si = sleep_interval
-                count = 0
-                while !isready(ChanStdOut)
-                    sleep(si)
-                    si = sleep_increment * si
-                    count = count + 1
-                    count > attempt_stdout &&
-                        error("Gnuplot is taking too long to respond.")
-                end
-                svgdata = ""
-                si = sleep_interval
-                while isready(ChanStdOut)
-                    svgdata = svgdata * take!(ChanStdOut)
-                    sleep(si)
-                    si = sleep_increment * si
-                end
-                fig.svg = svgdata
             end
+            svgdata = ""
+            si = sleep_interval
+            while isready(ChanStdOut)
+                svgdata = svgdata * take!(ChanStdOut)
+                sleep(si)
+                si = sleep_increment * si
+            end
+            fig.svg = svgdata
         end
     end
 
     return nothing
+
 end
