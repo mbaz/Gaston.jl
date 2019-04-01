@@ -219,7 +219,6 @@ valid_label(s) = isa(s, String)
 valid_fill(s) = s ∈ supported_fillstyles
 valid_grid(s) = s ∈ supported_grids
 valid_axis(s) = s ∈ supported_axis
-valid_terminal(s) = s ∈ supported_terminals
 
 function valid_linestyle(s)
     s == "" && return true # allow empty string

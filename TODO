@@ -13,6 +13,5 @@ To do file for Gaston
 
 ongoing tasks:
 
-* keep improving error checking (ie: don't give gnuplot invalid commands)
 * keep improving test frameworks and the tests themselves
 * keep improving documentation

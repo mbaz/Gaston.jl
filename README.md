@@ -14,19 +14,23 @@ Gaston release 0.7.4 is the last release compatible with Julia 0.6 or below. Thi
 Why use Gaston?
 --------------
 
-Why use Gaston, when there are plenty of modern, powerful alternatives such as Plots.jl and Gadfly.jl?  These are some Gaston features that may be attractive to you:
+Why use Gaston, when there are plenty of modern, powerful alternatives such as Plots.jl and Makie.jl?  These are some Gaston features that may be attractive to you:
 
 1. Emphasis on fast, simple plotting to the screen or in a Jupyter notebook.
-1. Since the code is so simple (less than 1,500 lines, with no dependencies beyond Julia Base), it loads quickly, even without precompilation.
 1. Support for 2D, 3D, histogram and image plots, with mouse zoom, rotation, etc.
+1. Can plot to multiple windows, or inline using sixel.
+1. Can save plots to PDF, SVG, EPS, PNG or GIF files.
+1. Since the code is so simple (less than 1,500 lines, with no dependencies beyond Julia Base), it loads quickly, even without precompilation.
 1. Support for error bars and finance bars.
 1. Syntax not too different from that of Matlab and Octave.
-1. Capable of handling multiple plots on the screen at the same time.
-1. Easy saving of plots to a file, supporting the more common file formats.
 
 My philosophy is that plotting to the screen should be fast and non-ugly. Publication-quality plots are the domain of TiKZ and pgfplots.
 
-Having said that, Gaston also shares GnuPlot's limitations. The main one is that gnuplot is not a library; it is designed to be used interactively. Gaston simulates a user typing interactive commands in a gnuplot session. While Gaston provides many safeguards, there is always the possibility that something goes wrong and a restart is required.
+Having said that, Gaston also shares gnuplot's limitations. The main one is
+that gnuplot is not a library; it is designed to be used interactively. Gaston
+simulates a user typing interactive commands in a gnuplot session. While Gaston
+provides many safeguards, there is always the possibility that something goes
+wrong and a restart is required.
 
 Installation
 ------------
