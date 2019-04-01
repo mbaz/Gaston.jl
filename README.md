@@ -1,9 +1,11 @@
 Gaston: Julia plotting using gnuplot
 ==================================== 
 
-Gaston is a [Julia](https://julialang.org)  package for plotting. It provides an interface to [gnuplot](http://gnuplot.info), a powerful but old-fashioned plotting package available on all major platforms.
+Gaston is a [Julia](https://julialang.org)  package for plotting. It provides an interface to [gnuplot](http://gnuplot.info), a powerful plotting package available on all major platforms.
 
-Current stable release is 0.9.0. To run Gaston with Julia 0.6.x, release 0.7.4 is recommended. Note, however, that release 0.7.4 is no longer under maintenance.
+Current stable release is 0.9.0, and it is tested with Julia 1.1.0.
+
+Gaston release 0.7.4 is the last release compatible with Julia 0.6 or below. This Gaston release is no longer under maintenance, though.
 
 | **Build Status** |
 |:----------------:|
@@ -15,7 +17,7 @@ Why use Gaston?
 Why use Gaston, when there are plenty of modern, powerful alternatives such as Plots.jl and Gadfly.jl?  These are some Gaston features that may be attractive to you:
 
 1. Emphasis on fast, simple plotting to the screen or in a Jupyter notebook.
-1. Since the code is so simple (less than 1,500 lines, with no dependencies beyond Julia Base), it loads in less than a second, even without precompilation.
+1. Since the code is so simple (less than 1,500 lines, with no dependencies beyond Julia Base), it loads quickly, even without precompilation.
 1. Support for 2D, 3D, histogram and image plots, with mouse zoom, rotation, etc.
 1. Support for error bars and finance bars.
 1. Syntax not too different from that of Matlab and Octave.
@@ -40,7 +42,7 @@ Documentation
 
 There is a tutorial available [here](https://nbviewer.jupyter.org/github/mbaz/Gaston.jl/blob/master/doc/gaston-tutorial.ipynb).
 
-Additional reference documentation is forthcoming.
+Additional reference documentation is in the works.
 
 A note on OSX
 -------------
