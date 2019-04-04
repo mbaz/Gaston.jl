@@ -241,7 +241,7 @@ function termstring()
         else
             size = gc.print_size  # use user-provided size
         end
-        ts = ts*" size $size "
+        gc.print_size != "" && (ts = ts*" size $size ")
     end
 
     if term ∈ term_file
