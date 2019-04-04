@@ -146,7 +146,7 @@ function Base.show(io::IO, ::MIME"text/plain", x::Figure)
     if !isjupyter
         llplot()
         if gaston_config.terminal == "dumb" || gaston_config.terminal == "sixelgd"
-            print(x.svg)
+            write(io, x.svg)
         end
         return nothing
     end
