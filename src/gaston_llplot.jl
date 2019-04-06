@@ -2,6 +2,36 @@
 ##
 ## This file is distributed under the 2-clause BSD License.
 
+# Asynchronously reads the IO and buffers the read content. When end
+# marker (GastonDone) is found in the content, sends everything
+# between start (GastonBegin) and end markers to the returned channel.
+# In case of timeout sends :timeout, in case of end of file, sends
+# :eof.
+function async_reader(io::IO, timeout_sec)::Channel
+    ch = Channel(1)
+    task = @async begin
+        reader_task = current_task()
+        function timeout_cb(timer)
+            put!(ch, :timeout)
+            Base.throwto(reader_task, InterruptException())
+        end
+
+        buf = ""
+        while (match_done = findfirst("GastonDone\n", buf)) == nothing
+            timeout = Timer(timeout_cb, timeout_sec)
+            data = String(readavailable(io))
+            if data == ""; put!(ch, :eof); return; end
+            timeout_sec > 0 && close(timeout) # Cancel the timeout
+            buf *= data
+        end
+        match_begin = findfirst("GastonBegin\n", buf)
+        start = (match_begin != nothing) ? last(match_begin)+1 : 1
+        put!(ch, buf[start:first(match_done)-1])
+    end
+    bind(ch, task)
+    return ch
+end
+
 # llplot() is our workhorse plotting function
 function llplot()
     global gnuplot_state

@@ -333,3 +333,44 @@ end
     closeall()
 end
 
+@testset "async_reader" begin
+    # Simplest way to test async_reader would be to use plain pipes,
+    # but there seems to be no way to create them in Julia, so we pipe
+    # data through an external process. The advantage of this approach
+    # is that it corresponds to how Gaston communicates with gnuplot.
+    pin = Pipe()
+    pout = Pipe()
+    proc = try
+        run(pipeline(`cat`, stdin = pin, stdout = pout),
+            wait = false)
+    catch err
+        @warn "Skipping async_reader tests"
+        return
+    end
+    close(pout.in)
+    close(pin.out)
+
+    @test begin
+        ch = Gaston.async_reader(pout, 1)
+        write(pin, "GastonBegin\ncontent\nGastonDone\n")
+        take!(ch)
+    end == "content\n"
+
+    @test begin
+        ch = Gaston.async_reader(pout, 0.001)
+        write(pin, "GastonBegin\nmissing end marker\n")
+        take!(ch)
+    end === :timeout
+
+    @test begin
+        ch = Gaston.async_reader(pout, 1)
+        write(pin, "no begin marker\nGastonDone\n")
+        take!(ch)
+    end == "no begin marker\n"
+
+    @test begin
+        ch = Gaston.async_reader(pout, 1)
+        kill(proc)
+        take!(ch)
+    end === :eof
+end
