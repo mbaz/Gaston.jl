@@ -2,6 +2,36 @@
 ##
 ## This file is distributed under the 2-clause BSD License.
 
+# Asynchronously reads the IO and buffers the read content. When end
+# marker (GastonDone) is found in the content, sends everything
+# between start (GastonBegin) and end markers to the returned channel.
+# In case of timeout sends :timeout, in case of end of file, sends
+# :eof.
+function async_reader(io::IO, timeout_sec)::Channel
+    ch = Channel(1)
+    task = @async begin
+        reader_task = current_task()
+        function timeout_cb(timer)
+            put!(ch, :timeout)
+            Base.throwto(reader_task, InterruptException())
+        end
+
+        buf = ""
+        while (match_done = findfirst("GastonDone\n", buf)) == nothing
+            timeout = Timer(timeout_cb, timeout_sec)
+            data = String(readavailable(io))
+            if data == ""; put!(ch, :eof); return; end
+            timeout_sec > 0 && close(timeout) # Cancel the timeout
+            buf *= data
+        end
+        match_begin = findfirst("GastonBegin\n", buf)
+        start = (match_begin != nothing) ? last(match_begin)+1 : 1
+        put!(ch, buf[start:first(match_done)-1])
+    end
+    bind(ch, task)
+    return ch
+end
+
 # llplot() is our workhorse plotting function
 function llplot()
     global gnuplot_state
@@ -23,6 +53,18 @@ function llplot()
 
     # Reset gnuplot settable options.
     gnuplot_send("\nreset\n")
+
+    # Start reading gnuplot's stdout in "background"
+    ch_out = async_reader(gstdout, 5)
+
+    # In order to capture all output produced by our plotting commands
+    # (error messages and figure text in case of text terminals), we
+    # send "marks" to the stdout and stderr streams before the first
+    # and after the last command. Everything between these marks will
+    # be returned by our async_readers.
+    gnuplot_send("set print \"-\"") # Redirect print to stdout
+    gnuplot_send("print \"GastonBegin\"")
+    gnuplot_send("printerr \"GastonBegin\"")
 
     # Build terminal setup string and send it to gnuplot
     gnuplot_send(termstring())
@@ -146,61 +188,32 @@ function llplot()
     gnuplot_state.gp_lasterror = err
     gnuplot_state.gp_error = false
 
-    attempt_stderr = 20
-    attempt_stdout = 100
-    sleep_interval = 0.05
-    sleep_increment = 1.2
+    gnuplot_send("print \"GastonDone\"")
+    gnuplot_send("printerr \"GastonDone\"")
 
-    gnuplot_send("printerr \"GastonDone\"\n")
-    sleep(sleep_interval)
+    out = take!(ch_out)
 
-    # wait for stderr channel to be ready
-    si = sleep_interval
-    count = 0
-    while !isready(ChanStdErr)
-        sleep(si)
-        si = sleep_increment * si
-        count = count + 1
-        count > attempt_stderr &&
-        error("Gnuplot is taking too long to respond.")
-    end
+    ch_err = async_reader(gstderr, 1)
+    err = take!(ch_err)
 
-    # read all data in channel
-    si = sleep_interval
-    while isready(ChanStdErr)
-        err = err * take!(ChanStdErr)
-        sleep(si)
-        si = sleep_increment * si
-    end
+    out === :timeout && error("Gnuplot is taking too long to respond.")
+    out === :eof     && error("Gnuplot crashed")
+
+    # We don't care about stderr timeouts.
+    err === :timeout && (err = "")
+    err === :eof     && (err = "")
 
     # check for errors while plotting
-    if err != "GastonDone\n"
+    if err != ""
         gnuplot_state.gp_lasterror = err
         gnuplot_state.gp_error = true
         @warn("Gnuplot returned an error message:\n  $err)")
     end
 
     # if there was no error and text terminal, read all data from stdout
-    if err == "GastonDone\n"
+    if err == ""
         if (gaston_config.terminal ∈ term_text)
-            # wait for stdout to be ready
-            si = sleep_interval
-            count = 0
-            while !isready(ChanStdOut)
-                sleep(si)
-                si = sleep_increment * si
-                count = count + 1
-                count > attempt_stdout &&
-                error("Gnuplot is taking too long to respond.")
-            end
-            svgdata = ""
-            si = sleep_interval
-            while isready(ChanStdOut)
-                svgdata = svgdata * take!(ChanStdOut)
-                sleep(si)
-                si = sleep_increment * si
-            end
-            fig.svg = svgdata
+            fig.svg = out
         end
     end
 
