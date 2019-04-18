@@ -238,6 +238,7 @@ function termstring()
         if gc.print_size == ""  # use appropriate default size
             term ∈ term_size_in && (size = gc.print_size_in)
             term ∈ term_size_pix && (size = gc.print_size_pix)
+            term ∈ term_size_char && (size = gc.print_size_char)
         else
             size = gc.print_size  # use user-provided size
         end

@@ -40,6 +40,7 @@ mutable struct GastonConfig
     print_size::String     # user-configured print size
     print_size_in::String  # some terminals specify size in inches
     print_size_pix::String # ... and some in pixels
+    print_size_char::String # ... and in characters
     # prefix for temp data files
     tmpprefix::String
 end
@@ -56,7 +57,7 @@ function GastonConfig()
 	# output file name
 	"",
     # print parameters
-    "color", "Sans", 12, 0.5, 1, "", "5in,3in", "800,600",
+    "color", "Sans", 12, 0.5, 1, "", "5in,3in", "800,600", "79,24",
     # tmp file prefix
     randstring(8)
     )
@@ -97,7 +98,8 @@ function set(;legend         = gaston_config.legend,
              print_linewidth = gaston_config.print_linewidth,
              print_size      = gaston_config.print_size,
              print_size_in   = gaston_config.print_size_in,
-             print_size_pix  = gaston_config.print_size_pix)
+             print_size_pix  = gaston_config.print_size_pix,
+             print_size_char = gaston_config.print_size_char)
     # Validate paramaters
     @assert valid_label(legend) "Legend must be a string."
     @assert valid_plotstyle(plotstyle) "Plotstyle $(plotstyle) not supported."
@@ -126,6 +128,7 @@ function set(;legend         = gaston_config.legend,
     @assert valid_label(print_size) "print_size must be a string."
     @assert valid_label(print_size_in) "print_size_in must be a string."
     @assert valid_label(print_size_pix) "print_size_pix must be a string."
+    @assert valid_label(print_size_char) "print_size_char must be a string."
     @assert valid_linestyle(linestyle) string("Line style pattern accepts: ",
             "space, dash, underscore and dot")
 
@@ -156,6 +159,7 @@ function set(;legend         = gaston_config.legend,
     gaston_config.print_size        = print_size
     gaston_config.print_size_in     = print_size_in
     gaston_config.print_size_pix    = print_size_pix
+    gaston_config.print_size_char   = print_size_char
     # don't change terminal inside jupyter
     if terminal != "ijulia" && isjupyter
         @warn("Terminal cannot be changed in a Jupyter notebook.")
@@ -179,6 +183,7 @@ const term_sup_size = ["qt", "wxt", "x11", "sixel", "svg", "gif", "png",
 const term_size_in = ["pdf", "eps"]
 const term_size_pix = ["qt", "wxt", "x11", "sixelgd", "ijulia",
                         "svg", "gif", "png"]
+const term_size_char = ["dumb"]
 # font
 const term_sup_font = ["qt", "wxt", "x11", "aqua", "sixel", "svg", "gif",
                        "png", "pdf", "eps"]
