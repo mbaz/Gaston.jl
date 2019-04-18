@@ -175,7 +175,7 @@ const term_text = ["dumb", "null", "sixelgd", "ijulia"]
 const term_file = ["svg", "gif", "png", "pdf", "eps"]
 # size and units
 const term_sup_size = ["qt", "wxt", "x11", "sixel", "svg", "gif", "png",
-                        "pdf", "eps"]
+                        "pdf", "eps", "dumb"]
 const term_size_in = ["pdf", "eps"]
 const term_size_pix = ["qt", "wxt", "x11", "sixelgd", "ijulia",
                         "svg", "gif", "png"]

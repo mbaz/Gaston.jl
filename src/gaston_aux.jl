@@ -146,7 +146,7 @@ function Base.show(io::IO, ::MIME"text/plain", x::Figure)
     if !isjupyter
         llplot()
         if gaston_config.terminal == "dumb" || gaston_config.terminal == "sixelgd"
-            print(x.svg)
+            write(io, x.svg)
         end
         return nothing
     end
@@ -241,7 +241,7 @@ function termstring()
         else
             size = gc.print_size  # use user-provided size
         end
-        ts = ts*" size $size "
+        gc.print_size != "" && (ts = ts*" size $size ")
     end
 
     if term ∈ term_file
