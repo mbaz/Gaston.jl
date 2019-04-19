@@ -193,6 +193,8 @@ if !Sys.iswindows()
               Gaston.gnuplot_state.gp_error
           end == false
 end
+# test requires gnuplot 5.2
+if occursin("5.2",read(`gnuplot --version`, String))
     @test begin
               set(terminal="dumb", print_size="27,13")
               repr("text/plain", plot(1:10))
@@ -211,6 +213,7 @@ end
                       1 2 3 4 5 6 7 8 9 10  
                                             
                  """
+end
     # build a multiple-plot figure manually
     closeall()
     @test begin
