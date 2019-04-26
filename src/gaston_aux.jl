@@ -251,6 +251,8 @@ function termstring()
         ts = ts*"\nset output \"$(gc.outputfile)\" "
     end
 
+    gc.termopts != "" && (ts = ts*gc.termopts)
+
     return ts
 end
 

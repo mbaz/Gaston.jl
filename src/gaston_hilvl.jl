@@ -203,7 +203,7 @@ function histogram(data::Coord;
                    xrange    = gaston_config.xrange,
                    yrange    = gaston_config.yrange,
                    handle    = gnuplot_state.current,
-                   gpcom           = ""
+                   gpcom     = ""
                    )
     # validation
     @assert valid_label(legend) "Legend must be a string."
@@ -242,14 +242,14 @@ end
 
 # image plots
 function imagesc(x::Coord,y::Coord,Z::Coord;
-                 title  = gaston_config.title,
-                 xlabel = gaston_config.xlabel,
-                 ylabel = gaston_config.ylabel,
-                 clim   = [0,255],
-                 handle = gnuplot_state.current,
-                 xrange = gaston_config.xrange,
-                 yrange = gaston_config.yrange,
-                 gpcom  = ""
+                 title     = gaston_config.title,
+                 xlabel    = gaston_config.xlabel,
+                 ylabel    = gaston_config.ylabel,
+                 clim      = [0,255],
+                 handle    = gnuplot_state.current,
+                 xrange    = gaston_config.xrange,
+                 yrange    = gaston_config.yrange,
+                 gpcom     = ""
                  )
     # validation
     @assert valid_label(title) "Title must be a string."

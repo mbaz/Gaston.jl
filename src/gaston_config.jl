@@ -27,8 +27,9 @@ mutable struct GastonConfig
     yrange::String
     zrange::String
     palette::String
-    # default terminal type
+    # default terminal type and options
     terminal::String
+    termopts::String
     # for terminals that support filenames
     outputfile::String
     # for printing to file
@@ -53,7 +54,7 @@ function GastonConfig()
 	"","","","","empty","off","inside vertical right top","",
 	"[*:*]","[*:*]","[*:*]","",
 	# terminal
-	"qt",
+	"qt", "",
 	# output file name
 	"",
     # print parameters
@@ -91,6 +92,7 @@ function set(;legend         = gaston_config.legend,
              zrange          = gaston_config.zrange,
              palette         = gaston_config.palette,
              terminal        = gaston_config.terminal,
+             termopts        = gaston_config.termopts,
              outputfile      = gaston_config.outputfile,
              print_color     = gaston_config.print_color,
              print_fontface  = gaston_config.print_fontface,
@@ -167,6 +169,7 @@ function set(;legend         = gaston_config.legend,
     else
         gaston_config.terminal = terminal
     end
+    gaston_config.termopts = termopts
     return nothing
 end
 
