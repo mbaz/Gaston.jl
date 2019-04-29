@@ -33,26 +33,14 @@ function async_reader(io::IO, timeout_sec)::Channel
 end
 
 # llplot() is our workhorse plotting function
-function llplot()
+function llplot(fig::Figure)
     global gnuplot_state
     global gaston_config
-
-    # select current figure
-    c = findfigure(gnuplot_state.current)
-    if c == 0
-        println("No current figure")
-        return
-    end
-    fig = gnuplot_state.figs[c]
-    config = fig.conf
 
     # if figure has no data, stop here
     if isempty(fig.isempty)
         return
     end
-
-    # Reset gnuplot settable options.
-    gnuplot_send("\nreset\n")
 
     # Start reading gnuplot's stdout in "background"
     ch_out = async_reader(gstdout, 5)
@@ -62,12 +50,13 @@ function llplot()
     # send "marks" to the stdout and stderr streams before the first
     # and after the last command. Everything between these marks will
     # be returned by our async_readers.
+    gnuplot_send("\nreset session\n")
     gnuplot_send("set print \"-\"") # Redirect print to stdout
     gnuplot_send("print \"GastonBegin\"")
     gnuplot_send("printerr \"GastonBegin\"")
 
     # Build terminal setup string and send it to gnuplot
-    gnuplot_send(termstring())
+    gnuplot_send(termstring(fig.conf))
 
     # Datafile filename. This is where we store the coordinates to plot.
     # This file is then read by gnuplot to do the actual plotting. One file
@@ -146,8 +135,10 @@ function llplot()
             write(f,"\n\n")
         end
         close(f)
-        # send figure configuration to gnuplot
-        gnuplot_send_fig_config(config)
+
+        # Send gnuplot commands.
+        # Build figure configuration to gnuplot
+        gnuplot_send_fig_config(fig.conf)
         # Send user command to gnuplot
         !isempty(fig.gpcom) && gnuplot_send(fig.gpcom)
         # send plot command to gnuplot
@@ -175,7 +166,7 @@ function llplot()
         end
         close(f)
         # send figure configuration to gnuplot
-        gnuplot_send_fig_config(config)
+        gnuplot_send_fig_config(fig.conf)
         # Send user command to gnuplot
         !isempty(fig.gpcom) && gnuplot_send(fig.gpcom)
         # send command to gnuplot

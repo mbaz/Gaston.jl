@@ -57,42 +57,28 @@ function push_figure!(handle,args...)
                 push!(gnuplot_state.figs[index].curves,c)
             end
             gnuplot_state.figs[index].isempty = false
-        elseif isa(c, AbstractString)
+        elseif isa(c, String)
             gnuplot_state.figs[index].gpcom = c
         end
     end
 end
 
 # convert marker string description to gnuplot's expected number
-function pointtype(x::AbstractString)
-    if x == "+"
-        return 1
-    elseif x == "x"
-        return 2
-    elseif x == "*"
-        return 3
-    elseif x == "esquare"
-        return 4
-    elseif x == "fsquare"
-        return 5
-    elseif x == "ecircle"
-        return 6
-    elseif x == "fcircle"
-        return 7
-    elseif x == "etrianup"
-        return 8
-    elseif x == "ftrianup"
-        return 9
-    elseif x == "etriandn"
-        return 10
-    elseif x == "ftriandn"
-        return 11
-    elseif x == "edmd"
-        return 12
-    elseif x == "fdmd"
-        return 13
-    end
-    return 1
+function pointtype(x::String)
+    x == "+" && return "1"
+    x == "x" && return "2"
+    x == "*" && return "3"
+    x == "esquare" && return "4"
+    x == "fsquare" && return "5"
+    x == "ecircle" && return "6"
+    x == "fcircle" && return "7"
+    x == "etrianup" && return "8"
+    x == "ftrianup" && return "9"
+    x == "etriandn" && return "10"
+    x == "ftriandn" && return "11"
+    x == "edmd" && return "12"
+    x == "fdmd" && return "13"
+    return "1"
 end
 
 # create a Z-coordinate matrix from x, y coordinates and a function
@@ -144,183 +130,162 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", x::Figure)
     if !isjupyter
-        llplot()
+        llplot(x)
         if gaston_config.terminal == "dumb" || gaston_config.terminal == "sixelgd"
             write(io, x.svg)
         end
-        return nothing
     end
+    return nothing
 end
 
 function Base.show(io::IO, ::MIME"image/svg+xml", x::Figure)
-    llplot()
+    llplot(x)
     write(io,x.svg)
+    return nothing
 end
 
 # return configuration string for a single plot
 function linestr_single(conf::CurveConf)
     s = ""
-    if conf.legend != ""
-        s = string(s, " title '", conf.legend, "' ")
-    else
-        s = string(s, "notitle ")
-    end
-    s = string(s, " with ", conf.plotstyle, " ")
-    if conf.color != ""
-        s = string(s, "linecolor rgb '", conf.color, "' ")
-    end
-    s = string(s, "lw ", string(conf.linewidth), " ")
-    if conf.linestyle != ""
-        s = string(s, "dt '", string(conf.linestyle), "' ")
-    end
+    conf.legend != "" && (s = s*" title '"*conf.legend*"' ")
+    conf.plotstyle != "" && (s = s*" with "*conf.plotstyle*" ")
+    conf.linecolor != "" && (s = s*"linecolor rgb '"*conf.linecolor*"' ")
+    conf.linewidth != "" && (s = s*"lw "*conf.linewidth*" ")
+    conf.linestyle != "" && (s = s*"dt '"*conf.linestyle*"' ")
     # some plotstyles don't allow point specifiers
     cp = conf.plotstyle
-    if cp != "lines" && cp != "impulses" && cp != "pm3d" && cp != "image" &&
-        cp != "rgbimage" && cp != "boxes" && cp != "dots" && cp != "steps" &&
-        cp != "fsteps" && cp != "fillsteps" && cp != "financebars"
-        if conf.marker != ""
-            s = string(s, "pt ", string(pointtype(conf.marker)), " ")
+    if cp ∈ ps_sup_points
+        if conf.pointtype != ""
+            s = s*"pt "*pointtype(conf.pointtype)*" "
+            conf.pointsize != "" && (s = s*"ps "*conf.pointsize*" ")
         end
-        s = string(s, "ps ", string(conf.pointsize), " ")
     end
     return s
 end
 
 # build a string with plot commands according to configuration
-function linestr(curves::Vector{Curve}, cmd::AbstractString, file::AbstractString)
+function linestr(curves::Vector{Curve}, cmd, file)
     # We have to insert "," between plot commands. One easy way to do this
     # is create the first plot command, then the rest
     # We also need to keep track of the current index (starts at zero)
     index = 0
-    s = string(cmd, " '", file, "' ", " i 0 ", linestr_single(curves[1].conf))
+    s = cmd*" '"*file*"' "*" i 0 "*linestr_single(curves[1].conf)
     if length(curves) > 1
         for i in curves[2:end]
             index += 1
-            s = string(s, ", '", file, "' ", " i ", string(index)," ",
-                       linestr_single(i.conf))
+            s = s*", '"*file*"' "*" i "*string(index)*" "*linestr_single(i.conf)
         end
     end
     return s
 end
 
 # Build a "set term" string appropriate for the terminal type
-function termstring()
+function termstring(ac::AxesConf)
     global gnuplot_state
     global gaston_config
 
-    gc = gaston_config
-    term = gaston_config.terminal
-    termname = term
-    term == "null" && (termname = "dumb")
-    term == "ijulia" && (termname = "svg")
-    term == "pdf" && (termname = "pdfcairo")
-    term == "eps" && (termname = "epscairo")
-
-    ts = "set term $termname "
-
-    if term ∈ term_window
-        ts = ts*string(gnuplot_state.current)*" "
+    # define terminal name
+    term = ""
+    if !ac.print_flag
+        term = gaston_config.terminal
+        term == "null" && (term = "dumb")
+        term == "ijulia" && (term = "svg")
+    else
+        term = ac.print_term
+        term == "pdf" && (term = "pdfcairo")
+        term == "eps" && (term = "epscairo")
+        term == "png" && (term = "pngcairo")
     end
 
-    if term ∈ term_sup_font
-        ts = ts*" font \"$(gc.print_fontface),$(gc.print_fontsize)\" "
-    end
+    ts = ""
 
-    if term ∈ term_sup_fontscale
-        ts = ts*" fontscale $(gc.print_fontscale) "
-    end
+    if term != ""
+        ts = "set term $term "
 
-    if term ∈ term_sup_lw
-        ts = ts*" linewidth $(gc.print_linewidth) "
-    end
+        term ∈ term_window && (ts = ts*string(gnuplot_state.current)*" ")
 
-    if term ∈ term_sup_size
-        if gc.print_size == ""  # use appropriate default size
-            term ∈ term_size_in && (size = gc.print_size_in)
-            term ∈ term_size_pix && (size = gc.print_size_pix)
-            term ∈ term_size_char && (size = gc.print_size_char)
-        else
-            size = gc.print_size  # use user-provided size
+        font = ac.print_flag ? ac.print_font : ac.font
+        if term ∈ term_sup_font && font != ""
+            ts = ts*" font \""*font*"\" "
         end
-        gc.print_size != "" && (ts = ts*" size $size ")
+
+        lw = ac.print_flag ? ac.print_linewidth : ac.linewidth
+        if term ∈ term_sup_lw && lw != ""
+            ts = ts*" linewidth "*lw*" "
+        end
+
+        size = ac.print_flag ? ac.print_size : ac.size
+        if term ∈ term_sup_size && size != ""
+            ts = ts*" size "*size*" "
+        end
+
+        if term ∈ term_sup_bkgnd && ac.background != ""
+            ts = ts*" background \""*ac.background*"\" "
+        end
+
+        if term ∈ term_file
+            # verify that user has set an output file
+            ac.print_outputfile == "" && error("Plotting to file, but no file name given. Use `set(outputfile=\"filename\")` to configure the output file name.")
+            ts = ts*"\nset output \"$(ac.print_outputfile)\" "
+        end
+
+        ac.termopts != "" && (ts = ts*ac.termopts)
+
     end
-
-    if term ∈ term_file
-        # verify that user has set an output file
-        gc.outputfile == "" && error("Plotting to file, but no file name given. Use `set(outputfile=\"filename\")` to configure the output file name.")
-        ts = ts*"\nset output \"$(gc.outputfile)\" "
-    end
-
-    gc.termopts != "" && (ts = ts*gc.termopts)
-
     return ts
 end
 
 # send gnuplot the current figure's configuration
 function gnuplot_send_fig_config(config)
-    # fill style
-    if config.fill != ""
-        gnuplot_send(string("set style fill ",config.fill))
-    end
-    # grid
+    config.title != "" && gnuplot_send("set title '"*config.title*"' ")
+    config.fill != "" && gnuplot_send("set style fill "*config.fill)
     if config.grid != ""
         if config.grid == "on"
-            gnuplot_send(string("set grid"))
+            gnuplot_send("set grid")
         else
-            gnuplot_send(string("unset grid"))
+            gnuplot_send("set grid "*config.grid)
         end
     end
-    # legend box
-    if config.box != ""
-        gnuplot_send(string("set key ",config.box))
+    config.keyoptions != "" && gnuplot_send("set key "*config.keyoptions)
+    if config.axis != ""
+        config.axis == "semilogx" && gnuplot_send("set logscale x")
+        config.axis == "semilogy" && gnuplot_send("set logscale y")
+        config.axis == "semilogz" && gnuplot_send("set logscale z")
+        config.axis == "loglog" && gnuplot_send("set logscale xyz")
     end
-    # plot title
-    if config.title != ""
-        gnuplot_send(string("set title '",config.title,"' "))
-    end
-    # xlabel
-    if config.xlabel != ""
-        gnuplot_send(string("set xlabel '",config.xlabel,"' "))
-    end
-    # ylabel
-    if config.ylabel != ""
-        gnuplot_send(string("set ylabel '",config.ylabel,"' "))
-    end
-    # zlabel
-    if config.zlabel != ""
-        gnuplot_send(string("set zlabel '",config.zlabel,"' "))
-    end
-    # axis log scale
-    if config.axis != "" || config.axis != "normal"
-        if config.axis == "semilogx"
-            gnuplot_send("set logscale x")
-        end
-        if config.axis == "semilogy"
-            gnuplot_send("set logscale y")
-        end
-        if config.axis == "loglog"
-            gnuplot_send("set logscale xy")
+    config.xlabel != "" && gnuplot_send("set xlabel '"*config.xlabel*"' ")
+    config.ylabel != "" && gnuplot_send("set ylabel '"*config.ylabel*"' ")
+    config.zlabel != "" && gnuplot_send("set zlabel '"*config.zlabel*"' ")
+    config.xrange != "" && gnuplot_send("set xrange "*config.xrange)
+    config.yrange != "" && gnuplot_send("set yrange "*config.yrange)
+    config.zrange != "" && gnuplot_send("set zrange "*config.zrange)
+    if config.xzeroaxis != ""
+        if config.xzeroaxis == "on"
+            gnuplot_send("set xzeroaxis")
+        else
+            gnuplot_send("set xzeroaxis "*config.xzeroaxis)
         end
     end
-    # ranges
-    gnuplot_send("set autoscale")
-    if config.xrange != ""
-        gnuplot_send(string("set xrange ",config.xrange))
+    if config.yzeroaxis != ""
+        if config.yzeroaxis == "on"
+            gnuplot_send("set yzeroaxis")
+        else
+            gnuplot_send("set yzeroaxis "*config.yzeroaxis)
+        end
     end
-    if config.yrange != ""
-        gnuplot_send(string("set yrange ",config.yrange))
+    if config.zzeroaxis != ""
+        if config.zzeroaxis == "on"
+            gnuplot_send("set zzeroaxis")
+        else
+            gnuplot_send("set zzeroaxis "*config.zzeroaxis)
+        end
     end
-    if config.zrange != ""
-        gnuplot_send(string("set zrange ",config.zrange))
-    end
-
-    if config.palette != ""
-        gnuplot_send(string("set palette ",config.palette))
-    end
+    config.palette != "" && gnuplot_send("set palette "*config.palette)
 end
 
 # write commands to gnuplot's pipe
-function gnuplot_send(s::AbstractString)
+function gnuplot_send(s)
+    #println(s)
     w = write(gstdin, string(s,"\n"))
     # check that data was accepted by the pipe
     if !(w > 0)
