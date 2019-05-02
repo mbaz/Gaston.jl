@@ -4,13 +4,6 @@
 
 # Auxiliary, non-exported functions are declared here.
 
-# close gnuplot pipes
-function gnuplot_exit(x...)
-    for p in [gstdin, gstdout, gstderr]
-        close(p)
-    end
-end
-
 # Return index to figure with handle `c`. If no such figure exists, returns 0.
 function findfigure(c)
     global gnuplot_state
@@ -286,11 +279,11 @@ end
 # write commands to gnuplot's pipe
 function gnuplot_send(s)
     #println(s)
-    w = write(gstdin, string(s,"\n"))
+    w = write(P.gstdin, string(s,"\n"))
     # check that data was accepted by the pipe
     if !(w > 0)
         println("Something went wrong writing to gnuplot STDIN.")
         return
     end
-    flush(gstdin)
+    flush(P.gstdin)
 end

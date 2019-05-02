@@ -43,7 +43,7 @@ function llplot(fig::Figure)
     end
 
     # Start reading gnuplot's stdout in "background"
-    ch_out = async_reader(gstdout, 5)
+    ch_out = async_reader(P.gstdout, 5)
 
     # In order to capture all output produced by our plotting commands
     # (error messages and figure text in case of text terminals), we
@@ -184,7 +184,7 @@ function llplot(fig::Figure)
 
     out = take!(ch_out)
 
-    ch_err = async_reader(gstderr, 1)
+    ch_err = async_reader(P.gstderr, 1)
     err = take!(ch_err)
 
     out === :timeout && error("Gnuplot is taking too long to respond.")
