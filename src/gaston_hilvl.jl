@@ -52,7 +52,7 @@ function figure(h = 0; redraw = true)
     global gaston_config
 
     # build vector of handles
-    handles = [f.handle for f in gnuplot_state.figs]
+    handles = gethandles()
 
     # make sure handle is valid
     h == nothing && (h = 0)
@@ -68,9 +68,11 @@ function figure(h = 0; redraw = true)
         push!(gnuplot_state.figs, Figure(h))
     else
         # when selecting a pre-existing window, gnuplot requires that it be
-        # redrawn in order to have mouse interactivity.
-        #redraw && display(Figure(h))
-        redraw && display(gnuplot_state.figs[h])
+        # redrawn in order to have mouse interactivity. Also, we want to
+        # display the figure again if it was closed.
+        i = findfigure(h)
+        fig = gnuplot_state.figs[i]
+        redraw && display(fig)
     end
     return h
 end

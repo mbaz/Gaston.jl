@@ -148,10 +148,13 @@ function hist(s,bins)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", x::Figure)
-    if !isjupyter
-        llplot(x)
-        if gaston_config.terminal == "dumb" || gaston_config.terminal == "sixelgd"
-            write(io, x.svg)
+    if !x.isempty
+        if !isjupyter
+            llplot(x)
+            term = gaston_config.terminal
+            if term == "dumb" || term == "sixelgd"
+                write(io, x.svg)
+            end
         end
     end
     return nothing
