@@ -2,7 +2,7 @@
 ##
 ## This file is distributed under the 2-clause BSD License.
 
-__precompile__(true)
+__precompile__(false)
 module Gaston
 
 export closefigure, closeall, figure,

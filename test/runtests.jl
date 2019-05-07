@@ -23,6 +23,9 @@ using Gaston, Test
     @test closefigure(4) == 4
     @test closefigure() == 2
     @test closeall() == 1
+    @test closeall();figure();figure();figure(4);closefigure(1,2) == 4
+    @test closeall();figure();figure();figure(4);closefigure(4) == 2
+    @test closeall();figure();figure();figure(4);closefigure(1,2,3,4,5) == nothing
     @test set(plotstyle="linespoints") == nothing
     @test set(linecolor="red") == nothing
     @test set(pointtype="ecircle") == nothing

@@ -4,38 +4,25 @@
 
 # This file contains exported, high-level commands
 
+""""Close one or more figures. Returns a handle to the active figure,
+or `nothing` if all figures were closed."""
 function closefigure(x...)
-    global gnuplot_state
-    global gaston_config
 
-    # build vector of handles
-    handles = [f.handle for f in gnuplot_state.figs]
-    isempty(handles) && error("No figures exist.")
+    isempty(x) && (x = gnuplot_state.current)
+    curr = 0
 
-    # get handle of figure to close
-    isempty(x) ? handle = gnuplot_state.current : handle = x[1]
+    for handle ∈ x
+        handles = gethandles()
+        # make sure handle is valid
+        isempty(handles) && return nothing
+        isa(handle,Int) || error("Invalid handle.")
+        handle < 1 && error("Invalid handle.")
+        handle ∈ handles || continue
 
-    # make sure handle is valid
-    isa(handle,Int) || error("Invalid handle.")
-    handle < 1 && error("Invalid handle.")
-    handle ∈ handles || error("No such figure exists.")
-
-    # only inform gnuplot if term type is screen
-    term = gaston_config.terminal
-    term ∈ term_window && gnuplot_send("set term $term $handle close")
-
-    # remove figure
-    filter!(h->h.handle!=handle,gnuplot_state.figs)
-
-    # update state
-    if isempty(gnuplot_state.figs)
-        # we just closed the last figure
-        gnuplot_state.current = nothing
-    else
-        # select the most-recently created figure
-        gnuplot_state.current = gnuplot_state.figs[end].handle
+        curr = closesinglefigure(handle)
     end
-    return handle
+
+    return curr
 end
 
 # close all figures

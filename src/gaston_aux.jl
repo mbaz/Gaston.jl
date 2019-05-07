@@ -4,6 +4,27 @@
 
 # Auxiliary, non-exported functions are declared here.
 
+# close a single figure, assuming arguments are valid; returns handle of
+# the new current figure
+function closesinglefigure(handle::Int)
+    global gnuplot_state
+
+    term = gaston_config.terminal
+    term ∈ term_window && gnuplot_send("set term $term $handle close")
+
+    # remove figure from global state
+    filter!(h->h.handle!=handle,gnuplot_state.figs)
+    # update state
+    if isempty(gnuplot_state.figs)
+        # we just closed the last figure
+        gnuplot_state.current = nothing
+    else
+        # select the most-recently created figure
+        gnuplot_state.current = gnuplot_state.figs[end].handle
+    end
+    return gnuplot_state.current
+end
+
 # Return index to figure with handle `c`. If no such figure exists, returns 0.
 function findfigure(c)
     global gnuplot_state
@@ -25,6 +46,11 @@ function clearfigure(h::Int)
     if f != 0
         gnuplot_state.figs[f] = Figure(h)
     end
+end
+
+# return array of existing handles
+function gethandles()
+    [f.handle for f in gnuplot_state.figs]
 end
 
 # Return the next available handle (smallest non-used positive integer)
