@@ -91,15 +91,14 @@ function set(;plotstyle       = gaston_config.plotstyle,
              reset            = false
             )
     # Validate paramaters
-    @assert valid_plotstyle(plotstyle) "Plotstyle $(plotstyle) not supported."
-    @assert valid_linestyle(linestyle) string("Line style pattern accepts: ",
-            "space, dash, underscore and dot.")
-    @assert valid_pointtype(pointtype) "Marker $(pointtype) not supported."
-    @assert valid_axis(axis) "Axis $(axis) not supported."
-    @assert valid_range(xrange) "Range $(xrange) not supported."
-    @assert valid_range(yrange) "Range $(yrange) not supported."
-    @assert valid_range(zrange) "Range $(yrange) not supported."
-    @assert valid_terminal(terminal) "Terminal type $(terminal) not supported."
+    valid_plotstyle(plotstyle)
+    valid_linestyle(linestyle)
+    valid_pointtype(pointtype)
+    valid_axis(axis)
+    valid_range(xrange)
+    valid_range(yrange)
+    valid_range(zrange)
+    valid_terminal(terminal)
 
     if reset
         gaston_config.plotstyle        = ""
@@ -208,20 +207,46 @@ const ps_sup_points = ["linespoints", "points", "dots"]
 # Validation functions
 #
 
-valid_terminal(s) = s ∈ supported_terminals
-valid_plotstyle(s) = s ∈ supported_plotstyles
-valid_2Dplotstyle(s) = s ∈ supported_2Dplotstyles
-valid_3Dplotstyle(s) = s ∈ supported_3Dplotstyles
-valid_pointtype(s) = s ∈ supported_pointtypes
-valid_axis(s) = s ∈ supported_axis
+function valid_file_term(s)
+    s ∈ term_file && return true
+    throw(DomainError(s,"supported terminals are: $term_file"))
+end
+
+function valid_terminal(s)
+    s ∈ supported_terminals && return true
+    throw(DomainError(s,"supported terminals are: $supported_terminals"))
+end
+function valid_plotstyle(s)
+    s ∈ supported_plotstyles && return true
+    throw(DomainError(s,"supported plotstyles are: $supported_plotstyles"))
+end
+function valid_2Dplotstyle(s)
+    s ∈ supported_2Dplotstyles && return true
+    throw(DomainError(s,"supported 2-D plotstyles are: $supported_2Dplotstyles"))
+end
+function valid_3Dplotstyle(s)
+    s ∈ supported_3Dplotstyles && return true
+    throw(DomainError(s,"supported 3-D plotstyles are: $supported_3Dplotstyles"))
+end
+function valid_pointtype(s)
+    s ∈ supported_pointtypes && return true
+    throw(DomainError(s,"supported point types are: $supported_pointtypes"))
+end
+function valid_axis(s)
+    s ∈ supported_axis && return true
+    throw(DomainError(s,"supported axis types are: $supported_axis"))
+end
 
 function valid_linestyle(s)
+    invalid = false
     s == "" && return true # allow empty string
     c = collect(s)
     # make sure only allowed characters are passed
-    issubset(c, Set([' ', '-', '_', '.'])) || return false
+    issubset(c, Set([' ', '-', '_', '.'])) || (invalid = true)
     # but do not allow spaces only
-    unique(c) != [' ']
+    unique(c) != [' '] || (invalid = true)
+    invalid && throw(DomainError(s,"line style pattern accepts: space, dash, underscore and dot"))
+    return true
 end
 
 # Validate that a given range follows gnuplot's syntax.
@@ -252,18 +277,22 @@ function valid_range(s::String)
         return true
     end
 
-    return false
+    throw(DomainError(s,"range must have have the form of [x:y]"))
 end
 
 # Validate coordinates
 function valid_coords(x,y;err=ErrorCoords(),fin=FinancialCoords())
-    length(x) != length(y) && return false
-    (err.valid && length(x) != length(err.ylow)) && return false
+    invalid = false
+    length(x) != length(y) && (invalid = true)
+    (err.valid && length(x) != length(err.ylow)) && (invalid = true)
     (err.valid && !isempty(err.yhigh) && length(x) !=
-        length(err.yhigh)) && return false
-    (fin.valid && length(x) != length(fin.open)) && return false
-    (fin.valid && length(x) != length(fin.low)) && return false
-    (fin.valid && length(x) != length(fin.high)) && return false
-    (fin.valid && length(x) != length(fin.close)) && return false
+        length(err.yhigh)) && (invalid = true)
+    (fin.valid && length(x) != length(fin.open)) && (invalid = true)
+    (fin.valid && length(x) != length(fin.low)) && (invalid = true)
+    (fin.valid && length(x) != length(fin.high)) && (invalid = true)
+    (fin.valid && length(x) != length(fin.close)) && (invalid = true)
+
+    invalid && throw(DimensionMismatch("input vectors must have the same nu mber of elements."))
+
     return true
 end

@@ -20,13 +20,35 @@ using Gaston, Test
     @test figure() == 1
     @test figure() == 2
     @test figure(4) == 4
-    @test closefigure(4) == 4
-    @test closefigure() == 2
+    @test closefigure(4) == 2
+    @test closefigure() == 1
     @test closeall() == 1
-    @test closeall();figure();figure();figure(4);closefigure(1,2) == 4
-    @test closeall();figure();figure();figure(4);closefigure(4) == 2
-    @test closeall();figure();figure();figure(4);closefigure(1,2,3,4,5) == nothing
-    @test closeall();figure(3);figure(3) == 3
+    @test begin
+        closeall()
+        figure()
+        figure()
+        figure(4);
+        closefigure(1,2)
+    end == 4
+    @test begin
+        closeall()
+        figure()
+        figure()
+        figure(4);
+        closefigure(4)
+    end == 2
+    @test begin
+        closeall()
+        figure()
+        figure()
+        figure(4);
+        closefigure(1,2,3,4,5)
+    end== nothing
+    @test begin
+        closeall()
+        figure(3)
+        figure(3)
+    end== 3
     @test set(plotstyle="linespoints") == nothing
     @test set(linecolor="red") == nothing
     @test set(pointtype="ecircle") == nothing
@@ -273,7 +295,7 @@ end
         Z[:,:,1] = R
         Z[:,:,2] = G
         Z[:,:,3] = B
-        imagesc(Z,title="RGB Image",clim=[10 200])
+        imagesc(Z,title="RGB Image",clim=[10,200])
         Gaston.gnuplot_state.gp_error
     end == false
 end
@@ -392,8 +414,8 @@ end
         plot(1:10, linestyle="- ._. ") # complex pattern
         Gaston.gnuplot_state.gp_error
     end == false
-    @test_throws AssertionError plot(1:10, linestyle=" ") # only spaces not allowed
-    @test_throws AssertionError plot(1:10, linestyle="-=") # = is not allowed in pattern
+    @test_throws DomainError plot(1:10, linestyle=" ") # only spaces not allowed
+    @test_throws DomainError plot(1:10, linestyle="-=") # = is not allowed in pattern
     closeall()
 end
 
@@ -444,59 +466,59 @@ end
     set(reset=true)
     set(terminal="null")
     # figure-related
-    @test_throws ErrorException figure("invalid")
-    @test_throws ErrorException figure(1.0)
-    @test_throws ErrorException figure(1:2)
-    @test_throws ErrorException closefigure(-1)
-    @test_throws ErrorException closefigure("invalid")
-    @test_throws ErrorException closefigure(1.0)
-    @test_throws ErrorException closefigure(1:2)
+    @test_throws MethodError figure("invalid")
+    @test_throws MethodError figure(1.0)
+    @test_throws MethodError figure(1:2)
+    @test_throws DomainError closefigure(-1)
+    @test_throws MethodError closefigure("invalid")
+    @test_throws MethodError closefigure(1.0)
+    @test_throws MethodError closefigure(1:2)
     # plot
-    @test_throws AssertionError plot(0:10,0:11)
-    @test_throws MethodError plot(0:10,legend=0)
-    @test_throws AssertionError plot(0:10,plotstyle="invalid")
-    @test_throws AssertionError plot(0:10,pointtype="invalid")
-    @test_throws AssertionError plot(0:10,pointtype=0)
-    @test_throws MethodError plot(0:10,linewidth=im)
-    @test_throws MethodError plot(0:10,pointsize=im)
-    @test_throws MethodError plot(0:10,title=0)
-    @test_throws MethodError plot(0:10,xlabel=0)
-    @test_throws MethodError plot(0:10,ylabel=0)
-    @test_throws AssertionError plot(0:10,axis="invalid")
-    @test_throws AssertionError plot(1:10,xrange = "2:3")
-    @test_throws AssertionError plot(1:10,yrange = "ab")
+    @test_throws DimensionMismatch plot(0:10,0:11)
+    @test_throws TypeError plot(0:10,legend=0)
+    @test_throws DomainError plot(0:10,plotstyle="invalid")
+    @test_throws DomainError plot(0:10,pointtype="invalid")
+    @test_throws TypeError plot(0:10,pointtype=0)
+    @test_throws TypeError plot(0:10,linewidth=im)
+    @test_throws TypeError plot(0:10,pointsize=im)
+    @test_throws TypeError plot(0:10,title=0)
+    @test_throws TypeError plot(0:10,xlabel=0)
+    @test_throws TypeError plot(0:10,ylabel=0)
+    @test_throws DomainError plot(0:10,axis="invalid")
+    @test_throws DomainError plot(1:10,xrange = "2:3")
+    @test_throws DomainError plot(1:10,yrange = "ab")
     f = Gaston.FinancialCoords([1,2],[1,2],[1,2],[1,2])
-    @test_throws AssertionError plot(1:10,financial=f)
+    @test_throws DimensionMismatch plot(1:10,financial=f)
     er = Gaston.ErrorCoords([0.1,0.1])
-    @test_throws AssertionError plot(1:10,err=er)
+    @test_throws DimensionMismatch plot(1:10,err=er)
     # plot!
     plot(1:10)
-    @test_throws MethodError plot!(0:10,legend=0)
+    @test_throws TypeError plot!(0:10,legend=0)
     @test_throws MethodError plot!(0:10,axis="loglog")
     # imagesc
     z = rand(5,6)
-    @test_throws AssertionError imagesc(1:5,1:7,z)
+    @test_throws DimensionMismatch imagesc(1:5,1:7,z)
     # histogram
     @test_throws MethodError histogram(0:10+im*0:10)
     # printfigure
-    @test_throws ErrorException begin
+    @test_throws DomainError begin
         printfigure(handle=2,term="png")
         Gaston.gnuplot_state.gp_error
     end
-    @test_throws ErrorException begin
+    @test_throws DomainError begin
         printfigure(term="xyz")
         Gaston.gnuplot_state.gp_error
     end
     # set
     @test_throws MethodError set(legend=3)
-    @test_throws AssertionError set(plotstyle="A")
+    @test_throws DomainError set(plotstyle="A")
     @test_throws MethodError set(color=3)
-    @test_throws AssertionError set(pointtype="xyz")
+    @test_throws DomainError set(pointtype="xyz")
     @test_throws MethodError set(title=3)
     @test_throws MethodError set(xlabel=3)
     @test_throws MethodError set(ylabel=3)
     @test_throws MethodError set(zlabel=3)
-    @test_throws AssertionError set(terminal="x12")
+    @test_throws DomainError set(terminal="x12")
     @test_throws MethodError set(print_outputfile=3)
     @test_throws MethodError set(print_color=3)
     @test_throws MethodError set(print_font=3)

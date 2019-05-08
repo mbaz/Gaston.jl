@@ -6,7 +6,7 @@
 
 """"Close one or more figures. Returns a handle to the active figure,
 or `nothing` if all figures were closed."""
-function closefigure(x...)
+function closefigure(x::Vararg{Int})
 
     isempty(x) && (x = gnuplot_state.current)
     curr = 0
@@ -14,9 +14,8 @@ function closefigure(x...)
     for handle ∈ x
         handles = gethandles()
         # make sure handle is valid
+        handle < 1 && throw(DomainError(handle, "handle must be a positive integer"))
         isempty(handles) && return nothing
-        isa(handle,Int) || error("Invalid handle.")
-        handle < 1 && error("Invalid handle.")
         handle ∈ handles || continue
 
         curr = closesinglefigure(handle)
@@ -46,8 +45,8 @@ When selecting a figure that must not be redrawn (e.g. because it will be
 immediately overwritten), set redraw = false.
 
 Returns the current figure handle.
- =#
-function figure(h = 0; redraw = true)
+=#
+function figure(h::Union{Int,Nothing} = 0; redraw = true)
     global gnuplot_state
     global gaston_config
 
@@ -56,8 +55,9 @@ function figure(h = 0; redraw = true)
 
     # make sure handle is valid
     h == nothing && (h = 0)
-    isa(h,Int) || error("Invalid handle.")
-    h < 0 && error("Invalid handle.")
+    if !isa(h,Int) || h < 0
+        throw(DomainError(h,"handle must be a positive integer or 0"))
+    end
 
     # determine figure handle
     h == 0 && (h = nexthandle())
@@ -79,41 +79,40 @@ end
 
 # 2D plots
 function plot(x::Coord,y::Coord;
-             legend          = "",
-             title           = "",
-             xlabel          = "",
-             ylabel          = "",
-             plotstyle       = gaston_config.plotstyle,
-             linecolor       = gaston_config.linecolor,
-             linewidth       = gaston_config.linewidth,
-             linestyle       = gaston_config.linestyle,
-             pointtype       = gaston_config.pointtype,
-             pointsize       = gaston_config.pointsize,
-             fill            = gaston_config.fill,
-             grid            = gaston_config.grid,
-             keyoptions      = gaston_config.keyoptions,
-             axis            = gaston_config.axis,
-             xrange          = gaston_config.xrange,
-             yrange          = gaston_config.yrange,
-             xzeroaxis       = gaston_config.xzeroaxis,
-             yzeroaxis       = gaston_config.yzeroaxis,
-             font            = gaston_config.font,
-             size            = gaston_config.size,
-             background      = gaston_config.background,
-             financial       = FinancialCoords(),
-             err             = ErrorCoords(),
-             handle          = gnuplot_state.current,
-             gpcom           = ""
+             legend::String     = "",
+             title::String      = "",
+             xlabel::String     = "",
+             ylabel::String     = "",
+             plotstyle::String  = gaston_config.plotstyle,
+             linecolor::String  = gaston_config.linecolor,
+             linewidth::String  = gaston_config.linewidth,
+             linestyle::String  = gaston_config.linestyle,
+             pointtype::String  = gaston_config.pointtype,
+             pointsize::String  = gaston_config.pointsize,
+             fill::String       = gaston_config.fill,
+             grid::String       = gaston_config.grid,
+             keyoptions::String = gaston_config.keyoptions,
+             axis::String       = gaston_config.axis,
+             xrange::String     = gaston_config.xrange,
+             yrange::String     = gaston_config.yrange,
+             xzeroaxis::String  = gaston_config.xzeroaxis,
+             yzeroaxis::String  = gaston_config.yzeroaxis,
+             font::String       = gaston_config.font,
+             size::String       = gaston_config.size,
+             background::String = gaston_config.background,
+             financial::FinancialCoords = FinancialCoords(),
+             err::ErrorCoords   = ErrorCoords(),
+             handle::Union{Int,Nothing} = gnuplot_state.current,
+             gpcom::String      = ""
             )
     # validation
-    @assert valid_2Dplotstyle(plotstyle) "Non-recognized plotstyle."
-    @assert valid_linestyle(linestyle) string("Line style pattern accepts: ",
-            "space, dash, underscore and dot.")
-    @assert valid_pointtype(pointtype) "Pointtype $(pointtype) not supported."
-    @assert valid_axis(axis) "Axis $(axis) not supported."
-    @assert valid_range(xrange) "Range $(xrange) not supported."
-    @assert valid_range(yrange) "Range $(yrange) not supported."
-    @assert valid_coords(x,y,err=err,fin=financial) "Input vectors must have the same number of elements."
+    valid_2Dplotstyle(plotstyle)
+    valid_linestyle(linestyle)
+    valid_pointtype(pointtype)
+    valid_axis(axis)
+    valid_range(xrange)
+    valid_range(yrange)
+    valid_coords(x,y,err=err,fin=financial)
 
     handle = figure(handle, redraw = false)
     clearfigure(handle)
@@ -145,24 +144,23 @@ plot(c::Vector{<:Complex};args...) = plot(real(c),imag(c);args...)
 
 # Add a curve to an existing figure
 function plot!(x::Coord,y::Coord;
-             legend          = "",
-             plotstyle       = gaston_config.plotstyle,
-             linecolor       = gaston_config.linecolor,
-             linewidth       = gaston_config.linewidth,
-             linestyle       = gaston_config.linestyle,
-             pointtype       = gaston_config.pointtype,
-             pointsize       = gaston_config.pointsize,
-             financial       = FinancialCoords(),
-             err             = ErrorCoords(),
-             handle          = gnuplot_state.current
+             legend::String    = "",
+             plotstyle::String = gaston_config.plotstyle,
+             linecolor::String = gaston_config.linecolor,
+             linewidth::String = gaston_config.linewidth,
+             linestyle::String = gaston_config.linestyle,
+             pointtype::String = gaston_config.pointtype,
+             pointsize::String = gaston_config.pointsize,
+             financial::FinancialCoords = FinancialCoords(),
+             err::ErrorCoords  = ErrorCoords(),
+             handle::Union{Int,Nothing} = gnuplot_state.current
          )
 
     # validation
-    @assert valid_2Dplotstyle(plotstyle) "Non-recognized plotstyle."
-    @assert valid_pointtype(pointtype) "pointtype $(pointtype) not supported."
-    @assert valid_linestyle(linestyle) string("Line style pattern accepts:",
-                                              " space, dash, underscore and dot")
-    @assert valid_coords(x,y,err=err,fin=financial) "Input vectors must have the same number of elements."
+    valid_2Dplotstyle(plotstyle)
+    valid_pointtype(pointtype)
+    valid_linestyle(linestyle)
+    valid_coords(x,y,err=err,fin=financial)
 
     handle = figure(handle, redraw = false)
     cc = CurveConf(legend,plotstyle,linecolor,pointtype,linewidth,linestyle,pointsize)
@@ -176,29 +174,29 @@ plot!(c::Complex;args...) = plot!(real(c),imag(c);args...)
 plot!(c::Vector{<:Complex};args...) = plot!(real(c),imag(c);args...)
 
 function histogram(data::Coord;
-                   bins::Int  = 10,
-                   norm       = 1.0,
-                   legend     = "",
-                   title      = "",
-                   xlabel     = "",
-                   ylabel     = "",
-                   linecolor  = gaston_config.linecolor,
-                   linewidth  = gaston_config.linewidth,
-                   fill       = gaston_config.fill,
-                   keyoptions = gaston_config.keyoptions,
-                   xrange     = gaston_config.xrange,
-                   yrange     = gaston_config.yrange,
-                   font       = gaston_config.font,
-                   size       = gaston_config.size,
-                   background = gaston_config.background,
-                   handle     = gnuplot_state.current,
-                   gpcom      = ""
+                   bins::Int          = 10,
+                   norm::Real         = 1.0,
+                   legend::String     = "",
+                   title::String      = "",
+                   xlabel::String     = "",
+                   ylabel::String     = "",
+                   linecolor::String  = gaston_config.linecolor,
+                   linewidth::String  = gaston_config.linewidth,
+                   fill::String       = gaston_config.fill,
+                   keyoptions::String = gaston_config.keyoptions,
+                   xrange::String     = gaston_config.xrange,
+                   yrange::String     = gaston_config.yrange,
+                   font::String       = gaston_config.font,
+                   size::String       = gaston_config.size,
+                   background::String = gaston_config.background,
+                   handle::Union{Int,Nothing} = gnuplot_state.current,
+                   gpcom::String      = ""
                    )
     # validation
-    @assert valid_range(xrange) "Range $(xrange) not supported."
-    @assert valid_range(yrange) "Range $(yrange) not supported."
-    @assert bins > 0 "At least one bin is required."
-    @assert norm > 0 "norm must be a positive number."
+    valid_range(xrange)
+    valid_range(yrange)
+    bins < 1 && throw(DomainError(bins, "at least one bin is required"))
+    norm < 0 && throw(DomainError(norm, "norm must be a positive number."))
 
     handle = figure(handle, redraw = false)
     clearfigure(handle)
@@ -226,24 +224,24 @@ end
 
 # image plots
 function imagesc(x::Coord,y::Coord,Z::Coord;
-                 title     = "",
-                 xlabel    = "",
-                 ylabel    = "",
-                 clim      = [0,255],
-                 handle    = gnuplot_state.current,
-                 xrange    = gaston_config.xrange,
-                 yrange    = gaston_config.yrange,
-                 font      = gaston_config.font,
-                 size      = gaston_config.size,
-                 gpcom     = ""
+                 title::String     = "",
+                 xlabel::String    = "",
+                 ylabel::String    = "",
+                 clim::Vector{Int} = [0,255],
+                 xrange::String    = gaston_config.xrange,
+                 yrange::String    = gaston_config.yrange,
+                 font::String      = gaston_config.font,
+                 size::String      = gaston_config.size,
+                 gpcom::String     = "",
+                 handle::Union{Int,Nothing} = gnuplot_state.current
                  )
     # validation
-    @assert valid_range(xrange) "Range $(xrange) not supported."
-    @assert valid_range(yrange) "Range $(yrange) not supported."
-    @assert length(clim) == 2 "clim must be a 2-element vector."
-    @assert length(x) == Base.size(Z)[2] "Invalid coordinates."
-    @assert length(y) == Base.size(Z)[1] "Invalid coordinates."
-    @assert 2 <= ndims(Z) <= 3 "Z must have two or three dimensions."
+    valid_range(xrange)
+    valid_range(yrange)
+    length(clim) == 2 || throw(DomainError(length(clim), "clim must be a 2-element vector."))
+    length(x) == Base.size(Z)[2] || throw(DimensionMismatch("invalid coordinates."))
+    length(y) == Base.size(Z)[1] || throw(DimensionMismatch("invalid coordinates."))
+    2 <= ndims(Z) <= 3 || throw(DimensionMismatch(ndims(Z), "Z must have two or three dimensions"))
 
     handle = figure(handle, redraw = false)
     clearfigure(handle)
@@ -274,37 +272,37 @@ imagesc(Z::Coord;args...) = imagesc(1:size(Z)[2],1:size(Z)[1],Z;args...)
 
 # surface plots
 function surf(x::Coord,y::Coord,Z::Coord;
-              legend     = "",
-              plotstyle  = gaston_config.plotstyle,
-              linecolor  = gaston_config.linecolor,
-              linewidth  = gaston_config.linewidth,
-              pointtype  = gaston_config.pointtype,
-              pointsize  = gaston_config.pointsize,
-              title      = "",
-              xlabel     = "",
-              ylabel     = "",
-              zlabel     = "",
-              keyoptions = gaston_config.keyoptions,
-              xrange     = gaston_config.xrange,
-              yrange     = gaston_config.yrange,
-              zrange     = gaston_config.zrange,
-              xzeroaxis  = gaston_config.xzeroaxis,
-              yzeroaxis  = gaston_config.yzeroaxis,
-              zzeroaxis  = gaston_config.zzeroaxis,
-              font       = gaston_config.font,
-              size       = gaston_config.size,
-              handle     = gnuplot_state.current,
-              gpcom      = ""
+              legend::String     = "",
+              plotstyle::String  = gaston_config.plotstyle,
+              linecolor::String  = gaston_config.linecolor,
+              linewidth::String  = gaston_config.linewidth,
+              pointtype::String  = gaston_config.pointtype,
+              pointsize::String  = gaston_config.pointsize,
+              title::String      = "",
+              xlabel::String     = "",
+              ylabel::String     = "",
+              zlabel::String     = "",
+              keyoptions::String = gaston_config.keyoptions,
+              xrange::String     = gaston_config.xrange,
+              yrange::String     = gaston_config.yrange,
+              zrange::String     = gaston_config.zrange,
+              xzeroaxis::String  = gaston_config.xzeroaxis,
+              yzeroaxis::String  = gaston_config.yzeroaxis,
+              zzeroaxis::String  = gaston_config.zzeroaxis,
+              font::String       = gaston_config.font,
+              size::String       = gaston_config.size,
+              handle::Union{Int,Nothing} = gnuplot_state.current,
+              gpcom::String      = ""
               )
     # validation
-    @assert valid_3Dplotstyle(plotstyle) "Non-recognized plotstyle."
-    @assert valid_pointtype(pointtype) "pointtype $(pointtype) not supported."
-    @assert valid_range(xrange) "Range $(xrange) not supported."
-    @assert valid_range(yrange) "Range $(yrange) not supported."
-    @assert valid_range(zrange) "Range $(zrange) not supported."
-    @assert ndims(Z) == 2 "Z must have two dimensions."
-    @assert length(x) == Base.size(Z)[1] "Invalid coordinates."
-    @assert length(y) == Base.size(Z)[2] "Invalid coordinates."
+    valid_3Dplotstyle(plotstyle)
+    valid_pointtype(pointtype)
+    valid_range(xrange)
+    valid_range(yrange)
+    valid_range(zrange)
+    ndims(Z) == 2 || throw(DimensionMismatch(ndims(Z), "Z must have two dimensions."))
+    length(x) == Base.size(Z)[1] || throw(DimensionMismatch("invalid coordinates."))
+    length(y) == Base.size(Z)[2]  || throw(DimensionMismatch("Invalid coordinates."))
 
     handle = figure(handle, redraw = false)
     clearfigure(handle)
@@ -336,21 +334,22 @@ surf(x::Coord,y::Coord,f::Function;args...) = surf(x,y,meshgrid(x,y,f);args...)
 surf(Z::Matrix;args...) = surf(1:size(Z)[2],1:size(Z)[1],Z;args...)
 
 # print a figure to a file
-function printfigure(;handle=gnuplot_state.current,
-                     term=gaston_config.print_term,
-                     font=gaston_config.print_font,
-                     size=gaston_config.print_size,
-                     linewidth=gaston_config.print_linewidth,
-                     outputfile=gaston_config.print_outputfile)
+function printfigure(;handle::Union{Int,Nothing} = gnuplot_state.current,
+                     term::String       = gaston_config.print_term,
+                     font::String       = gaston_config.print_font,
+                     size::String       = gaston_config.print_size,
+                     linewidth::String  = gaston_config.print_linewidth,
+                     outputfile::String = gaston_config.print_outputfile
+                    )
 
     # disable this command in IJulia
     # TODO: see if it's desirable and/or possible to re-enable it
     isjupyter && error("printfigure command disabled in Jupyter notebook.")
 
     h = findfigure(handle)
-    h == 0 && error("Requested figure does not exist.")
-    isempty(outputfile) && error("Please specify an output filename.")
-    term ∈ term_file || error("Unsupported terminal $(term).")
+    h == 0 && throw(DomainError(h, "requested figure does not exist."))
+    isempty(outputfile) && throw(DomainError("Please specify an output filename."))
+    valid_file_term(term)
 
     # set figure's print parameters
     fig = gnuplot_state.figs[h]
