@@ -152,7 +152,7 @@ function Base.show(io::IO, ::MIME"text/plain", x::Figure)
         if !isjupyter
             llplot(x)
             term = gaston_config.terminal
-            if term == "dumb" || term == "sixelgd"
+            if term == "dumb" || term == "sixelgd" || term == "ijulia"
                 write(io, x.svg)
             end
         end
@@ -211,7 +211,6 @@ function termstring(ac::AxesConf)
     if !ac.print_flag
         term = gaston_config.terminal
         term == "null" && (term = "dumb")
-        term == "ijulia" && (term = "svg")
     else
         term = ac.print_term
         term == "pdf" && (term = "pdfcairo")
@@ -222,7 +221,11 @@ function termstring(ac::AxesConf)
     ts = ""
 
     if term != ""
-        ts = "set term $term "
+        if term == "ijulia"
+            ts = "set term svg "
+        else
+            ts = "set term $term "
+        end
 
         term ∈ term_window && (ts = ts*string(gnuplot_state.current)*" ")
 

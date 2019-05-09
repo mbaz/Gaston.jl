@@ -217,6 +217,12 @@ end
             a=repr("text/plain", plot(1:10))
             a == x
         end == true
+        @test begin
+            set(reset=true)
+            set(terminal="ijulia")
+            a = repr("text/plain", plot(1:10))
+            a[1:35] == "<?xml version=\"1.0\" encoding=\"utf-8"
+        end == true
     end
     # build a multiple-plot figure manually
     closeall()
