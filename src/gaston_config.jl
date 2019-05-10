@@ -201,7 +201,7 @@ const supported_pointtypes = ["", "+", "x", "*", "esquare", "fsquare",
                           "ecircle", "fcircle", "etrianup", "ftrianup",
                           "etriandn", "ftriandn", "edmd", "fdmd"]
 # List of plotstyles that support points
-const ps_sup_points = ["linespoints", "points", "dots"]
+const ps_sup_points = ["linespoints", "points"]
 
 #
 # Validation functions
