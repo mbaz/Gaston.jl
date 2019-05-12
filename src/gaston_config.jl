@@ -172,22 +172,25 @@ const term_text = ["dumb", "null", "sixelgd", "ijulia"]
 const term_file = ["svg", "gif", "png", "pdf", "eps", "pngcairo", "pdfcairo",
                    "epscairo"]
 # supports size
-const term_sup_size = ["qt", "wxt", "x11", "sixelgd", "svg", "gif", "png",
-                        "pdf", "eps", "dumb", "pngcairo", "pdfcairo", "epscairo"]
+const term_sup_size = ["qt", "wxt", "x11", "sixelgd", "svg", "ijulia", "gif",
+                       "png", "pdf", "eps", "dumb", "pngcairo", "pdfcairo",
+                       "epscairo"]
 # supports font
-const term_sup_font = ["qt", "wxt", "x11", "aqua", "sixelgd", "svg", "gif",
-                       "png", "pdf", "eps", "pngcairo", "pdfcairo", "epscairo"]
+const term_sup_font = ["qt", "wxt", "x11", "aqua", "sixelgd", "svg", "ijulia",
+                       "gif", "png", "pdf", "eps", "pngcairo", "pdfcairo",
+                       "epscairo"]
 # supports linewidth
-const term_sup_lw = ["qt", "wxt", "x11", "aqua", "sixelgd", "svg", "gif",
-                     "png", "pdf", "eps", "pngcairo", "pdfcairo", "epscairo"]
+const term_sup_lw = ["qt", "wxt", "x11", "aqua", "sixelgd", "svg", "ijulia",
+                     "gif", "png", "pdf", "eps", "pngcairo", "pdfcairo",
+                     "epscairo"]
 # supports background color
-const term_sup_bkgnd = ["sixelgd", "svg", "wxt", "gif", "pdf", "eps", "png",
-                        "pdfcairo", "pngcairo", "epscairo"]
+const term_sup_bkgnd = ["sixelgd", "svg", "ijulia", "wxt", "gif", "pdf", "eps",
+                        "png", "pdfcairo", "pngcairo", "epscairo"]
 
 # List of valid configuration values
 const supported_terminals = ["", "qt", "wxt", "x11", "aqua", "dumb", "null",
                              "sixelgd", "ijulia", "svg", "gif", "png", "pdf",
-                             "eps"]
+                             "eps", "pngcairo", "pdfcairo", "epscairo"]
 const supported_2Dplotstyles = ["", "lines", "linespoints", "points",
                                 "impulses", "boxes", "errorlines", "errorbars",
                                 "dots", "steps", "fsteps", "fillsteps",
