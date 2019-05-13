@@ -481,6 +481,7 @@ end
     @test_throws MethodError closefigure(1:2)
     # plot
     @test_throws DimensionMismatch plot(0:10,0:11)
+    @test_throws DimensionMismatch surf([1,2],[3,4],[5,6])
     @test_throws TypeError plot(0:10,legend=0)
     @test_throws DomainError plot(0:10,plotstyle="invalid")
     @test_throws DomainError plot(0:10,pointtype="invalid")

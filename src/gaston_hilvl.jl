@@ -300,7 +300,7 @@ function surf(x::Coord,y::Coord,Z::Coord;
     valid_range(xrange)
     valid_range(yrange)
     valid_range(zrange)
-    ndims(Z) == 2 || throw(DimensionMismatch(ndims(Z), "Z must have two dimensions."))
+    ndims(Z) == 2 || throw(DimensionMismatch("Z must have two dimensions."))
     length(x) == Base.size(Z)[1] || throw(DimensionMismatch("invalid coordinates."))
     length(y) == Base.size(Z)[2]  || throw(DimensionMismatch("Invalid coordinates."))
 
