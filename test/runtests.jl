@@ -243,7 +243,7 @@ end
         theo_curve = Gaston.Curve(x2,theo_pdf,theo_cconf)
         figure(1)
         Gaston.push_figure!(1,ac,exp_curve,theo_curve)
-        figure(1)  # plot the figure
+        figure(1,redraw=false)
     end == 1
 end
 

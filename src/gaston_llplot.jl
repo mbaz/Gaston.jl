@@ -186,7 +186,6 @@ function llplot(fig::Figure)
 
     out = take!(ch_out)
     err = take!(ch_err)
-    println(out)
 
     out === :timeout && error("Gnuplot is taking too long to respond.")
     out === :eof     && error("Gnuplot crashed")
