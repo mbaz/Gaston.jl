@@ -2,11 +2,12 @@
 ##
 ## This file is distributed under the 2-clause BSD License.
 
-# Asynchronously reads the IO and buffers the read content. When end
-# marker (GastonDone) is found in the content, sends everything
+# Asynchronously reads the IO and buffers the read content. When end marker
+# (GastonDone, which is stored in `gmarker` to account for Unix/Windows
+# variability in line endings) is found in the content, sends everything
 # between start (GastonBegin) and end markers to the returned channel.
-# In case of timeout sends :timeout, in case of end of file, sends
-# :eof.
+# In case of timeout sends :timeout; in case of end of file, sends :eof.
+
 function async_reader(io::IO, timeout_sec)::Channel
     ch = Channel(1)
     task = @async begin
@@ -17,14 +18,14 @@ function async_reader(io::IO, timeout_sec)::Channel
         end
 
         buf = ""
-        while (match_done = findfirst("GastonDone\n", buf)) == nothing
+        while (match_done = findfirst(gmarker_done, buf)) == nothing
             timeout = Timer(timeout_cb, timeout_sec)
             data = String(readavailable(io))
             if data == ""; put!(ch, :eof); return; end
             timeout_sec > 0 && close(timeout) # Cancel the timeout
             buf *= data
         end
-        match_begin = findfirst("GastonBegin\n", buf)
+        match_begin = findfirst(gmarker_start, buf)
         start = (match_begin != nothing) ? last(match_begin)+1 : 1
         put!(ch, buf[start:first(match_done)-1])
     end
@@ -41,10 +42,6 @@ function llplot(fig::Figure)
     if isempty(fig.isempty)
         return
     end
-
-    # Start reading gnuplot's streams in "background"
-    ch_out = async_reader(P.gstdout, 5)
-    ch_err = async_reader(P.gstderr, 1)
 
     # In order to capture all output produced by our plotting commands
     # (error messages and figure text in case of text terminals), we
@@ -183,8 +180,13 @@ function llplot(fig::Figure)
     gnuplot_send("print \"GastonDone\"")
     gnuplot_send("printerr \"GastonDone\"")
 
+    # Start reading gnuplot's streams in "background"
+    ch_out = async_reader(P.gstdout, out_timeout)
+    ch_err = async_reader(P.gstderr, err_timeout)
+
     out = take!(ch_out)
     err = take!(ch_err)
+    println(out)
 
     out === :timeout && error("Gnuplot is taking too long to respond.")
     out === :eof     && error("Gnuplot crashed")

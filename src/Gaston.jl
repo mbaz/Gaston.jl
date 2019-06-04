@@ -2,7 +2,7 @@
 ##
 ## This file is distributed under the 2-clause BSD License.
 
-__precompile__(false)
+__precompile__(true)
 module Gaston
 
 export closefigure, closeall, figure,
@@ -13,8 +13,6 @@ import Base.show
 
 using Random
 using DelimitedFiles
-
-# before doing anything else, verify gnuplot is present on this system
 
 # load files
 include("gaston_types.jl")
@@ -27,6 +25,24 @@ include("gaston_config.jl")
 isjupyter = false
 if isdefined(Main, :IJulia) && Main.IJulia.inited
     isjupyter = true
+end
+
+## Handle Unix/Windows differences
+#
+# Define gnuplot's end-of-plot delimiter. It is different in Windows
+# than in Unix, thanks to different end-of-line conventions.
+gmarker_start = "GastonBegin\n"
+gmarker_done = "GastonDone\n"
+if Sys.iswindows()
+    gmarker_start = "GastonBegin\r\n"
+    gmarker_done = "GastonDone\r\n"
+end
+# Set different async_reader() timeouts. Windows is _much_ slower than Unix.
+out_timeout = 1;
+err_timeout = 5;
+if Sys.iswindows()
+    out_timeout = 20;
+    err_timeout = 20;
 end
 
 # initialize internal state
@@ -66,8 +82,5 @@ function __init__()
     P.gstderr = gstderr
     return nothing
 end
-
-# load initialization file
-#include("gaston_init.jl")
 
 end
