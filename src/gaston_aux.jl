@@ -244,8 +244,12 @@ function termstring(ac::AxesConf)
             ts = ts*" size "*size*" "
         end
 
-        if term ∈ term_sup_bkgnd && ac.background != ""
-            ts = ts*" background \""*ac.background*"\" "
+        if term ∈ term_sup_bkgnd
+            if ac.background != ""
+                ts = ts*" background \""*ac.background*"\" "
+            else
+                ts = ts*" background \"white\" "
+            end
         end
 
         if term ∈ term_file
