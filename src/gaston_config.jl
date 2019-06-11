@@ -90,23 +90,24 @@ function set(;reset = false, terminal=usr_term_cnf[:terminal], kw...)
         return nothing
     end
 
-    termvar = ""
+    t = terminal
+    tv = usr_term_cnf[:termvar]
     if terminal == "ijulia"
-        terminal = "svg"
-        termvar = "ijulia"
+        t = "svg"
+        tv = "ijulia"
     elseif terminal == "null"
-        terminal = "dumb"
-        termvar = "null"
+        t = "dumb"
+        tv = "null"
     elseif terminal == "pdf"
-        terminal = "pdfcairo"
+        t = "pdfcairo"
     elseif terminal == "png"
-        terminal = "pngcairo"
+        t = "pngcairo"
     elseif terminal == "eps"
-        terminal = "epscairo"
+        t = "epscairo"
     end
-    valid_terminal(terminal)
-    usr_term_cnf[:terminal] = terminal
-    usr_term_cnf[:termvar] = termvar
+    valid_terminal(t)
+    usr_term_cnf[:terminal] = t
+    usr_term_cnf[:termvar] = tv
 
     for k in keys(kw)
         k == :plotstyle && valid_plotstyle(kw[k])

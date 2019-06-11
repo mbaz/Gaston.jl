@@ -205,7 +205,6 @@ function termstring(f::Figure,print=false)
     pc = f.print
 
     term = print ? pc.print_term : usr_term_cnf[:terminal]
-    termvar = usr_term_cnf[:termvar]
 
     if term != ""
         # determine font, size, global linewidth and background
@@ -274,6 +273,8 @@ function gnuplot_send_fig_config(config)
     end
     config.palette != "" && gnuplot_send("set palette "*config.palette)
 end
+
+version() = "0.10.0-pre"
 
 # write commands to gnuplot's pipe
 function gnuplot_send(s)
