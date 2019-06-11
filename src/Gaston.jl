@@ -9,7 +9,7 @@ export closefigure, closeall, figure,
        plot, plot!, histogram, imagesc, surf,
        printfigure, set
 
-import Base.show
+import Base.show, Base.isempty
 
 using Random
 using DelimitedFiles
@@ -47,6 +47,8 @@ include("gaston_config.jl")
 
 # initialize internal state
 gnuplot_state = GnuplotState()
+
+Base.isempty(f::Figure) = (f.curves == nothing)
 
 mutable struct Pipes
     gstdin :: Pipe

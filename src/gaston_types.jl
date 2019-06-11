@@ -141,13 +141,12 @@ mutable struct Figure
     term::TermConf               # term options
     print::PrintConf             # print optinos
     axes::AxesConf               # figure configuration
-    curves::Vector{Curve}        # a vector of curves
-    isempty::Bool                # a flag to indicate if figure is empty
+    curves::Union{Nothing,Vector{Curve}} # a vector of curves
     svg::String          # SVG data returned by gnuplot (used in IJulia)
     gpcom::String        # a gnuplot command to run before plotting
 end
 # Construct an empty figure with given handle
-Figure(handle) = Figure(handle,TermConf(),PrintConf(),AxesConf(),Curve[],true,"","")
+Figure(handle) = Figure(handle,TermConf(),PrintConf(),AxesConf(),nothing,"","")
 
 # We need a global variable to keep track of gnuplot's state
 mutable struct GnuplotState

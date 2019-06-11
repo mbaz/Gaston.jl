@@ -38,7 +38,7 @@ function llplot(fig::Figure)
     global gnuplot_state
 
     # if figure has no data, stop here
-    if isempty(fig.isempty)
+    if isempty(fig)
         return
     end
 

@@ -66,23 +66,15 @@ end
 # Push configuration, axes or curves to a figure. The handle is assumed valid.
 function push_figure!(handle,args...)
     index = findfigure(handle)
+    f = gnuplot_state.figs[index]
     for c in args
-        if isa(c,AxesConf)
-            gnuplot_state.figs[index].axes = c
-        elseif isa(c, Curve)
-            if gnuplot_state.figs[index].isempty
-                gnuplot_state.figs[index].curves = [c]
-            else
-                push!(gnuplot_state.figs[index].curves,c)
-            end
-            gnuplot_state.figs[index].isempty = false
-        elseif isa(c, String)
-            gnuplot_state.figs[index].gpcom = c
-        elseif isa(c, PrintConf)
-            gnuplot_state.figs[index].print = c
-        elseif isa(c, TermConf)
-            gnuplot_state.figs[index].term = c
+        if isa(c, Curve)
+            isempty(f) ? f.curves = [c] : push!(f.curves,c)
         end
+        isa(c,AxesConf) && (f.axes = c)
+        isa(c, String) && (f.gpcom = c)
+        isa(c, PrintConf) && (f.print = c)
+        isa(c, TermConf) && (f.term = c)
     end
 end
 
@@ -152,7 +144,7 @@ function hist(s,bins)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", x::Figure)
-    if !x.isempty
+    if !isempty(x)
         if !isjupyter
             llplot(x)
             terminal = usr_term_cnf[:terminal]
