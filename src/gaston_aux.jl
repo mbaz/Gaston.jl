@@ -228,7 +228,7 @@ function termstring(f::Figure)
             to != "" && (ts *= to*" ")
         end
 
-        if term ∈ term_file && termvar != "ijulia"
+        if (term ∈ term_file) && (termvar != "ijulia")
             ts = ts*"\nset output \"$(pc.print_outputfile)\" "
         end
     end
