@@ -44,8 +44,8 @@ const TerminalDefaults = Dict("wxt" => Dict(:font       => "Sans,10",
 )
 
 # Dicts to store user-specified configuration
-default_term_config() = Dict(:terminal => isjupyter ? "svg" : "qt",
-                             :termvar => isjupyter ? "ijulia" : "",
+default_term_config() = Dict(:terminal => IsJupyter ? "svg" : "qt",
+                             :termvar => IsJupyter ? "ijulia" : "",
                              :font => "",
                              :size => "",
                              :glinewidth => "",
@@ -74,11 +74,6 @@ default_print_config() = Dict(:print_term => "pdfcairo",
                               :print_linewidth => "",
                               :print_background => "",
                               :print_outputfile => "")
-
-usr_term_cnf = default_term_config()
-usr_axes_cnf = default_axes_config()
-usr_curve_cnf = default_curve_config()
-usr_print_cnf = default_print_config()
 
 # Set any of Gaston's configuration variables
 function set(;reset = false, terminal=usr_term_cnf[:terminal], kw...)

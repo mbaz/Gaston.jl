@@ -2,7 +2,7 @@
 ##
 ## This file is distributed under the 2-clause BSD License.
 
-__precompile__(true)
+__precompile__(false)
 module Gaston
 
 export closefigure, closeall, figure,
@@ -13,12 +13,6 @@ import Base.show, Base.isempty
 
 using Random
 using DelimitedFiles
-
-# determine if running in an IJulia notebook
-isjupyter = false
-if isdefined(Main, :IJulia) && Main.IJulia.inited
-    isjupyter = true
-end
 
 ## Handle Unix/Windows differences
 #
@@ -45,10 +39,11 @@ include("gaston_llplot.jl")
 include("gaston_hilvl.jl")
 include("gaston_config.jl")
 
+# define function to determine if function is empty
+Base.isempty(f::Figure) = (f.curves == nothing)
+
 # initialize internal state
 gnuplot_state = GnuplotState()
-
-Base.isempty(f::Figure) = (f.curves == nothing)
 
 mutable struct Pipes
     gstdin :: Pipe
@@ -61,6 +56,7 @@ const P = Pipes()
 
 # initialize gnuplot
 function __init__()
+    global P
     try
         success(`gnuplot --version`)
     catch
@@ -79,6 +75,17 @@ function __init__()
     P.gstdin = gstdin
     P.gstdout = gstdout
     P.gstderr = gstderr
+
+    global IsJupyter = false
+    if isdefined(Main, :IJulia) && Main.IJulia.inited
+        global IsJupyter = true
+    end
+
+    global usr_term_cnf = default_term_config()
+    global usr_axes_cnf = default_axes_config()
+    global usr_curve_cnf = default_curve_config()
+    global usr_print_cnf = default_print_config()
+
     return nothing
 end
 

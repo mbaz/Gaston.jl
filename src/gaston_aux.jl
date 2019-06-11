@@ -144,15 +144,13 @@ function hist(s,bins)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", x::Figure)
-    if !isempty(x)
-        if !isjupyter
-            llplot(x)
-            terminal = usr_term_cnf[:terminal]
-            termvar = usr_term_cnf[:termvar]
-            if (terminal ∈ term_text) || (termvar == "ijulia")
-                write(io, x.svg)
-            end
-        end
+    isempty(x) && return nothing
+    IsJupyter && return nothing
+    llplot(x)
+    terminal = usr_term_cnf[:terminal]
+    termvar = usr_term_cnf[:termvar]
+    if (terminal ∈ term_text) || (termvar == "ijulia")
+        write(io, x.svg)
     end
     return nothing
 end
