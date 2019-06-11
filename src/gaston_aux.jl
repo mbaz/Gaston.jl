@@ -9,7 +9,7 @@
 function closesinglefigure(handle::Int)
     global gnuplot_state
 
-    term = gaston_config.terminal
+    term = usr_term_cnf[:terminal]
     term ∈ term_window && gnuplot_send("set term $term $handle close")
 
     # remove figure from global state
@@ -68,7 +68,7 @@ function push_figure!(handle,args...)
     index = findfigure(handle)
     for c in args
         if isa(c,AxesConf)
-            gnuplot_state.figs[index].conf = c
+            gnuplot_state.figs[index].axes = c
         elseif isa(c, Curve)
             if gnuplot_state.figs[index].isempty
                 gnuplot_state.figs[index].curves = [c]
@@ -78,6 +78,10 @@ function push_figure!(handle,args...)
             gnuplot_state.figs[index].isempty = false
         elseif isa(c, String)
             gnuplot_state.figs[index].gpcom = c
+        elseif isa(c, PrintConf)
+            gnuplot_state.figs[index].print = c
+        elseif isa(c, TermConf)
+            gnuplot_state.figs[index].term = c
         end
     end
 end
@@ -151,8 +155,9 @@ function Base.show(io::IO, ::MIME"text/plain", x::Figure)
     if !x.isempty
         if !isjupyter
             llplot(x)
-            term = gaston_config.terminal
-            if term == "dumb" || term == "sixelgd" || term == "ijulia"
+            terminal = usr_term_cnf[:terminal]
+            termvar = usr_term_cnf[:termvar]
+            if (terminal ∈ term_text) || (termvar == "ijulia")
                 write(io, x.svg)
             end
         end
@@ -202,64 +207,38 @@ function linestr(curves::Vector{Curve}, cmd, file)
 end
 
 # Build a "set term" string appropriate for the terminal type
-function termstring(ac::AxesConf)
+function termstring(f::Figure)
     global gnuplot_state
-    global gaston_config
 
-    # define terminal name
-    term = ""
-    if !ac.print_flag
-        term = gaston_config.terminal
-        term == "null" && (term = "dumb")
-    else
-        term = ac.print_term
-        term == "pdf" && (term = "pdfcairo")
-        term == "eps" && (term = "epscairo")
-        term == "png" && (term = "pngcairo")
-    end
+    ac = f.axes
+    tc = f.term
+    pc = f.print
 
-    ts = ""
+    term = pc.print_flag ?  pc.print_term : term = usr_term_cnf[:terminal]
+    termvar = usr_term_cnf[:termvar]
 
     if term != ""
-        if term == "ijulia"
-            ts = "set term svg "
-        else
-            ts = "set term $term "
-        end
+        # determine font, size, global linewidth and background
+        font = pc.print_flag ? pc.print_font : tc.font
+        size = pc.print_flag ? pc.print_size : tc.size
+        background = pc.print_flag ? pc.print_background : tc.background
+        linewidth = pc.print_flag ? pc.print_linewidth : tc.linewidth
 
+        # build term string
+        ts = "set term $term "
         term ∈ term_window && (ts = ts*string(gnuplot_state.current)*" ")
-
-        font = ac.print_flag ? ac.print_font : ac.font
-        if term ∈ term_sup_font && font != ""
-            ts = ts*" font \""*font*"\" "
+        term ∈ term_sup_font && (ts *= " font \""*font*"\" ")
+        term ∈ term_sup_lw && (ts *= " linewidth "*linewidth*" ")
+        term ∈ term_sup_size && (ts *= " size "*size*" ")
+        term ∈ term_sup_bkgnd && (ts *= " background \""*background*"\" ")
+        if !pc.print_flag
+            to = usr_term_cnf[:termopts]
+            to != "" && (ts *= to*" ")
         end
 
-        lw = ac.print_flag ? ac.print_linewidth : ac.linewidth
-        if term ∈ term_sup_lw && lw != ""
-            ts = ts*" linewidth "*lw*" "
+        if term ∈ term_file && termvar != "ijulia"
+            ts = ts*"\nset output \"$(pc.print_outputfile)\" "
         end
-
-        size = ac.print_flag ? ac.print_size : ac.size
-        if term ∈ term_sup_size && size != ""
-            ts = ts*" size "*size*" "
-        end
-
-        if term ∈ term_sup_bkgnd
-            if ac.background != ""
-                ts = ts*" background \""*ac.background*"\" "
-            else
-                ts = ts*" background \"white\" "
-            end
-        end
-
-        if term ∈ term_file
-            # verify that user has set an output file
-            ac.print_outputfile == "" && error("Plotting to file, but no file name given. Use `set(outputfile=\"filename\")` to configure the output file name.")
-            ts = ts*"\nset output \"$(ac.print_outputfile)\" "
-        end
-
-        ac.termopts != "" && (ts = ts*ac.termopts)
-
     end
     return ts
 end

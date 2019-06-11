@@ -14,13 +14,6 @@ import Base.show
 using Random
 using DelimitedFiles
 
-# load files
-include("gaston_types.jl")
-include("gaston_aux.jl")
-include("gaston_llplot.jl")
-include("gaston_hilvl.jl")
-include("gaston_config.jl")
-
 # determine if running in an IJulia notebook
 isjupyter = false
 if isdefined(Main, :IJulia) && Main.IJulia.inited
@@ -45,11 +38,15 @@ if Sys.iswindows()
     err_timeout = 20;
 end
 
+# load files
+include("gaston_types.jl")
+include("gaston_aux.jl")
+include("gaston_llplot.jl")
+include("gaston_hilvl.jl")
+include("gaston_config.jl")
+
 # initialize internal state
 gnuplot_state = GnuplotState()
-
-# initialize default configuration
-gaston_config = GastonConfig()
 
 mutable struct Pipes
     gstdin :: Pipe
