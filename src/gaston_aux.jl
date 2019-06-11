@@ -9,7 +9,7 @@
 function closesinglefigure(handle::Int)
     global gnuplot_state
 
-    term = usr_term_cnf[:terminal]
+    term = config[:term][:terminal]
     term ∈ term_window && gnuplot_send("set term $term $handle close")
 
     # remove figure from global state
@@ -147,10 +147,10 @@ function Base.show(io::IO, ::MIME"text/plain", x::Figure)
     isempty(x) && return nothing
     IsJupyter && return nothing
     llplot(x)
-    terminal = usr_term_cnf[:terminal]
-    termvar = usr_term_cnf[:termvar]
-    if (terminal ∈ term_text) || (termvar == "ijulia")
-        write(io, x.svg)
+    if config[:mode] != "null"
+        if (config[:term][:terminal] ∈ term_text) || (config[:mode] == "ijulia")
+            write(io, x.svg)
+        end
     end
     return nothing
 end
@@ -204,7 +204,7 @@ function termstring(f::Figure,print=false)
     tc = f.term
     pc = f.print
 
-    term = print ? pc.print_term : usr_term_cnf[:terminal]
+    term = print ? pc.print_term : config[:term][:terminal]
 
     if term != ""
         # determine font, size, global linewidth and background
@@ -220,7 +220,7 @@ function termstring(f::Figure,print=false)
         term ∈ term_sup_lw && (ts *= " linewidth "*linewidth*" ")
         term ∈ term_sup_size && (ts *= " size "*size*" ")
         term ∈ term_sup_bkgnd && (ts *= " background \""*background*"\" ")
-        print || (ts *= usr_term_cnf[:termopts]*" ")
+        print || (ts *= config[:term][:termopts]*" ")
         print && (ts = ts*"\nset output \"$(pc.print_outputfile)\" ")
     end
     return ts

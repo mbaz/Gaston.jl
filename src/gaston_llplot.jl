@@ -201,9 +201,7 @@ function llplot(fig::Figure;print=false)
 
     # if there was no error and text terminal, read all data from stdout
     if err == ""
-        terminal = usr_term_cnf[:terminal]
-        termvar = usr_term_cnf[:termvar]
-        if (terminal ∈ term_text) || (termvar == "ijulia")
+        if (config[:term][:terminal] ∈ term_text) || (config[:mode] == "ijulia")
             fig.svg = out
         end
     end

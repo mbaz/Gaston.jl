@@ -44,70 +44,58 @@ const TerminalDefaults = Dict("wxt" => Dict(:font       => "Sans,10",
 )
 
 # Dicts to store user-specified configuration
-default_term_config() = Dict(:terminal => IsJupyter ? "svg" : "qt",
-                             :termvar => IsJupyter ? "ijulia" : "",
-                             :font => "",
-                             :size => "",
-                             :glinewidth => "",
-                             :background => "",
-                             :termopts => "")
-default_axes_config() = Dict(:axis => "",
-                             :xrange => "",
-                             :yrange => "",
-                             :zrange => "",
-                             :fill => "",
-                             :grid => "",
-                             :xzeroaxis => "",
-                             :yzeroaxis => "",
-                             :zzeroaxis => "",
-                             :keyoptions => "",
-                             :palette => "")
-default_curve_config() = Dict(:plotstyle => "",
-                              :linecolor => "",
-                              :linewidth => "",
-                              :linestyle => "",
-                              :pointtype => "",
-                              :pointsize => "")
-default_print_config() = Dict(:print_term => "pdfcairo",
-                              :print_font => "",
-                              :print_size => "",
-                              :print_linewidth => "",
-                              :print_background => "",
-                              :print_outputfile => "")
+default_config() = Dict(:mode => IsJupyter ? "ijulia" : "normal",
+                        :term => Dict(:terminal => IsJupyter ? "svg" : "qt",
+                                      :font => "",
+                                      :size => "",
+                                      :glinewidth => "",
+                                      :background => "",
+                                      :termopts => ""),
+                        :axes => Dict(:axis => "",
+                                      :xrange => "",
+                                      :yrange => "",
+                                      :zrange => "",
+                                      :fill => "",
+                                      :grid => "",
+                                      :xzeroaxis => "",
+                                      :yzeroaxis => "",
+                                      :zzeroaxis => "",
+                                      :keyoptions => "",
+                                      :palette => ""),
+                        :curve => Dict(:plotstyle => "",
+                                       :linecolor => "",
+                                       :linewidth => "",
+                                       :linestyle => "",
+                                       :pointtype => "",
+                                       :pointsize => ""),
+                        :print => Dict(:print_term => "pdfcairo",
+                                       :print_font => "",
+                                       :print_size => "",
+                                       :print_linewidth => "",
+                                       :print_background => "",
+                                       :print_outputfile => ""))
 
 # Set any of Gaston's configuration variables
-function set(;reset = false, terminal=usr_term_cnf[:terminal], kw...)
-    global usr_term_cnf
-    global usr_axes_cnf
-    global usr_curve_cnf
-    global usr_print_cnf
+function set(;reset = false, terminal=config[:term][:terminal],
+             mode = config[:mode], kw...)
+    global config
 
     if reset
-        usr_term_cnf = default_term_config()
-        usr_axes_cnf = default_axes_config()
-        usr_curve_cnf = default_curve_config()
-        usr_print_cnf = default_print_config()
+        config = default_config()
         return nothing
     end
 
     t = terminal
-    tv = usr_term_cnf[:termvar]
-    if terminal == "ijulia"
-        t = "svg"
-        tv = "ijulia"
-    elseif terminal == "null"
-        t = "dumb"
-        tv = "null"
-    elseif terminal == "pdf"
-        t = "pdfcairo"
-    elseif terminal == "png"
-        t = "pngcairo"
-    elseif terminal == "eps"
-        t = "epscairo"
+    mode == "ijulia" && (t = "svg")
+    mode == "null" && (t = "dumb")
+    if mode == "normal"
+        terminal == "pdf" && (t = "pdfcairo")
+        terminal == "pnf" && (t = "pnfcairo")
+        terminal == "eps" && (t = "epscairo")
     end
     valid_terminal(t)
-    usr_term_cnf[:terminal] = t
-    usr_term_cnf[:termvar] = tv
+    config[:term][:terminal] = t
+    config[:mode] = mode
 
     for k in keys(kw)
         k == :plotstyle && valid_plotstyle(kw[k])
@@ -118,10 +106,10 @@ function set(;reset = false, terminal=usr_term_cnf[:terminal], kw...)
         k == :yrange && valid_range(kw[k])
         k == :zrange && valid_range(kw[k])
         flag = true
-        haskey(usr_term_cnf, k) && (flag=false;usr_term_cnf[k] = kw[k])
-        haskey(usr_axes_cnf, k) && (flag=false;usr_axes_cnf[k] = kw[k])
-        haskey(usr_curve_cnf, k) && (flag=false;usr_curve_cnf[k] = kw[k])
-        haskey(usr_print_cnf, k) && (flag=false;usr_print_cnf[k] = kw[k])
+        for i in [:term, :axes, :curve, :print]
+            c = config[i]
+            haskey(c, k) && (flag=false; c[k] = kw[k])
+        end
         flag && throw(MethodError(set, "invalid setting"))
     end
 

@@ -82,23 +82,23 @@ function plot(x::Coord,y::Coord;
              title::String      = "",
              xlabel::String     = "",
              ylabel::String     = "",
-             plotstyle::String  = usr_curve_cnf[:plotstyle],
-             linecolor::String  = usr_curve_cnf[:linecolor],
-             linewidth::String  = usr_curve_cnf[:linewidth],
-             linestyle::String  = usr_curve_cnf[:linestyle],
-             pointtype::String  = usr_curve_cnf[:pointtype],
-             pointsize::String  = usr_curve_cnf[:pointsize],
-             fill::String       = usr_axes_cnf[:fill],
-             grid::String       = usr_axes_cnf[:grid],
-             keyoptions::String = usr_axes_cnf[:keyoptions],
-             axis::String       = usr_axes_cnf[:axis],
-             xrange::String     = usr_axes_cnf[:xrange],
-             yrange::String     = usr_axes_cnf[:yrange],
-             xzeroaxis::String  = usr_axes_cnf[:xzeroaxis],
-             yzeroaxis::String  = usr_axes_cnf[:yzeroaxis],
-             font::String       = usr_term_cnf[:font],
-             size::String       = usr_term_cnf[:size],
-             background::String = usr_term_cnf[:background],
+             plotstyle::String  = config[:curve][:plotstyle],
+             linecolor::String  = config[:curve][:linecolor],
+             linewidth::String  = config[:curve][:linewidth],
+             linestyle::String  = config[:curve][:linestyle],
+             pointtype::String  = config[:curve][:pointtype],
+             pointsize::String  = config[:curve][:pointsize],
+             fill::String       = config[:axes][:fill],
+             grid::String       = config[:axes][:grid],
+             keyoptions::String = config[:axes][:keyoptions],
+             axis::String       = config[:axes][:axis],
+             xrange::String     = config[:axes][:xrange],
+             yrange::String     = config[:axes][:yrange],
+             xzeroaxis::String  = config[:axes][:xzeroaxis],
+             yzeroaxis::String  = config[:axes][:yzeroaxis],
+             font::String       = config[:term][:font],
+             size::String       = config[:term][:size],
+             background::String = config[:term][:background],
              financial::FinancialCoords = FinancialCoords(),
              err::ErrorCoords   = ErrorCoords(),
              handle::Union{Int,Nothing} = gnuplot_state.current,
@@ -113,7 +113,7 @@ function plot(x::Coord,y::Coord;
     valid_range(yrange)
     valid_coords(x,y,err=err,fin=financial)
 
-    term = usr_term_cnf[:terminal]
+    term = config[:term][:terminal]
     font == "" && (font = TerminalDefaults[term][:font])
     size == "" && (size = TerminalDefaults[term][:size])
     linewidth == "" && (linewidth = "1")
@@ -152,12 +152,12 @@ plot(c::Vector{<:Complex};args...) = plot(real(c),imag(c);args...)
 # Add a curve to an existing figure
 function plot!(x::Coord,y::Coord;
              legend::String    = "",
-             plotstyle::String = usr_curve_cnf[:plotstyle],
-             linecolor::String = usr_curve_cnf[:linecolor],
-             linewidth::String = usr_curve_cnf[:linewidth],
-             linestyle::String = usr_curve_cnf[:linestyle],
-             pointtype::String = usr_curve_cnf[:pointtype],
-             pointsize::String = usr_curve_cnf[:pointsize],
+             plotstyle::String = config[:curve][:plotstyle],
+             linecolor::String = config[:curve][:linecolor],
+             linewidth::String = config[:curve][:linewidth],
+             linestyle::String = config[:curve][:linestyle],
+             pointtype::String = config[:curve][:pointtype],
+             pointsize::String = config[:curve][:pointsize],
              financial::FinancialCoords = FinancialCoords(),
              err::ErrorCoords  = ErrorCoords(),
              handle::Union{Int,Nothing} = gnuplot_state.current
@@ -187,15 +187,15 @@ function histogram(data::Coord;
                    title::String      = "",
                    xlabel::String     = "",
                    ylabel::String     = "",
-                   linecolor::String  = usr_curve_cnf[:linecolor],
-                   linewidth::String  = usr_curve_cnf[:linewidth],
-                   fill::String       = usr_axes_cnf[:fill],
-                   keyoptions::String = usr_axes_cnf[:keyoptions],
-                   xrange::String     = usr_axes_cnf[:xrange],
-                   yrange::String     = usr_axes_cnf[:yrange],
-                   font::String       = usr_term_cnf[:font],
-                   size::String       = usr_term_cnf[:size],
-                   background::String = usr_term_cnf[:background],
+                   linecolor::String  = config[:curve][:linecolor],
+                   linewidth::String  = config[:curve][:linewidth],
+                   fill::String       = config[:axes][:fill],
+                   keyoptions::String = config[:axes][:keyoptions],
+                   xrange::String     = config[:axes][:xrange],
+                   yrange::String     = config[:axes][:yrange],
+                   font::String       = config[:term][:font],
+                   size::String       = config[:term][:size],
+                   background::String = config[:term][:background],
                    handle::Union{Int,Nothing} = gnuplot_state.current,
                    gpcom::String      = ""
                    )
@@ -217,7 +217,7 @@ function histogram(data::Coord;
                   keyoptions = keyoptions,
                   xrange = xrange,
                   yrange = yrange)
-    term = usr_term_cnf[:terminal]
+    term = config[:term][:terminal]
     font == "" && (font = TerminalDefaults[term][:font])
     size == "" && (size = TerminalDefaults[term][:size])
     background == "" && (background = TerminalDefaults[term][:background])
@@ -240,10 +240,10 @@ function imagesc(x::Coord,y::Coord,Z::Coord;
                  xlabel::String    = "",
                  ylabel::String    = "",
                  clim::Vector{Int} = [0,255],
-                 xrange::String    = usr_axes_cnf[:xrange],
-                 yrange::String    = usr_axes_cnf[:yrange],
-                 font::String      = usr_term_cnf[:font],
-                 size::String      = usr_term_cnf[:size],
+                 xrange::String    = config[:axes][:xrange],
+                 yrange::String    = config[:axes][:yrange],
+                 font::String      = config[:term][:font],
+                 size::String      = config[:term][:size],
                  gpcom::String     = "",
                  handle::Union{Int,Nothing} = gnuplot_state.current
                  )
@@ -265,7 +265,7 @@ function imagesc(x::Coord,y::Coord,Z::Coord;
                   ylabel = ylabel,
                   xrange = xrange,
                   yrange = yrange)
-    term = usr_term_cnf[:terminal]
+    term = config[:term][:terminal]
     font == "" && (font = TerminalDefaults[term][:font])
     size == "" && (size = TerminalDefaults[term][:size])
     tc = TermConf(font,size,"1","white")
@@ -291,21 +291,21 @@ function surf(x::Coord,y::Coord,Z::Coord;
               xlabel::String     = "",
               ylabel::String     = "",
               zlabel::String     = "",
-              plotstyle::String  = usr_curve_cnf[:plotstyle],
-              linecolor::String  = usr_curve_cnf[:linecolor],
-              linewidth::String  = usr_curve_cnf[:linewidth],
-              pointtype::String  = usr_curve_cnf[:pointtype],
-              pointsize::String  = usr_curve_cnf[:pointsize],
-              keyoptions::String = usr_axes_cnf[:keyoptions],
-              xrange::String     = usr_axes_cnf[:xrange],
-              yrange::String     = usr_axes_cnf[:yrange],
-              zrange::String     = usr_axes_cnf[:zrange],
-              xzeroaxis::String  = usr_axes_cnf[:xzeroaxis],
-              yzeroaxis::String  = usr_axes_cnf[:yzeroaxis],
-              zzeroaxis::String  = usr_axes_cnf[:zzeroaxis],
-              font::String       = usr_term_cnf[:font],
-              size::String       = usr_term_cnf[:size],
-              background::String = usr_term_cnf[:background],
+              plotstyle::String  = config[:curve][:plotstyle],
+              linecolor::String  = config[:curve][:linecolor],
+              linewidth::String  = config[:curve][:linewidth],
+              pointtype::String  = config[:curve][:pointtype],
+              pointsize::String  = config[:curve][:pointsize],
+              keyoptions::String = config[:axes][:keyoptions],
+              xrange::String     = config[:axes][:xrange],
+              yrange::String     = config[:axes][:yrange],
+              zrange::String     = config[:axes][:zrange],
+              xzeroaxis::String  = config[:axes][:xzeroaxis],
+              yzeroaxis::String  = config[:axes][:yzeroaxis],
+              zzeroaxis::String  = config[:axes][:zzeroaxis],
+              font::String       = config[:term][:font],
+              size::String       = config[:term][:size],
+              background::String = config[:term][:background],
               handle::Union{Int,Nothing} = gnuplot_state.current,
               gpcom::String      = ""
               )
@@ -334,7 +334,7 @@ function surf(x::Coord,y::Coord,Z::Coord;
                   xzeroaxis = xzeroaxis,
                   yzeroaxis = yzeroaxis,
                   zzeroaxis = zzeroaxis)
-    term = usr_term_cnf[:terminal]
+    term = config[:term][:terminal]
     font == "" && (font = TerminalDefaults[term][:font])
     size == "" && (size = TerminalDefaults[term][:size])
     background == "" && (background = TerminalDefaults[term][:background])
@@ -354,12 +354,12 @@ surf(Z::Matrix;args...) = surf(1:size(Z)[2],1:size(Z)[1],Z;args...)
 
 # print a figure to a file
 function printfigure(;handle::Union{Int,Nothing} = gnuplot_state.current,
-                     term::String       = usr_print_cnf[:print_term],
-                     font::String       = usr_print_cnf[:print_font],
-                     size::String       = usr_print_cnf[:print_size],
-                     linewidth::String  = usr_print_cnf[:print_linewidth],
-                     background::String = usr_print_cnf[:print_background],
-                     outputfile::String = usr_print_cnf[:print_outputfile]
+                     term::String       = config[:print][:print_term],
+                     font::String       = config[:print][:print_font],
+                     size::String       = config[:print][:print_size],
+                     linewidth::String  = config[:print][:print_linewidth],
+                     background::String = config[:print][:print_background],
+                     outputfile::String = config[:print][:print_outputfile]
                     )
 
     # disable this command in IJulia

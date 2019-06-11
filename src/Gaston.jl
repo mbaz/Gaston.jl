@@ -81,10 +81,7 @@ function __init__()
         global IsJupyter = true
     end
 
-    global usr_term_cnf = default_term_config()
-    global usr_axes_cnf = default_axes_config()
-    global usr_curve_cnf = default_curve_config()
-    global usr_print_cnf = default_print_config()
+    global config = default_config()
 
     return nothing
 end

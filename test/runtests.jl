@@ -15,7 +15,7 @@ using Gaston, Test
 @testset "Figure and set commands" begin
     closeall()
     set(reset=true)
-    set(terminal="null")
+    set(mode="null")
     # figures
     @test figure() == 1
     @test figure() == 2
@@ -71,7 +71,7 @@ end
 @testset "2-D plots" begin
     closeall()
     set(reset=true)
-    set(terminal="null")
+    set(mode="null")
     @test closeall() == 0
     @test begin
         plot(1:10)
@@ -222,13 +222,13 @@ end
     end
     @test begin
         set(reset=true)
-        set(terminal="ijulia")
+        set(mode="ijulia")
         a = repr("text/plain", plot(1:10))
         a[1:35] == "<?xml version=\"1.0\" encoding=\"utf-8"
     end == true
     # build a multiple-plot figure manually
     closeall()
-    set(terminal="null")
+    set(mode="null")
     @test begin
         ac = Gaston.AxesConf(title="T")
         x1, exp_pdf = Gaston.hist(randn(10000),25)
@@ -250,7 +250,7 @@ end
 @testset "Histograms" begin
     closeall()
     set(reset=true)
-    set(terminal="null")
+    set(mode="null")
     @test begin
         histogram(rand(1000))
         Gaston.gnuplot_state.gp_error
@@ -279,7 +279,7 @@ end
 @testset "Images" begin
     closeall()
     set(reset=true)
-    set(terminal="null")
+    set(mode="null")
     z = rand(5,6)
     @test begin
         imagesc(z,
@@ -311,7 +311,7 @@ end
 @testset "3-D plots" begin
     closeall()
     set(reset=true)
-    set(terminal="null")
+    set(mode="null")
     @test begin
         surf(rand(10,10))
         Gaston.gnuplot_state.gp_error
@@ -357,7 +357,7 @@ end
 @testset "Saving plots" begin
     closeall()
     set(reset=true)
-    set(terminal="null")
+    set(mode="null")
     set(print_outputfile=tempname())
     plot(1:10)
     @test begin
@@ -395,7 +395,7 @@ end
 @testset "Linestyle tests" begin
     closeall()
     set(reset=true)
-    set(terminal="null")
+    set(mode="null")
     @test begin
         plot(1:10) # solid
         Gaston.gnuplot_state.gp_error
@@ -473,7 +473,7 @@ end
 @testset "Tests that should fail" begin
     closeall()
     set(reset=true)
-    set(terminal="null")
+    set(mode="null")
     # figure-related
     @test_throws MethodError figure("invalid")
     @test_throws MethodError figure(1.0)
@@ -520,6 +520,7 @@ end
         Gaston.gnuplot_state.gp_error
     end
     # set
+    set(mode="normal")
     @test_throws MethodError set(legend=3)
     @test_throws DomainError set(plotstyle="A")
     @test_throws MethodError set(color=3)

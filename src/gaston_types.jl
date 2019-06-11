@@ -65,12 +65,12 @@ end
 # Convenience constructor
 CurveConf(;
           legend    = "",
-          plotstyle = usr_curve_cnf[:plotstyle],
-          linecolor = usr_curve_cnf[:linecolor],
-          linewidth = usr_curve_cnf[:linewidth],
-          linestyle = usr_curve_cnf[:linestyle],
-          pointtype = usr_curve_cnf[:pointtype],
-          pointsize = usr_curve_cnf[:pointsize]
+          plotstyle = config[:curve][:plotstyle],
+          linecolor = config[:curve][:linecolor],
+          linewidth = config[:curve][:linewidth],
+          linestyle = config[:curve][:linestyle],
+          pointtype = config[:curve][:pointtype],
+          pointsize = config[:curve][:pointsize]
          ) = CurveConf(legend,plotstyle,linecolor,linewidth,linestyle,pointtype,pointsize)
 
 # A curve is a set of coordinates and a configuration
@@ -119,17 +119,17 @@ AxesConf(;
       xlabel           = "",
       ylabel           = "",
       zlabel           = "",
-      fill             = usr_axes_cnf[:fill],
-      grid             = usr_axes_cnf[:grid],
-      keyoptions       = usr_axes_cnf[:keyoptions],
-      axis             = usr_axes_cnf[:axis],
-      xrange           = usr_axes_cnf[:xrange],
-      yrange           = usr_axes_cnf[:yrange],
-      zrange           = usr_axes_cnf[:zrange],
-      xzeroaxis        = usr_axes_cnf[:xzeroaxis],
-      yzeroaxis        = usr_axes_cnf[:yzeroaxis],
-      zzeroaxis        = usr_axes_cnf[:zzeroaxis],
-      palette          = usr_axes_cnf[:palette],
+      fill             = config[:axes][:fill],
+      grid             = config[:axes][:grid],
+      keyoptions       = config[:axes][:keyoptions],
+      axis             = config[:axes][:axis],
+      xrange           = config[:axes][:xrange],
+      yrange           = config[:axes][:yrange],
+      zrange           = config[:axes][:zrange],
+      xzeroaxis        = config[:axes][:xzeroaxis],
+      yzeroaxis        = config[:axes][:yzeroaxis],
+      zzeroaxis        = config[:axes][:zzeroaxis],
+      palette          = config[:axes][:palette],
       ) = AxesConf(title,xlabel,ylabel,zlabel,fill,grid,keyoptions,axis,
                    xrange,yrange,zrange,xzeroaxis,yzeroaxis,zzeroaxis, palette)
 
