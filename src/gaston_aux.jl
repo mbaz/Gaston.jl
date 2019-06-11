@@ -199,22 +199,22 @@ function linestr(curves::Vector{Curve}, cmd, file)
 end
 
 # Build a "set term" string appropriate for the terminal type
-function termstring(f::Figure)
+function termstring(f::Figure,print=false)
     global gnuplot_state
 
     ac = f.axes
     tc = f.term
     pc = f.print
 
-    term = pc.print_flag ?  pc.print_term : term = usr_term_cnf[:terminal]
+    term = print ? pc.print_term : usr_term_cnf[:terminal]
     termvar = usr_term_cnf[:termvar]
 
     if term != ""
         # determine font, size, global linewidth and background
-        font = pc.print_flag ? pc.print_font : tc.font
-        size = pc.print_flag ? pc.print_size : tc.size
-        background = pc.print_flag ? pc.print_background : tc.background
-        linewidth = pc.print_flag ? pc.print_linewidth : tc.linewidth
+        font = print ? pc.print_font : tc.font
+        size = print ? pc.print_size : tc.size
+        background = print ? pc.print_background : tc.background
+        linewidth = print ? pc.print_linewidth : tc.linewidth
 
         # build term string
         ts = "set term $term "
@@ -223,14 +223,8 @@ function termstring(f::Figure)
         term ∈ term_sup_lw && (ts *= " linewidth "*linewidth*" ")
         term ∈ term_sup_size && (ts *= " size "*size*" ")
         term ∈ term_sup_bkgnd && (ts *= " background \""*background*"\" ")
-        if !pc.print_flag
-            to = usr_term_cnf[:termopts]
-            to != "" && (ts *= to*" ")
-        end
-
-        if (term ∈ term_file) && (termvar != "ijulia")
-            ts = ts*"\nset output \"$(pc.print_outputfile)\" "
-        end
+        print || (ts *= usr_term_cnf[:termopts]*" ")
+        print && (ts = ts*"\nset output \"$(pc.print_outputfile)\" ")
     end
     return ts
 end

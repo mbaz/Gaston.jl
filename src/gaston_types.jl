@@ -16,7 +16,6 @@ end
 TermConf() = TermConf("","","","")
 
 mutable struct PrintConf
-    print_flag::Bool
     print_term::String
     print_font::String
     print_size::String
@@ -24,7 +23,7 @@ mutable struct PrintConf
     print_background::String
     print_outputfile::String
 end
-PrintConf() = PrintConf(false,"","","","","","")
+PrintConf() = PrintConf("","","","","","")
 
 ## Coordinates
 Coord = Union{AbstractRange{T},Array{T}} where T <: Real

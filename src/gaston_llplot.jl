@@ -34,7 +34,7 @@ function async_reader(io::IO, timeout_sec)::Channel
 end
 
 # llplot() is our workhorse plotting function
-function llplot(fig::Figure)
+function llplot(fig::Figure;print=false)
     global gnuplot_state
 
     # if figure has no data, stop here
@@ -53,13 +53,12 @@ function llplot(fig::Figure)
     gnuplot_send("printerr \"GastonBegin\"")
 
     # Build terminal setup string and send it to gnuplot
-    gnuplot_send(termstring(fig))
+    gnuplot_send(termstring(fig,print))
 
     # Datafile filename. This is where we store the coordinates to plot.
     # This file is then read by gnuplot to do the actual plotting. One file
     # per figure handle is used; this avoids polutting /tmp with too many files.
-    filename = joinpath(tempdir(),
-                        "gaston-$(tmpprefix)-$(fig.handle)")
+    filename = joinpath(tempdir(),"gaston-$(tmpprefix)-$(fig.handle)")
     f = open(filename,"w")
 
     # Send appropriate coordinates and data to gnuplot, depending on

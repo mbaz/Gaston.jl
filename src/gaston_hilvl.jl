@@ -382,14 +382,10 @@ function printfigure(;handle::Union{Int,Nothing} = gnuplot_state.current,
     background == "" && (background = TerminalDefaults[term][:background])
 
     fig = gnuplot_state.figs[h]
-    pc = PrintConf(true,term,font,size,linewidth,background,outputfile)
+    pc = PrintConf(term,font,size,linewidth,background,outputfile)
     fig.print = pc
-    llplot(fig)
-    # gnuplot is weird: this command is needed to close the output file
-    gnuplot_send("set output")
-
-    # unset print_flag
-    fig.print.print_flag = false
+    llplot(fig,print=true)
+    gnuplot_send("set output") # gnuplot needs this to close the output file
 
     return nothing
 end
