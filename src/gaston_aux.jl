@@ -170,10 +170,13 @@ function linestr_single(conf::CurveConf)
     conf.linewidth != "" && (s = s*"lw "*conf.linewidth*" ")
     conf.linestyle != "" && (s = s*"dt '"*conf.linestyle*"' ")
     # some plotstyles don't allow point specifiers
-    cp = conf.plotstyle
-    if cp ∈ ps_sup_points
+    if conf.plotstyle ∈ ps_sup_points
         if conf.pointtype != ""
-            s = s*"pt "*pointtype(conf.pointtype)*" "
+            if conf.pointtype ∈ supported_pointtypes
+                s = s*"pt "*pointtype(conf.pointtype)*" "
+            else
+                s = s*"pt \""*conf.pointtype*"\" "
+            end
             conf.pointsize != "" && (s = s*"ps "*conf.pointsize*" ")
         end
     end

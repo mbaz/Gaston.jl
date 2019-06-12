@@ -180,6 +180,8 @@ plot!(x::Real,y::Real;args...) = plot!([x],[y];args...)
 plot!(c::Complex;args...) = plot!(real(c),imag(c);args...)
 plot!(c::Vector{<:Complex};args...) = plot!(real(c),imag(c);args...)
 
+scatter(x,y;args...) = plot(x,y,plotstyle="points";args...)
+
 function histogram(data::Coord;
                    bins::Int          = 10,
                    norm::Real         = 1.0,

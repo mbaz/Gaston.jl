@@ -180,7 +180,8 @@ function valid_3Dplotstyle(s)
 end
 function valid_pointtype(s)
     s ∈ supported_pointtypes && return true
-    throw(DomainError(s,"supported point types are: $supported_pointtypes"))
+    length(s) == 1 && return true
+    throw(DomainError(s,"supported point types are: $supported_pointtypes or single-character UTF-8 strings"))
 end
 function valid_axis(s)
     s ∈ supported_axis && return true
