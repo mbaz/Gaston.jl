@@ -6,7 +6,7 @@ __precompile__(false)
 module Gaston
 
 export closefigure, closeall, figure,
-       plot, plot!, histogram, imagesc, surf,
+       plot, plot!, scatter, histogram, imagesc, surf,
        printfigure, set
 
 import Base.show, Base.isempty
