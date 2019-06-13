@@ -324,6 +324,7 @@ function surf(x::Coord,y::Coord,Z::Coord;
               xzeroaxis::String  = config[:axes][:xzeroaxis],
               yzeroaxis::String  = config[:axes][:yzeroaxis],
               zzeroaxis::String  = config[:axes][:zzeroaxis],
+              palette::String    = config[:axes][:palette],
               font::String       = config[:term][:font],
               size::String       = config[:term][:size],
               background::String = config[:term][:background],
@@ -354,7 +355,8 @@ function surf(x::Coord,y::Coord,Z::Coord;
                   zrange = zrange,
                   xzeroaxis = xzeroaxis,
                   yzeroaxis = yzeroaxis,
-                  zzeroaxis = zzeroaxis)
+                  zzeroaxis = zzeroaxis,
+                  palette = palette)
     term = config[:term][:terminal]
     font == "" && (font = TerminalDefaults[term][:font])
     size == "" && (size = TerminalDefaults[term][:size])
