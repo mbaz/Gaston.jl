@@ -164,11 +164,13 @@ end
 # return configuration string for a single plot
 function linestr_single(conf::CurveConf)
     s = ""
-    conf.legend != "" && (s = s*" title '"*conf.legend*"' ")
-    conf.plotstyle != "" && (s = s*" with "*conf.plotstyle*" ")
-    conf.linecolor != "" && (s = s*"linecolor rgb '"*conf.linecolor*"' ")
-    conf.linewidth != "" && (s = s*"lw "*conf.linewidth*" ")
-    conf.linestyle != "" && (s = s*"dt '"*conf.linestyle*"' ")
+    conf.legend != "" && (s *= " title '"*conf.legend*"' ")
+    conf.plotstyle != "" && (s *= " with "*conf.plotstyle*" ")
+    conf.linecolor != "" && (s *= "lc rgb '"*conf.linecolor*"' ")
+    conf.linewidth != "" && (s *= "lw "*conf.linewidth*" ")
+    conf.linestyle != "" && (s *= "dt '"*conf.linestyle*"' ")
+    conf.fillstyle != "" && (s *= "fs \""*conf.fillstyle*"\" ")
+    conf.fillcolor != "" && (s *= "fc \""*conf.fillcolor*"\" ")
     # some plotstyles don't allow point specifiers
     if conf.plotstyle ∈ ps_sup_points
         if conf.pointtype != ""
@@ -232,7 +234,7 @@ end
 # send gnuplot the current figure's configuration
 function gnuplot_send_fig_config(config)
     config.title != "" && gnuplot_send("set title '"*config.title*"' ")
-    config.fill != "" && gnuplot_send("set style fill "*config.fill)
+    config.fillstyle != "" && gnuplot_send("set style fill "*config.fillstyle)
     if config.grid != ""
         if config.grid == "on"
             gnuplot_send("set grid")

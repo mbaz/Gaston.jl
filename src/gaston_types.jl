@@ -53,25 +53,17 @@ ErrorCoords(l::Vector,h::Vector) = ErrorCoords(true,l,h)
 
 ## Curves
 # Curve configuration
-struct CurveConf
-    legend::String
-    plotstyle::String
-    linecolor::String       # run 'show colornames' inside gnuplot
-    linewidth::String
-    linestyle::String
-    pointtype::String
-    pointsize::String
+Base.@kwdef struct CurveConf
+    legend::String    = ""
+    plotstyle::String = config[:curve][:plotstyle]
+    linecolor::String = config[:curve][:linecolor]
+    linewidth::String = "1"
+    linestyle::String = config[:curve][:linestyle]
+    pointtype::String = config[:curve][:pointtype]
+    pointsize::String = config[:curve][:pointsize]
+    fillstyle::String = ""
+    fillcolor::String = config[:curve][:pointsize]
 end
-# Convenience constructor
-CurveConf(;
-          legend    = "",
-          plotstyle = config[:curve][:plotstyle],
-          linecolor = config[:curve][:linecolor],
-          linewidth = config[:curve][:linewidth],
-          linestyle = config[:curve][:linestyle],
-          pointtype = config[:curve][:pointtype],
-          pointsize = config[:curve][:pointsize]
-         ) = CurveConf(legend,plotstyle,linecolor,linewidth,linestyle,pointtype,pointsize)
 
 # A curve is a set of coordinates and a configuration
 mutable struct Curve
@@ -97,41 +89,23 @@ Curve(x,y,Z) = Curve(x,y,Z,FinancialCoords(),ErrorCoords(),CurveConf())
 Curve(x,y,Z,c::CurveConf) = Curve(x,y,Z,FinancialCoords(),ErrorCoords(),c)
 
 # Storage for axes configuration
-mutable struct AxesConf
-    title::String
-    xlabel::String
-    ylabel::String
-    zlabel::String
-    fill::String
-    grid::String
-    keyoptions::String
-    axis::String
-    xrange::String
-    yrange::String
-    zrange::String
-    xzeroaxis::String
-    yzeroaxis::String
-    zzeroaxis::String
-    palette::String
+Base.@kwdef mutable struct AxesConf
+    title::String      = ""
+    xlabel::String     = ""
+    ylabel::String     = ""
+    zlabel::String     = ""
+    fillstyle::String  = config[:axes][:fillstyle]
+    grid::String       = config[:axes][:grid]
+    keyoptions::String = config[:axes][:keyoptions]
+    axis::String       = config[:axes][:axis]
+    xrange::String     = config[:axes][:xrange]
+    yrange::String     = config[:axes][:yrange]
+    zrange::String     = config[:axes][:zrange]
+    xzeroaxis::String  = config[:axes][:xzeroaxis]
+    yzeroaxis::String  = config[:axes][:yzeroaxis]
+    zzeroaxis::String  = config[:axes][:zzeroaxis]
+    palette::String    = config[:axes][:palette]
 end
-AxesConf(;
-      title            = "",
-      xlabel           = "",
-      ylabel           = "",
-      zlabel           = "",
-      fill             = config[:axes][:fill],
-      grid             = config[:axes][:grid],
-      keyoptions       = config[:axes][:keyoptions],
-      axis             = config[:axes][:axis],
-      xrange           = config[:axes][:xrange],
-      yrange           = config[:axes][:yrange],
-      zrange           = config[:axes][:zrange],
-      xzeroaxis        = config[:axes][:xzeroaxis],
-      yzeroaxis        = config[:axes][:yzeroaxis],
-      zzeroaxis        = config[:axes][:zzeroaxis],
-      palette          = config[:axes][:palette],
-      ) = AxesConf(title,xlabel,ylabel,zlabel,fill,grid,keyoptions,axis,
-                   xrange,yrange,zrange,xzeroaxis,yzeroaxis,zzeroaxis, palette)
 
 # At the top level, a figure is a handle, an axes configuration, and a
 # set of curves.

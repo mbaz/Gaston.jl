@@ -84,11 +84,12 @@ function plot(x::Coord,y::Coord;
              ylabel::String     = "",
              plotstyle::String  = config[:curve][:plotstyle],
              linecolor::String  = config[:curve][:linecolor],
-             linewidth::String  = config[:curve][:linewidth],
+             linewidth::String  = "1",
              linestyle::String  = config[:curve][:linestyle],
              pointtype::String  = config[:curve][:pointtype],
              pointsize::String  = config[:curve][:pointsize],
-             fill::String       = config[:axes][:fill],
+             fillcolor::String  = config[:curve][:fillcolor],
+             fillstyle::String  = config[:axes][:fillstyle],
              grid::String       = config[:axes][:grid],
              keyoptions::String = config[:axes][:keyoptions],
              axis::String       = config[:axes][:axis],
@@ -128,7 +129,6 @@ function plot(x::Coord,y::Coord;
     ac = AxesConf(title = title,
                   xlabel = xlabel,
                   ylabel = ylabel,
-                  fill = fill,
                   grid = grid,
                   keyoptions = keyoptions,
                   axis = axis,
@@ -137,7 +137,8 @@ function plot(x::Coord,y::Coord;
                   xzeroaxis = xzeroaxis,
                   yzeroaxis = yzeroaxis,
                  )
-    cc = CurveConf(legend,plotstyle,linecolor,linewidth,linestyle,pointtype,pointsize)
+    cc = CurveConf(legend,plotstyle,linecolor,linewidth,
+                   linestyle,pointtype,pointsize,fillstyle,fillcolor)
     c = Curve(x,y,financial,err,cc)
     push_figure!(handle,tc,ac,c,gpcom)
 
@@ -154,10 +155,12 @@ function plot!(x::Coord,y::Coord;
              legend::String    = "",
              plotstyle::String = config[:curve][:plotstyle],
              linecolor::String = config[:curve][:linecolor],
-             linewidth::String = config[:curve][:linewidth],
+             linewidth::String = "1",
              linestyle::String = config[:curve][:linestyle],
              pointtype::String = config[:curve][:pointtype],
              pointsize::String = config[:curve][:pointsize],
+             fillcolor::String  = config[:curve][:fillcolor],
+             fillstyle::String  = config[:axes][:fillstyle],
              financial::FinancialCoords = FinancialCoords(),
              err::ErrorCoords  = ErrorCoords(),
              handle::Union{Int,Nothing} = gnuplot_state.current
@@ -170,7 +173,8 @@ function plot!(x::Coord,y::Coord;
     valid_coords(x,y,err=err,fin=financial)
 
     handle = figure(handle, redraw = false)
-    cc = CurveConf(legend,plotstyle,linecolor,linewidth,linestyle,pointtype,pointsize)
+    cc = CurveConf(legend,plotstyle,linecolor,linewidth,linestyle,pointtype,
+                   pointsize,fillstyle,fillcolor)
     c = Curve(x,y,financial,err,cc)
     push_figure!(handle,c)
     return gnuplot_state.figs[findfigure(handle)]
@@ -187,17 +191,20 @@ function scatter(x::Coord,y::Coord;
 end
 
 function stem(x::Coord,y::Coord;
-              onlyimpulses=false,
-              handle::Union{Int,Nothing} = gnuplot_state.current,
-              args...)
+              onlyimpulses = config[:axes][:onlyimpulses],
+              handle::Union{Int,Nothing} = gnuplot_state.current, args...)
+    println("1")
     p = plot(x,y;handle=handle,plotstyle="impulses",
              linecolor="blue",linewidth="1.25",args...)
-    onlyimpulses || (p =  plot!(x,y;handle=handle,plotstyle="points",
-                                linecolor="blue", pointtype="ecircle",
-                                pointsize="1.5",args...))
+    println("2")
+    onlyimpulses || (p = plot!(x,y;handle=handle,plotstyle="points",
+                               linecolor="blue", pointtype="ecircle",
+                               pointsize="1.5",args...))
+    println("3")
     return p
 end
-function stem(y::Coord;handle=gnuplot_state.current,onlyimpulses=false,args...)
+function stem(y::Coord;handle=gnuplot_state.current,
+              onlyimpulses=config[:axes][:onlyimpulses],args...)
     stem(1:length(y),y;handle=handle,onlyimpulses=onlyimpulses,args...)
 end
 
@@ -209,8 +216,9 @@ function histogram(data::Coord;
                    xlabel::String     = "",
                    ylabel::String     = "",
                    linecolor::String  = config[:curve][:linecolor],
-                   linewidth::String  = config[:curve][:linewidth],
-                   fill::String       = config[:axes][:fill],
+                   linewidth::String  = "1",
+                   fillcolor::String  = config[:curve][:fillcolor],
+                   fillstyle::String  = config[:axes][:fillstyle],
                    keyoptions::String = config[:axes][:keyoptions],
                    xrange::String     = config[:axes][:xrange],
                    yrange::String     = config[:axes][:yrange],
@@ -234,7 +242,6 @@ function histogram(data::Coord;
     ac = AxesConf(title = title,
                   xlabel = xlabel,
                   ylabel = ylabel,
-                  fill = fill,
                   keyoptions = keyoptions,
                   xrange = xrange,
                   yrange = yrange)
@@ -249,7 +256,9 @@ function histogram(data::Coord;
     cc = CurveConf(legend = legend,
                    plotstyle = "boxes",
                    linecolor = linecolor,
-                   linewidth = linewidth)
+                   linewidth = linewidth,
+                   fillstyle = fillstyle,
+                   fillcolor = fillcolor)
     c = Curve(x,y,cc)
     push_figure!(handle,tc,ac,c,gpcom)
     return gnuplot_state.figs[findfigure(handle)]
@@ -314,7 +323,7 @@ function surf(x::Coord,y::Coord,Z::Coord;
               zlabel::String     = "",
               plotstyle::String  = config[:curve][:plotstyle],
               linecolor::String  = config[:curve][:linecolor],
-              linewidth::String  = config[:curve][:linewidth],
+              linewidth::String  = "1",
               pointtype::String  = config[:curve][:pointtype],
               pointsize::String  = config[:curve][:pointsize],
               keyoptions::String = config[:axes][:keyoptions],
