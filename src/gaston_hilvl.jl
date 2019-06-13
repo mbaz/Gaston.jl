@@ -172,6 +172,9 @@ function plot!(x::Coord,y::Coord;
     valid_linestyle(linestyle)
     valid_coords(x,y,err=err,fin=financial)
 
+    # verify that handle exists
+    handles =gethandles()
+    handle ∈ handles || error("Cannot append curve to non-existing handle")
     handle = figure(handle, redraw = false)
     cc = CurveConf(legend,plotstyle,linecolor,linewidth,linestyle,pointtype,
                    pointsize,fillstyle,fillcolor)
@@ -193,14 +196,10 @@ end
 function stem(x::Coord,y::Coord;
               onlyimpulses = config[:axes][:onlyimpulses],
               handle::Union{Int,Nothing} = gnuplot_state.current, args...)
-    println("1")
     p = plot(x,y;handle=handle,plotstyle="impulses",
              linecolor="blue",linewidth="1.25",args...)
-    println("2")
-    onlyimpulses || (p = plot!(x,y;handle=handle,plotstyle="points",
-                               linecolor="blue", pointtype="ecircle",
-                               pointsize="1.5",args...))
-    println("3")
+    onlyimpulses || (p = plot!(x,y;plotstyle="points", linecolor="blue",
+                               pointtype="ecircle", pointsize="1.5",args...))
     return p
 end
 function stem(y::Coord;handle=gnuplot_state.current,
