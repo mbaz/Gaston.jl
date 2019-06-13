@@ -180,7 +180,26 @@ plot!(x::Real,y::Real;args...) = plot!([x],[y];args...)
 plot!(c::Complex;args...) = plot!(real(c),imag(c);args...)
 plot!(c::Vector{<:Complex};args...) = plot!(real(c),imag(c);args...)
 
-scatter(x,y;args...) = plot(x,y,plotstyle="points";args...)
+function scatter(x::Coord,y::Coord;
+                 handle::Union{Int,Nothing} = gnuplot_state.current,
+                 args...)
+    plot(x,y,plotstyle="points",handle=handle;args...)
+end
+
+function stem(x::Coord,y::Coord;
+              onlyimpulses=false,
+              handle::Union{Int,Nothing} = gnuplot_state.current,
+              args...)
+    p = plot(x,y;handle=handle,plotstyle="impulses",
+             linecolor="blue",linewidth="1.25",args...)
+    onlyimpulses || (p =  plot!(x,y;handle=handle,plotstyle="points",
+                                linecolor="blue", pointtype="ecircle",
+                                pointsize="1.5",args...))
+    return p
+end
+function stem(y::Coord;handle=gnuplot_state.current,onlyimpulses=false,args...)
+    stem(1:length(y),y;handle=handle,onlyimpulses=onlyimpulses,args...)
+end
 
 function histogram(data::Coord;
                    bins::Int          = 10,
