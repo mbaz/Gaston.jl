@@ -216,62 +216,15 @@ function bar(x::Coord,y::Coord;
 end
 bar(y;handle=gnuplot_state.current,args...) = bar(1:length(y),y;handle=handle,args...)
 
-function histogram(data::Coord;
-                   bins::Int          = 10,
-                   norm::Real         = 1.0,
-                   legend::String     = "",
-                   title::String      = "",
-                   xlabel::String     = "",
-                   ylabel::String     = "",
-                   linecolor::String  = config[:curve][:linecolor],
-                   linewidth::String  = "1",
-                   fillcolor::String  = config[:curve][:fillcolor],
-                   fillstyle::String  = config[:axes][:fillstyle],
-                   keyoptions::String = config[:axes][:keyoptions],
-                   boxwidth::String   = config[:axes][:boxwidth],
-                   xrange::String     = config[:axes][:xrange],
-                   yrange::String     = config[:axes][:yrange],
-                   font::String       = config[:term][:font],
-                   size::String       = config[:term][:size],
-                   background::String = config[:term][:background],
-                   handle::Union{Int,Nothing} = gnuplot_state.current,
-                   gpcom::String      = ""
-                   )
+function histogram(data::Coord;bins::Int=10,norm::Real=1.0,args...)
     # validation
-    valid_range(xrange)
-    valid_range(yrange)
     bins < 1 && throw(DomainError(bins, "at least one bin is required"))
     norm < 0 && throw(DomainError(norm, "norm must be a positive number."))
 
-    # determine handle and clear figure
-    handle = figure(handle, redraw = false)
-    clearfigure(handle)
-
-    # create figure configuration
-    ac = AxesConf(title = title,
-                  xlabel = xlabel,
-                  ylabel = ylabel,
-                  keyoptions = keyoptions,
-                  boxwidth = boxwidth,
-                  xrange = xrange,
-                  yrange = yrange)
-    term = config[:term][:terminal]
-    font == "" && (font = TerminalDefaults[term][:font])
-    size == "" && (size = TerminalDefaults[term][:size])
-    background == "" && (background = TerminalDefaults[term][:background])
-    tc = TermConf(font,size,"1",background)
-
     x, y = hist(data,bins)
     y = norm*y/(step(x)*sum(y))  # make area under histogram equal to norm
-    cc = CurveConf(legend = legend,
-                   plotstyle = "boxes",
-                   linecolor = linecolor,
-                   linewidth = linewidth,
-                   fillstyle = fillstyle,
-                   fillcolor = fillcolor)
-    c = Curve(x,y,cc)
-    push_figure!(handle,tc,ac,c,gpcom)
-    return gnuplot_state.figs[findfigure(handle)]
+
+    bar(x, y; boxwidth="0.9 relative", fillstyle="solid 0.5",args...)
 end
 
 # image plots
