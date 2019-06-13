@@ -169,7 +169,7 @@ function linestr_single(conf::CurveConf)
     conf.linecolor != "" && (s *= "lc rgb '"*conf.linecolor*"' ")
     conf.linewidth != "" && (s *= "lw "*conf.linewidth*" ")
     conf.linestyle != "" && (s *= "dt '"*conf.linestyle*"' ")
-    conf.fillstyle != "" && (s *= "fs \""*conf.fillstyle*"\" ")
+    conf.fillstyle != "" && (s *= "fs "*conf.fillstyle*" ")
     conf.fillcolor != "" && (s *= "fc \""*conf.fillcolor*"\" ")
     # some plotstyles don't allow point specifiers
     if conf.plotstyle ∈ ps_sup_points

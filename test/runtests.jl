@@ -55,7 +55,7 @@ using Gaston, Test
     @test set(linewidth="3") == nothing
     @test set(pointsize="3") == nothing
     @test set(palette="gray") == nothing
-    @test set(fill="solid") == nothing
+    @test set(fillstyle="solid") == nothing
     @test set(grid="on") == nothing
     if !Sys.iswindows()
         @test set(terminal="x11") == nothing # This test does not pass in Windows
@@ -99,7 +99,7 @@ end
              linestyle = "-.-",
              pointtype = "ecircle",
              pointsize = "1.1",
-             fill = "",
+             fillstyle = "",
              keyoptions = "inside horizontal left top",
              axis ="loglog",
              xrange = "[2:3]",
@@ -222,6 +222,28 @@ end
     end
     @test begin
         set(reset=true)
+        stem(rand(10))
+        Gaston.gnuplot_state.gp_error
+    end == false
+    @test begin
+        stem(rand(10),onlyimpulses=true)
+        Gaston.gnuplot_state.gp_error
+    end == false
+    @test begin
+        scatter(rand(10),rand(10))
+        Gaston.gnuplot_state.gp_error
+    end == false
+    @test begin
+        scatter(randn(10), randn(10), pointtype="λ")
+        Gaston.gnuplot_state.gp_error
+    end == false
+    @test begin
+        t = -2:0.06:2
+        plot(t, sin.(2π*t), plotstyle="fillsteps", fillstyle="solid 0.5", title="Fillsteps plot")
+        Gaston.gnuplot_state.gp_error
+    end == false
+    @test begin
+        set(reset=true)
         set(mode="ijulia")
         a = repr("text/plain", plot(1:10))
         a[1:35] == "<?xml version=\"1.0\" encoding=\"utf-8"
@@ -264,7 +286,7 @@ end
                   ylabel = "y",
                   linecolor = "blue",
                   linewidth = "2",
-                  fill = "solid",
+                  fillstyle = "solid",
                   keyoptions = "inside horizontal left top",
                   xrange = "[*:*]",
                   yrange = "[*:*]",
@@ -519,6 +541,7 @@ end
         printfigure(term="xyz")
         Gaston.gnuplot_state.gp_error
     end
+    @test_throws ErrorException plot!(rand(10),handle=10)
     # set
     set(mode="normal")
     @test_throws MethodError set(legend=3)
