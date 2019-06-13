@@ -243,6 +243,7 @@ function gnuplot_send_fig_config(config)
         end
     end
     config.keyoptions != "" && gnuplot_send("set key "*config.keyoptions)
+    config.boxwidth != "" && gnuplot_send("set boxwidth "*config.boxwidth)
     if config.axis != ""
         config.axis == "semilogx" && gnuplot_send("set logscale x")
         config.axis == "semilogy" && gnuplot_send("set logscale y")

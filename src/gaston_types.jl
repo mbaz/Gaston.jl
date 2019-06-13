@@ -96,6 +96,7 @@ Base.@kwdef mutable struct AxesConf
     zlabel::String     = ""
     fillstyle::String  = config[:axes][:fillstyle]
     grid::String       = config[:axes][:grid]
+    boxwidth::String   = config[:axes][:boxwidth]
     keyoptions::String = config[:axes][:keyoptions]
     axis::String       = config[:axes][:axis]
     xrange::String     = config[:axes][:xrange]

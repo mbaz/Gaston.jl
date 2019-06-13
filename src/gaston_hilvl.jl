@@ -91,6 +91,7 @@ function plot(x::Coord,y::Coord;
              fillcolor::String  = config[:curve][:fillcolor],
              fillstyle::String  = config[:axes][:fillstyle],
              grid::String       = config[:axes][:grid],
+             boxwidth::String   = config[:axes][:boxwidth],
              keyoptions::String = config[:axes][:keyoptions],
              axis::String       = config[:axes][:axis],
              xrange::String     = config[:axes][:xrange],
@@ -130,6 +131,7 @@ function plot(x::Coord,y::Coord;
                   xlabel = xlabel,
                   ylabel = ylabel,
                   grid = grid,
+                  boxwidth = boxwidth,
                   keyoptions = keyoptions,
                   axis = axis,
                   xrange = xrange,
@@ -196,16 +198,23 @@ end
 function stem(x::Coord,y::Coord;
               onlyimpulses = config[:axes][:onlyimpulses],
               handle::Union{Int,Nothing} = gnuplot_state.current, args...)
-    p = plot(x,y;handle=handle,plotstyle="impulses",
-             linecolor="blue",linewidth="1.25",args...)
+    p = plot(x,y;handle=handle,
+             plotstyle="impulses", linecolor="blue",linewidth="1.25",args...)
     onlyimpulses || (p = plot!(x,y;plotstyle="points", linecolor="blue",
                                pointtype="ecircle", pointsize="1.5",args...))
     return p
 end
-function stem(y::Coord;handle=gnuplot_state.current,
+function stem(y;handle=gnuplot_state.current,
               onlyimpulses=config[:axes][:onlyimpulses],args...)
     stem(1:length(y),y;handle=handle,onlyimpulses=onlyimpulses,args...)
 end
+
+function bar(x::Coord,y::Coord;
+             handle::Union{Int,Nothing} = gnuplot_state.current, args...)
+    plot(x,y; handle=handle,
+         plotstyle="boxes",boxwidth="0.8 relative",fillstyle="solid 0.5",args...)
+end
+bar(y;handle=gnuplot_state.current,args...) = bar(1:length(y),y;handle=handle,args...)
 
 function histogram(data::Coord;
                    bins::Int          = 10,
@@ -219,6 +228,7 @@ function histogram(data::Coord;
                    fillcolor::String  = config[:curve][:fillcolor],
                    fillstyle::String  = config[:axes][:fillstyle],
                    keyoptions::String = config[:axes][:keyoptions],
+                   boxwidth::String   = config[:axes][:boxwidth],
                    xrange::String     = config[:axes][:xrange],
                    yrange::String     = config[:axes][:yrange],
                    font::String       = config[:term][:font],
@@ -242,6 +252,7 @@ function histogram(data::Coord;
                   xlabel = xlabel,
                   ylabel = ylabel,
                   keyoptions = keyoptions,
+                  boxwidth = boxwidth,
                   xrange = xrange,
                   yrange = yrange)
     term = config[:term][:terminal]
