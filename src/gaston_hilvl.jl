@@ -359,7 +359,7 @@ function printfigure(;handle::Union{Int,Nothing} = gnuplot_state.current,
 
     # disable this command in IJulia
     # TODO: see if it's desirable and/or possible to re-enable it
-    IsJupyter && error("printfigure command disabled in Jupyter notebook.")
+    IsJupyterOrJuno && error("printfigure command disabled in Jupyter notebook.")
 
     h = findfigure(handle)
     h == 0 && throw(DomainError(h, "requested figure does not exist."))

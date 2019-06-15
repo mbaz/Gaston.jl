@@ -2,7 +2,7 @@
 ##
 ## This file is distributed under the 2-clause BSD License.
 
-__precompile__(false)
+__precompile__(true)
 module Gaston
 
 export closefigure, closeall, figure,
@@ -76,9 +76,11 @@ function __init__()
     P.gstdout = gstdout
     P.gstderr = gstderr
 
-    global IsJupyter = false
+    global IsJupyterOrJuno = false
     if isdefined(Main, :IJulia) && Main.IJulia.inited
-        global IsJupyter = true
+        global IsJupyterOrJuno = true
+    elseif isdefined(Main, :Juno) && Main.Juno.isactive()
+        global IsJupyterOrJuno = true
     end
 
     global config = default_config()

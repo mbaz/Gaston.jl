@@ -145,7 +145,7 @@ end
 
 function Base.show(io::IO, ::MIME"text/plain", x::Figure)
     isempty(x) && return nothing
-    IsJupyter && return nothing
+    IsJupyterOrJuno && return nothing
     llplot(x)
     if config[:mode] != "null"
         if (config[:term][:terminal] ∈ term_text) || (config[:mode] == "ijulia")

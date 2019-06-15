@@ -44,8 +44,8 @@ const TerminalDefaults = Dict("wxt" => Dict(:font       => "Sans,10",
 )
 
 # Dicts to store user-specified configuration
-default_config() = Dict(:mode => IsJupyter ? "ijulia" : "normal",
-                        :term => Dict(:terminal => IsJupyter ? "svg" : "qt",
+default_config() = Dict(:mode => IsJupyterOrJuno ? "ijulia" : "normal",
+                        :term => Dict(:terminal => IsJupyterOrJuno ? "svg" : "qt",
                                       :font => "",
                                       :size => "",
                                       :linewidth => "",
