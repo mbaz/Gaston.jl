@@ -89,7 +89,7 @@ function plot(x::Coord,y::Coord;
              pointtype::String  = config[:curve][:pointtype],
              pointsize::String  = config[:curve][:pointsize],
              fillcolor::String  = config[:curve][:fillcolor],
-             fillstyle::String  = config[:axes][:fillstyle],
+             fillstyle::String  = config[:curve][:fillstyle],
              grid::String       = config[:axes][:grid],
              boxwidth::String   = config[:axes][:boxwidth],
              keyoptions::String = config[:axes][:keyoptions],
@@ -162,7 +162,7 @@ function plot!(x::Coord,y::Coord;
              pointtype::String = config[:curve][:pointtype],
              pointsize::String = config[:curve][:pointsize],
              fillcolor::String  = config[:curve][:fillcolor],
-             fillstyle::String  = config[:axes][:fillstyle],
+             fillstyle::String  = config[:curve][:fillstyle],
              financial::FinancialCoords = FinancialCoords(),
              err::ErrorCoords  = ErrorCoords(),
              handle::Union{Int,Nothing} = gnuplot_state.current
