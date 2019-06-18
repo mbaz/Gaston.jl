@@ -377,6 +377,20 @@ end
 surf!(x::Coord,y::Coord,f::Function;args...) = surf!(x,y,meshgrid(x,y,f);args...)
 surf!(Z::Matrix;args...) = surf!(1:size(Z)[2],1:size(Z)[1],Z;args...)
 
+function contour(x::Coord,y::Coord,Z::Coord;labels=true,args...)
+    gp = """unset key
+            set view map
+            set contour base
+            unset surface
+            set cntrlabel font ",7"
+            set cntrparam levels 10"""
+    p = surf(x,y,Z;gpcom=gp,args...)
+    labels && (p = surf!(x,y,Z;plotstyle="labels"))
+    return p
+end
+contour(x::Coord,y::Coord,f::Function;args...) = contour(x,y,meshgrid(x,y,f);args...)
+contour(Z::Matrix;args...) = contour(1:size(Z)[2],1:size(Z)[1],Z;args...)
+
 # print a figure to a file
 function printfigure(;handle::Union{Int,Nothing} = gnuplot_state.current,
                      term::String       = config[:print][:print_term],
