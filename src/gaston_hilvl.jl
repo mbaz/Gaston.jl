@@ -189,6 +189,8 @@ plot!(x::Real,y::Real;args...) = plot!([x],[y];args...)
 plot!(c::Complex;args...) = plot!(real(c),imag(c);args...)
 plot!(c::Vector{<:Complex};args...) = plot!(real(c),imag(c);args...)
 
+scatter(y::Coord,args...) = scatter(1:length(y),y,args...)
+
 function scatter(x::Coord,y::Coord;
                  handle::Union{Int,Nothing} = gnuplot_state.current,
                  args...)

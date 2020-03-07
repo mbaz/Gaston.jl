@@ -234,6 +234,10 @@ end
         Gaston.gnuplot_state.gp_error
     end == false
     @test begin
+        scatter(rand(10))
+        Gaston.gnuplot_state.gp_error
+    end == false
+    @test begin
         scatter(randn(10), randn(10), pointtype="λ")
         Gaston.gnuplot_state.gp_error
     end == false
