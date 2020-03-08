@@ -189,7 +189,7 @@ plot!(x::Real,y::Real;args...) = plot!([x],[y];args...)
 plot!(c::Complex;args...) = plot!(real(c),imag(c);args...)
 plot!(c::Vector{<:Complex};args...) = plot!(real(c),imag(c);args...)
 
-scatter(y::Coord,args...) = scatter(1:length(y),y,args...)
+scatter(y::ComplexCoord,args...) = scatter(real(y),imag(y),args...)
 
 function scatter(x::Coord,y::Coord;
                  handle::Union{Int,Nothing} = gnuplot_state.current,
@@ -311,9 +311,17 @@ function surf(x::Coord,y::Coord,Z::Coord;
     valid_range(xrange)
     valid_range(yrange)
     valid_range(zrange)
-    ndims(Z) == 2 || throw(DimensionMismatch("Z must have two dimensions."))
-    length(x) == Base.size(Z)[1] || throw(DimensionMismatch("invalid coordinates."))
-    length(y) == Base.size(Z)[2]  || throw(DimensionMismatch("Invalid coordinates."))
+    if isa(Z, Matrix)
+        length(x) == Base.size(Z)[1] ||
+            throw(DimensionMismatch("invalid X coordinates in surface plot."))
+        length(y) == Base.size(Z)[2]  ||
+            throw(DimensionMismatch("Invalid Y coordinates in surface plot."))
+    elseif isa(Z, Coord)
+        length(x) == length(y) || throw(DimensionMismatch("in a 3D scatter plot, all coordinates must have the same dimension."))
+        length(x) == length(Z) || throw(DimensionMismatch("in a 3D scatter plot, all coordinates must have the same dimension."))
+    else
+        throw(DimensionMismatch("Z must be a matrix or a vector."))
+    end
 
     handle = figure(handle, redraw = false)
     clearfigure(handle)
@@ -392,6 +400,9 @@ function contour(x::Coord,y::Coord,Z::Coord;labels=true,args...)
 end
 contour(x::Coord,y::Coord,f::Function;args...) = contour(x,y,meshgrid(x,y,f);args...)
 contour(Z::Matrix;args...) = contour(1:size(Z)[2],1:size(Z)[1],Z;args...)
+
+scatter3(x::Coord,y::Coord,Z::Coord;args...) = surf(x,y,Z,plotstyle="points";args...)
+
 
 # print a figure to a file
 function printfigure(;handle::Union{Int,Nothing} = gnuplot_state.current,

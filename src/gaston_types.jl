@@ -27,6 +27,7 @@ PrintConf() = PrintConf("","","","","","")
 
 ## Coordinates
 Coord = Union{AbstractRange{T},Array{T}} where T <: Real
+ComplexCoord = Array{T} where T <: Complex
 
 # storage for financial coordinates
 struct FinancialCoords

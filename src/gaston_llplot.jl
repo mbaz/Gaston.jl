@@ -145,21 +145,38 @@ function llplot(fig::Figure;print=false)
             fig.curves[1].conf.plotstyle != "image" &&
             fig.curves[1].conf.plotstyle != "rgbimage"
         # create data file
-        for i in fig.curves
-            # data is written to tmparr, which is then written to disk
-            tmparr = zeros(1, 3)
-            tmparr_row_index = 1
-            for row in 1:length(i.x)
-                for col in 1:length(i.y)
-                    tmparr[1,1] = i.x[row]
-                    tmparr[1,2] = i.y[col]
-                    tmparr[1,3] = i.Z[row,col]
+        if isa(fig.curves[1].Z, Matrix)  # surface plot
+            for i in fig.curves
+                # data is written to tmparr, which is then written to disk
+                tmparr = zeros(1, 3)
+                tmparr_row_index = 1
+                for row in 1:length(i.x)
+                    for col in 1:length(i.y)
+                        tmparr[1,1] = i.x[row]
+                        tmparr[1,2] = i.y[col]
+                        tmparr[1,3] = i.Z[row,col]
+                        writedlm(f,tmparr,' ')
+                    end
+                    write(f,"\n")
+                end
+                write(f,"\n\n")
+            end
+        else # scatter plot
+            for i in fig.curves
+                # data is written to tmparr, which is then written to disk
+                tmparr = zeros(1, 3)
+                tmparr_row_index = 1
+                for k in 1:length(i.x)
+                    tmparr[1,1] = i.x[k]
+                    tmparr[1,2] = i.y[k]
+                    tmparr[1,3] = i.Z[k]
                     writedlm(f,tmparr,' ')
                 end
                 write(f,"\n")
             end
             write(f,"\n\n")
         end
+
         close(f)
         # send figure configuration to gnuplot
         gnuplot_send_fig_config(fig.axes)
