@@ -234,11 +234,11 @@ end
         Gaston.gnuplot_state.gp_error
     end == false
     @test begin
-        scatter(rand(10))
+        scatter(randn(10), randn(10), pointtype="λ")
         Gaston.gnuplot_state.gp_error
     end == false
     @test begin
-        scatter(randn(10), randn(10), pointtype="λ")
+        scatter(complex.(rand(10), rand(10)))
         Gaston.gnuplot_state.gp_error
     end == false
     @test begin
@@ -378,6 +378,10 @@ end
             )
         Gaston.gnuplot_state.gp_error
     end == false
+    @test begin
+        scatter3(rand(10),rand(10),rand(10),pointtype="fcircle",linecolor="red")
+        Gaston.gnuplot_state.gp_error
+    end == false
 end
 
 @testset "Saving plots" begin
@@ -510,7 +514,9 @@ end
     @test_throws MethodError closefigure(1:2)
     # plot
     @test_throws DimensionMismatch plot(0:10,0:11)
-    @test_throws DimensionMismatch surf([1,2],[3,4],[5,6])
+    @test_throws DimensionMismatch surf([1,2],[3,4],[5,6,7])
+    @test_throws DimensionMismatch surf([1,2,3],[3,4],[5,6,7])
+    @test_throws MethodError surf([1,2,3],[3,4],"a")
     @test_throws TypeError plot(0:10,legend=0)
     @test_throws DomainError plot(0:10,plotstyle="invalid")
     @test_throws DomainError plot(0:10,pointtype="invalid")
