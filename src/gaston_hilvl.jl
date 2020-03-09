@@ -152,6 +152,123 @@ plot(x::Real,y::Real;args...) = plot([x],[y];args...)  # plot a single point
 plot(c::Complex;args...) = plot(real(c),imag(c);args...)
 plot(c::ComplexCoord;args...) = plot(real(c),imag(c);args...)
 
+# plot a matrix
+plot(M::Matrix;args...) = plot(1:size(M)[1],M;args...)
+
+function plot(x::Coord,M::Matrix;
+             legend     = "",
+             title      = "",
+             xlabel     = "",
+             ylabel     = "",
+             plotstyle  = config[:curve][:plotstyle],
+             linecolor  = config[:curve][:linecolor],
+             linewidth  = "1",
+             linestyle  = config[:curve][:linestyle],
+             pointtype  = config[:curve][:pointtype],
+             pointsize  = config[:curve][:pointsize],
+             fillcolor  = config[:curve][:fillcolor],
+             fillstyle  = config[:curve][:fillstyle],
+             grid       = config[:axes][:grid],
+             boxwidth   = config[:axes][:boxwidth],
+             keyoptions = config[:axes][:keyoptions],
+             axis       = config[:axes][:axis],
+             xrange     = config[:axes][:xrange],
+             yrange     = config[:axes][:yrange],
+             xzeroaxis  = config[:axes][:xzeroaxis],
+             yzeroaxis  = config[:axes][:yzeroaxis],
+             font       = config[:term][:font],
+             size       = config[:term][:size],
+             background = config[:term][:background],
+             financial  = FinancialCoords(),
+             err        = ErrorCoords(),
+             handle::Union{Int,Nothing} = gnuplot_state.current,
+             gpcom::String      = ""
+             )
+    legend isa Vector{String} && (lg = legend)
+    legend isa String && (lg = [legend])
+    lgn = length(lg)
+    plotstyle isa Vector{String} && (ps = plotstyle)
+    plotstyle isa String && (ps = [plotstyle])
+    psn = length(ps)
+    linecolor isa Vector{String} && (lc = linecolor)
+    linecolor isa String && (lc = [linecolor])
+    lcn = length(lc)
+    linewidth isa Vector{String} && (lw = linewidth)
+    linewidth isa String && (lw = [linewidth])
+    lwn = length(lw)
+    linestyle isa Vector{String} && (ls = linestyle)
+    linestyle isa String && (ls = [linestyle])
+    lsn = length(ls)
+    pointtype isa Vector{String} && (pt = pointtype)
+    pointtype isa String && (pt = [pointtype])
+    ptn = length(pt)
+    pointsize isa Vector{String} && (pz = pointsize)
+    pointsize isa String && (pz = [pointsize])
+    pzn = length(pz)
+    fillcolor isa Vector{String} && (fc = fillcolor)
+    fillcolor isa String && (fc = [fillcolor])
+    fcn = length(fc)
+    fillstyle isa Vector{String} && (fs = fillstyle)
+    fillstyle isa String && (fs = [fillstyle])
+    fsn = length(fs)
+    boxwidth isa Vector{String} && (bw = boxwidth)
+    boxwidth isa String && (bw = [boxwidth])
+    bwn = length(bw)
+    financial isa Vector{FinancialCoords} && (fn = financial)
+    financial isa FinancialCoords && (fn = [financial])
+    fnn = length(fn)
+    err isa Vector{ErrorCoords} && (er = err)
+    err isa ErrorCoords && (er = [err])
+    ern = length(er)
+
+    ans = plot(x,M[:,1],
+               legend = lg[1],
+               plotstyle = ps[1],
+               linecolor = lc[1],
+               linewidth = lw[1],
+               linestyle = ls[1],
+               pointtype = pt[1],
+               pointsize = pz[1],
+               fillcolor = fc[1],
+               fillstyle = fs[1],
+               boxwidth = bw[1],
+               financial = fn[1],
+               err = er[1],
+               title = title,
+               xlabel = xlabel,
+               ylabel = ylabel,
+               grid = grid,
+               keyoptions = keyoptions,
+               axis = axis,
+               xrange = xrange,
+               yrange = yrange,
+               xzeroaxis = xzeroaxis,
+               yzeroaxis = yzeroaxis,
+               font = font,
+               size = size,
+               background = background,
+               handle = handle,
+               gpcom = gpcom
+              )
+
+    for col in 2:Base.size(M)[2]
+        ans = plot!(x,M[:,col],
+                    legend = lg[(col-1)%lgn+1],
+                    plotstyle = ps[(col-1)%psn+1],
+                    linecolor = lc[(col-1)%lcn+1],
+                    linewidth = lw[(col-1)%lwn+1],
+                    linestyle = ls[(col-1)%lsn+1],
+                    pointtype = pt[(col-1)%ptn+1],
+                    pointsize = pz[(col-1)%pzn+1],
+                    fillcolor = fc[(col-1)%fcn+1],
+                    fillstyle = fs[(col-1)%fsn+1],
+                    financial = fn[(col-1)%fnn+1],
+                    err = er[(col-1)%ern+1],
+                    handle = handle)
+    end
+    return ans
+end
+
 # Add a curve to an existing figure
 function plot!(x::Coord,y::Coord;
              legend::String    = "",
