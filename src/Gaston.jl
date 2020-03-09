@@ -6,7 +6,7 @@ __precompile__(true)
 module Gaston
 
 export closefigure, closeall, figure,
-       plot, plot!, scatter, stem, bar, histogram, imagesc,
+       plot, plot!, scatter, scatter!, stem, bar, histogram, imagesc,
        surf, surf!, contour, scatter3,
        printfigure, set
 

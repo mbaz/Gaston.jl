@@ -306,13 +306,17 @@ plot!(x::Real,y::Real;args...) = plot!([x],[y];args...)
 plot!(c::Complex;args...) = plot!(real(c),imag(c);args...)
 plot!(c::ComplexCoord;args...) = plot!(real(c),imag(c);args...)
 
-scatter(y::ComplexCoord,args...) = scatter(real(y),imag(y),args...)
+scatter(y::ComplexCoord;args...) = scatter(real(y),imag(y);args...)
 
 function scatter(x::Coord,y::Coord;
                  handle::Handle = gnuplot_state.current,
                  args...)
     plot(x,y,plotstyle="points",handle=handle;args...)
 end
+
+scatter!(y::ComplexCoord;args...) = scatter!(real(y),imag(y);args...)
+scatter!(x::Coord,y::Coord;handle::Handle = gnuplot_state.current,args...) =
+    plot!(x,y,plotstyle="points";handle=handle,args...)
 
 function stem(x::Coord,y::Coord;
               onlyimpulses = config[:axes][:onlyimpulses],

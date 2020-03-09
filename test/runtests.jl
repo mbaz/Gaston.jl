@@ -242,6 +242,16 @@ end
         Gaston.gnuplot_state.gp_error
     end == false
     @test begin
+        scatter(complex.(rand(10), rand(10)),linecolor="green")
+        scatter!(complex.(rand(10), rand(10)),linecolor="blue")
+        Gaston.gnuplot_state.gp_error
+    end == false
+    @test begin
+        scatter(rand(10), rand(10),pointtype="ecircle")
+        scatter!(rand(10), rand(10),pointtype="fcircle")
+        Gaston.gnuplot_state.gp_error
+    end == false
+    @test begin
         t = -2:0.06:2
         plot(t, sin.(2π*t), plotstyle="fillsteps", fillstyle="solid 0.5", title="Fillsteps plot")
         Gaston.gnuplot_state.gp_error
