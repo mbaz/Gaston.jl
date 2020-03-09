@@ -46,7 +46,7 @@ immediately overwritten), set redraw = false.
 
 Returns the current figure handle.
 =#
-function figure(h::Union{Int,Nothing} = 0; redraw = true)
+function figure(h::Handle = 0; redraw = true)
     global gnuplot_state
 
     # build vector of handles
@@ -103,7 +103,7 @@ function plot(x::Coord,y::Coord;
              background::String = config[:term][:background],
              financial::FCuN    = FinancialCoords(),
              err::ECuN          = ErrorCoords(),
-             handle::Union{Int,Nothing} = gnuplot_state.current,
+             handle::Handle     = gnuplot_state.current,
              gpcom::String      = ""
             )
     # validation
@@ -181,7 +181,7 @@ function plot(x::Coord,M::Matrix;
              background = config[:term][:background],
              financial  = FinancialCoords(),
              err        = ErrorCoords(),
-             handle::Union{Int,Nothing} = gnuplot_state.current,
+             handle::Handle     = gnuplot_state.current,
              gpcom::String      = ""
              )
     legend isa Vector{String} && (lg = legend)
@@ -282,7 +282,7 @@ function plot!(x::Coord,y::Coord;
              fillstyle::String  = config[:curve][:fillstyle],
              financial::FCuN = FinancialCoords(),
              err::ECuN       = ErrorCoords(),
-             handle::Union{Int,Nothing} = gnuplot_state.current
+             handle::Handle  = gnuplot_state.current
          )
 
     # validation
@@ -309,14 +309,14 @@ plot!(c::ComplexCoord;args...) = plot!(real(c),imag(c);args...)
 scatter(y::ComplexCoord,args...) = scatter(real(y),imag(y),args...)
 
 function scatter(x::Coord,y::Coord;
-                 handle::Union{Int,Nothing} = gnuplot_state.current,
+                 handle::Handle = gnuplot_state.current,
                  args...)
     plot(x,y,plotstyle="points",handle=handle;args...)
 end
 
 function stem(x::Coord,y::Coord;
               onlyimpulses = config[:axes][:onlyimpulses],
-              handle::Union{Int,Nothing} = gnuplot_state.current, args...)
+              handle::Handle = gnuplot_state.current, args...)
     p = plot(x,y;handle=handle,
              plotstyle="impulses", linecolor="blue",linewidth="1.25",args...)
     onlyimpulses || (p = plot!(x,y;plotstyle="points", linecolor="blue",
@@ -329,7 +329,7 @@ function stem(y;handle=gnuplot_state.current,
 end
 
 function bar(x::Coord,y::Coord;
-             handle::Union{Int,Nothing} = gnuplot_state.current, args...)
+             handle::Handle = gnuplot_state.current, args...)
     plot(x,y; handle=handle,
          plotstyle="boxes",boxwidth="0.8 relative",fillstyle="solid 0.5",args...)
 end
@@ -357,7 +357,7 @@ function imagesc(x::Coord,y::Coord,Z::Coord;
                  font::String      = config[:term][:font],
                  size::String      = config[:term][:size],
                  gpcom::String     = "",
-                 handle::Union{Int,Nothing} = gnuplot_state.current
+                 handle::Handle    = gnuplot_state.current
                  )
     # validation
     valid_range(xrange)
@@ -419,7 +419,7 @@ function surf(x::Coord,y::Coord,Z::Coord;
               font::String       = config[:term][:font],
               size::String       = config[:term][:size],
               background::String = config[:term][:background],
-              handle::Union{Int,Nothing} = gnuplot_state.current,
+              handle::Handle     = gnuplot_state.current,
               gpcom::String      = ""
               )
     # validation
@@ -481,7 +481,7 @@ function surf!(x::Coord,y::Coord,Z::Coord;
       linewidth::String  = "1",
       pointtype::String  = config[:curve][:pointtype],
       pointsize::String  = config[:curve][:pointsize],
-      handle::Union{Int,Nothing} = gnuplot_state.current
+      handle::Handle     = gnuplot_state.current
      )
     valid_3Dplotstyle(plotstyle)
     valid_pointtype(pointtype)
@@ -522,7 +522,7 @@ scatter3(x::Coord,y::Coord,Z::Coord;args...) = surf(x,y,Z,plotstyle="points";arg
 
 
 # print a figure to a file
-function printfigure(;handle::Union{Int,Nothing} = gnuplot_state.current,
+function printfigure(;handle::Handle    = gnuplot_state.current,
                      term::String       = config[:print][:print_term],
                      font::String       = config[:print][:print_font],
                      size::String       = config[:print][:print_size],

@@ -95,8 +95,9 @@ end
 
 # At the top level, a figure is a handle, an axes configuration, and a
 # set of curves.
+const Handle = Union{Int,Nothing}  # handle type
 mutable struct Figure
-    handle                       # each figure has a unique handle
+    handle::Handle               # each figure has a unique handle
     term::TermConf               # term options
     print::PrintConf             # print optinos
     axes::AxesConf               # figure configuration
