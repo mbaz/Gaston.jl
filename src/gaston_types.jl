@@ -41,13 +41,12 @@ FinancialCoords() = nothing
 
 # storage for error coordinates
 struct ErrorCoords
-    valid::Bool
     ylow::Coord
     yhigh::Coord
 end
-ErrorCoords() = ErrorCoords(false,Real[],Real[])
-ErrorCoords(l::Vector) = ErrorCoords(true,l,Real[])
-ErrorCoords(l::Vector,h::Vector) = ErrorCoords(true,l,h)
+const ECuN = Union{ErrorCoords, Nothing}
+ErrorCoords() = nothing
+ErrorCoords(l::Coord) = ErrorCoords(l,Float64[])
 
 ## Curves
 # Curve configuration
@@ -69,7 +68,7 @@ mutable struct Curve
     y::Coord
     Z::Coord
     F::FCuN
-    E::ErrorCoords
+    E::ECuN
     conf::CurveConf
 end
 # Construct an empty curve
@@ -81,8 +80,7 @@ Curve(y,c::CurveConf) = Curve(1:length(y),y,Real[],
                               FinancialCoords(),ErrorCoords(),c)
 Curve(x,y) = Curve(x,y,Real[],FinancialCoords(),ErrorCoords(),CurveConf())
 Curve(x,y,c::CurveConf) = Curve(x,y,Real[],FinancialCoords(),ErrorCoords(),c)
-Curve(x,y,fc::FCuN,ec::ErrorCoords,c::CurveConf) =
-    Curve(x,y,Real[],fc,ec,c)
+Curve(x,y,fc::FCuN,ec::ECuN,c::CurveConf) = Curve(x,y,Real[],fc,ec,c)
 Curve(x,y,Z) = Curve(x,y,Z,FinancialCoords(),ErrorCoords(),CurveConf())
 Curve(x,y,Z,c::CurveConf) = Curve(x,y,Z,FinancialCoords(),ErrorCoords(),c)
 

@@ -238,9 +238,10 @@ end
 function valid_coords(x,y;err=ErrorCoords(),fin=FinancialCoords())
     invalid = false
     length(x) != length(y) && (invalid = true)
-    (err.valid && length(x) != length(err.ylow)) && (invalid = true)
-    (err.valid && !isempty(err.yhigh) && length(x) !=
-        length(err.yhigh)) && (invalid = true)
+    if err != nothing
+        length(x) != length(err.ylow) && (invalid = true)
+        (!isempty(err.yhigh) && length(x) != length(err.yhigh)) && (invalid = true)
+    end
     if fin != nothing
         lx = length(x)
         lx != length(fin.open) && (invalid = true)
