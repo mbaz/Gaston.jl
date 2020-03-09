@@ -115,7 +115,7 @@ mutable struct GnuplotState
     gp_stderr::String            # last data read from  gnuplot's stderr
     gp_lasterror::String         # gnuplot's last error output
     gp_error::Bool               # true if last command resulted in gp error
-    figs::Array{Figure}          # storage for all figures
+    figs::Vector{Figure}          # storage for all figures
 end
 
 GnuplotState() = GnuplotState(nothing,nothing,"","","",false,Figure[])
