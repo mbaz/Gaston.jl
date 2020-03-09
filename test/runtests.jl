@@ -252,6 +252,21 @@ end
         a = repr("text/plain", plot(1:10))
         a[1:35] == "<?xml version=\"1.0\" encoding=\"utf-8"
     end == true
+    # matrix plotting
+    @test begin
+        ps=["points","linespoints"];lc=["blue","red","green"]
+        pt=["ecircle","fcircle"];l=["1","2","3","4"]
+        M = rand(10,5)
+        plot(M,plotstyle=ps,linecolor=lc,pointtype=pt,legend=l)
+        Gaston.gnuplot_state.gp_error
+    end == false
+    @test begin
+        ps=["points","linespoints"];lc=["blue","red","green"]
+        pt=["ecircle","fcircle"];l=["1","2","3","4"]
+        M = rand(10,5)
+        plot(22:31,M,plotstyle=ps,linecolor=lc,pointtype=pt,legend=l)
+        Gaston.gnuplot_state.gp_error
+    end == false
     # build a multiple-plot figure manually
     closeall()
     set(mode="null")
