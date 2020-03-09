@@ -26,8 +26,9 @@ end
 PrintConf() = PrintConf("","","","","","")
 
 ## Coordinates
-Coord = Union{AbstractRange{T},Array{T}} where T <: Real
-ComplexCoord = Array{T} where T <: Complex
+const Coord = Union{AbstractRange{T},Array{T}} where T <: Real
+Coord() = Float64[] # return an empty coordinate
+const ComplexCoord = Array{T} where T <: Complex
 
 # storage for financial coordinates
 struct FinancialCoords
@@ -63,26 +64,14 @@ Base.@kwdef struct CurveConf
 end
 
 # A curve is a set of coordinates and a configuration
-mutable struct Curve
-    x::Coord
-    y::Coord
-    Z::Coord
-    F::FCuN
-    E::ECuN
-    conf::CurveConf
+Base.@kwdef mutable struct Curve
+    x::Coord = Coord()
+    y::Coord = Coord()
+    Z::Coord = Coord()
+    F::FCuN = FinancialCoords()
+    E::ECuN = ErrorCoords()
+    conf::CurveConf = CurveConf()
 end
-# Construct an empty curve
-Curve() = Curve(Real[],Real[],Real[],FinancialCoords(),ErrorCoords(),CurveConf())
-# Convenience constructors
-Curve(y) = Curve(1:length(y),y,Real[],
-                 FinancialCoords(),ErrorCoords(),CurveConf())
-Curve(y,c::CurveConf) = Curve(1:length(y),y,Real[],
-                              FinancialCoords(),ErrorCoords(),c)
-Curve(x,y) = Curve(x,y,Real[],FinancialCoords(),ErrorCoords(),CurveConf())
-Curve(x,y,c::CurveConf) = Curve(x,y,Real[],FinancialCoords(),ErrorCoords(),c)
-Curve(x,y,fc::FCuN,ec::ECuN,c::CurveConf) = Curve(x,y,Real[],fc,ec,c)
-Curve(x,y,Z) = Curve(x,y,Z,FinancialCoords(),ErrorCoords(),CurveConf())
-Curve(x,y,Z,c::CurveConf) = Curve(x,y,Z,FinancialCoords(),ErrorCoords(),c)
 
 # Storage for axes configuration
 Base.@kwdef mutable struct AxesConf

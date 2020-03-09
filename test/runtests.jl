@@ -277,11 +277,11 @@ end
         exp_cconf = Gaston.CurveConf(plotstyle="boxes",
                                      linecolor="blue",
                                      legend="E")
-        exp_curve = Gaston.Curve(x1,exp_pdf,exp_cconf)
+        exp_curve = Gaston.Curve(x=x1,y=exp_pdf,conf=exp_cconf)
         x2 = -5:0.05:5
         theo_pdf = @. 1/sqrt(2π)*exp((-x2^2)/2)
         theo_cconf = Gaston.CurveConf(linecolor="black",legend="T")
-        theo_curve = Gaston.Curve(x2,theo_pdf,theo_cconf)
+        theo_curve = Gaston.Curve(x=x2,y=theo_pdf,conf=theo_cconf)
         figure(1)
         Gaston.push_figure!(1,ac,exp_curve,theo_curve)
         figure(1,redraw=false)

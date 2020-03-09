@@ -141,7 +141,7 @@ function plot(x::Coord,y::Coord;
                  )
     cc = CurveConf(legend,plotstyle,linecolor,linewidth,
                    linestyle,pointtype,pointsize,fillstyle,fillcolor)
-    c = Curve(x,y,financial,err,cc)
+    c = Curve(x=x,y=y,F=financial,E=err,conf=cc)
     push_figure!(handle,tc,ac,c,gpcom)
 
     return gnuplot_state.figs[findfigure(handle)]
@@ -297,7 +297,7 @@ function plot!(x::Coord,y::Coord;
     handle = figure(handle, redraw = false)
     cc = CurveConf(legend,plotstyle,linecolor,linewidth,linestyle,pointtype,
                    pointsize,fillstyle,fillcolor)
-    c = Curve(x,y,financial,err,cc)
+    c = Curve(x=x,y=y,F=financial,E=err,conf=cc)
     push_figure!(handle,c)
     return gnuplot_state.figs[findfigure(handle)]
 end
@@ -389,7 +389,7 @@ function imagesc(x::Coord,y::Coord,Z::Coord;
         Z[:] = Z.*255.0/(clim[2]-clim[1])
         Z[Z.>255] .= 255
     end
-    c = Curve(x,y,Z,cc)
+    c = Curve(x=x,y=y,Z=Z,conf=cc)
 
     push_figure!(handle,tc,ac,c,gpcom)
     return gnuplot_state.figs[findfigure(handle)]
@@ -467,7 +467,7 @@ function surf(x::Coord,y::Coord,Z::Coord;
                    pointtype = pointtype,
                    linewidth = linewidth,
                    pointsize = pointsize)
-    c = Curve(x,y,Z,cc)
+    c = Curve(x=x,y=y,Z=Z,conf=cc)
     push_figure!(handle,tc,ac,c,gpcom)
     return gnuplot_state.figs[findfigure(handle)]
 end
@@ -497,7 +497,7 @@ function surf!(x::Coord,y::Coord,Z::Coord;
                    pointtype = pointtype,
                    linewidth = linewidth,
                    pointsize = pointsize)
-    c = Curve(x,y,Z,cc)
+    c = Curve(x=x,y=y,Z=Z,conf=cc)
     push_figure!(handle,c)
     return gnuplot_state.figs[findfigure(handle)]
 end
