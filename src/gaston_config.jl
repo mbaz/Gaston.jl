@@ -241,12 +241,15 @@ function valid_coords(x,y;err=ErrorCoords(),fin=FinancialCoords())
     (err.valid && length(x) != length(err.ylow)) && (invalid = true)
     (err.valid && !isempty(err.yhigh) && length(x) !=
         length(err.yhigh)) && (invalid = true)
-    (fin.valid && length(x) != length(fin.open)) && (invalid = true)
-    (fin.valid && length(x) != length(fin.low)) && (invalid = true)
-    (fin.valid && length(x) != length(fin.high)) && (invalid = true)
-    (fin.valid && length(x) != length(fin.close)) && (invalid = true)
+    if fin != nothing
+        lx = length(x)
+        lx != length(fin.open) && (invalid = true)
+        lx != length(fin.low) && (invalid = true)
+        lx != length(fin.high) && (invalid = true)
+        lx != length(fin.close) && (invalid = true)
+    end
 
-    invalid && throw(DimensionMismatch("input vectors must have the same nu mber of elements."))
+    invalid && throw(DimensionMismatch("input vectors must have the same number of elements."))
 
     return true
 end

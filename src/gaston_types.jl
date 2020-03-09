@@ -31,16 +31,13 @@ ComplexCoord = Array{T} where T <: Complex
 
 # storage for financial coordinates
 struct FinancialCoords
-    valid::Bool
     open::Coord
     low::Coord
     high::Coord
     close::Coord
 end
-FinancialCoords() = FinancialCoords(false,Real[],Real[],Real[],Real[])
-function FinancialCoords(o::Vector,l::Vector,h::Vector,c::Vector)
-    return FinancialCoords(true,o,l,h,c)
-end
+const FCuN = Union{FinancialCoords, Nothing}
+FinancialCoords() = nothing
 
 # storage for error coordinates
 struct ErrorCoords
@@ -71,7 +68,7 @@ mutable struct Curve
     x::Coord
     y::Coord
     Z::Coord
-    F::FinancialCoords
+    F::FCuN
     E::ErrorCoords
     conf::CurveConf
 end
@@ -84,7 +81,7 @@ Curve(y,c::CurveConf) = Curve(1:length(y),y,Real[],
                               FinancialCoords(),ErrorCoords(),c)
 Curve(x,y) = Curve(x,y,Real[],FinancialCoords(),ErrorCoords(),CurveConf())
 Curve(x,y,c::CurveConf) = Curve(x,y,Real[],FinancialCoords(),ErrorCoords(),c)
-Curve(x,y,fc::FinancialCoords,ec::ErrorCoords,c::CurveConf) =
+Curve(x,y,fc::FCuN,ec::ErrorCoords,c::CurveConf) =
     Curve(x,y,Real[],fc,ec,c)
 Curve(x,y,Z) = Curve(x,y,Z,FinancialCoords(),ErrorCoords(),CurveConf())
 Curve(x,y,Z,c::CurveConf) = Curve(x,y,Z,FinancialCoords(),ErrorCoords(),c)

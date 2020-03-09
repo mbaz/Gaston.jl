@@ -101,7 +101,7 @@ function plot(x::Coord,y::Coord;
              font::String       = config[:term][:font],
              size::String       = config[:term][:size],
              background::String = config[:term][:background],
-             financial::FinancialCoords = FinancialCoords(),
+             financial::FCuN    = FinancialCoords(),
              err::ErrorCoords   = ErrorCoords(),
              handle::Union{Int,Nothing} = gnuplot_state.current,
              gpcom::String      = ""
@@ -214,8 +214,8 @@ function plot(x::Coord,M::Matrix;
     boxwidth isa Vector{String} && (bw = boxwidth)
     boxwidth isa String && (bw = [boxwidth])
     bwn = length(bw)
-    financial isa Vector{FinancialCoords} && (fn = financial)
-    financial isa FinancialCoords && (fn = [financial])
+    financial isa Vector{FCuN} && (fn = financial)
+    financial isa FCuN && (fn = [financial])
     fnn = length(fn)
     err isa Vector{ErrorCoords} && (er = err)
     err isa ErrorCoords && (er = [err])
@@ -280,7 +280,7 @@ function plot!(x::Coord,y::Coord;
              pointsize::String = config[:curve][:pointsize],
              fillcolor::String  = config[:curve][:fillcolor],
              fillstyle::String  = config[:curve][:fillstyle],
-             financial::FinancialCoords = FinancialCoords(),
+             financial::FCuN = FinancialCoords(),
              err::ErrorCoords  = ErrorCoords(),
              handle::Union{Int,Nothing} = gnuplot_state.current
          )
