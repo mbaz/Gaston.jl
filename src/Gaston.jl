@@ -7,7 +7,7 @@ module Gaston
 
 export closefigure, closeall, figure,
        plot, plot!, scatter, scatter!, stem, bar, histogram, imagesc,
-       surf, surf!, contour, scatter3,
+       surf, surf!, contour, scatter3, scatter3!,
        printfigure, set
 
 import Base.show, Base.isempty
@@ -36,9 +36,14 @@ end
 # load files
 include("gaston_types.jl")
 include("gaston_aux.jl")
-include("gaston_llplot.jl")
-include("gaston_hilvl.jl")
 include("gaston_config.jl")
+include("gaston_figures.jl")
+include("gaston_llplot.jl")
+include("gaston_2d.jl")
+include("gaston_3d.jl")
+include("gaston_histograms.jl")
+include("gaston_images.jl")
+include("gaston_print.jl")
 
 # define function to determine if function is empty
 Base.isempty(f::Figure) = (f.curves == nothing)
