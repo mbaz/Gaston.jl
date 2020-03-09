@@ -25,13 +25,6 @@ if Sys.iswindows()
     gmarker_start = "GastonBegin\r\n"
     gmarker_done = "GastonDone\r\n"
 end
-# Set different async_reader() timeouts. Windows is _much_ slower than Unix.
-out_timeout = 1;
-err_timeout = 5;
-if Sys.iswindows()
-    out_timeout = 20;
-    err_timeout = 20;
-end
 
 # load files
 include("gaston_types.jl")

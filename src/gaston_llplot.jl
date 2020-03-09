@@ -196,8 +196,8 @@ function llplot(fig::Figure;print=false)
     gnuplot_send("printerr \"GastonDone\"")
 
     # Start reading gnuplot's streams in "background"
-    ch_out = async_reader(P.gstdout, out_timeout)
-    ch_err = async_reader(P.gstderr, err_timeout)
+    ch_out = async_reader(P.gstdout, config[:timeouts][:stdout_timeout])
+    ch_err = async_reader(P.gstderr, config[:timeouts][:stderr_timeout])
 
     out = take!(ch_out)
     err = take!(ch_err)

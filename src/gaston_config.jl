@@ -45,6 +45,8 @@ const TerminalDefaults = Dict("wxt" => Dict(:font       => "Sans,10",
 
 # Dicts to store user-specified configuration
 default_config() = Dict(:mode => IsJupyterOrJuno ? "ijulia" : "normal",
+                        :timeouts => Dict(:stdout_timeout => Sys.isunix() ? 2 : 20,
+                                          :stderr_timeout => Sys.isunix() ? 5 : 20),
                         :term => Dict(:terminal => IsJupyterOrJuno ? "svg" : "qt",
                                       :font => "",
                                       :size => "",
@@ -109,7 +111,7 @@ function set(;reset = false, terminal=config[:term][:terminal],
         k == :yrange && valid_range(kw[k])
         k == :zrange && valid_range(kw[k])
         flag = true
-        for i in [:term, :axes, :curve, :print]
+        for i in [:timeouts, :term, :axes, :curve, :print]
             c = config[i]
             haskey(c, k) && (flag=false; c[k] = kw[k])
         end
