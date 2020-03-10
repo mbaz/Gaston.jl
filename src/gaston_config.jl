@@ -47,6 +47,7 @@ const TerminalDefaults = Dict("wxt" => Dict(:font       => "Sans,10",
 default_config() = Dict(:mode => IsJupyterOrJuno ? "ijulia" : "normal",
                         :timeouts => Dict(:stdout_timeout => Sys.isunix() ? 2 : 20,
                                           :stderr_timeout => Sys.isunix() ? 5 : 20),
+                        :debug => false,
                         :term => Dict(:terminal => IsJupyterOrJuno ? "svg" : "qt",
                                       :font => "",
                                       :size => "",
@@ -103,6 +104,10 @@ function set(;reset = false, terminal=config[:term][:terminal],
     config[:mode] = mode
 
     for k in keys(kw)
+        if k == :debug
+            valid_debug(kw[k]) && (config[:debug] = kw[k])
+            continue
+        end
         k == :plotstyle && valid_plotstyle(kw[k])
         k == :linestyle && valid_linestyle(kw[k])
         k == :pointtype && valid_pointtype(kw[k])
@@ -161,6 +166,11 @@ const ps_sup_points = ["linespoints", "points"]
 #
 # Validation functions
 #
+
+function valid_debug(s)
+    s isa Bool && return true
+    throw(DomainError(s,"debug must be set to a Bool"))
+end
 
 function valid_file_term(s)
     s ∈ term_file && return true

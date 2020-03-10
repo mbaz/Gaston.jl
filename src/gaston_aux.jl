@@ -210,7 +210,7 @@ version() = "0.10.0-pre"
 
 # write commands to gnuplot's pipe
 function gnuplot_send(s)
-    #println(s)
+    config[:debug] && println(s)  # print gnuplot commands if debug enabled
     w = write(P.gstdin, string(s,"\n"))
     # check that data was accepted by the pipe
     if !(w > 0)

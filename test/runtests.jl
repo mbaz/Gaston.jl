@@ -66,6 +66,8 @@ using Gaston, Test
     @test set(print_font="A") == nothing
     @test set(print_linewidth="3") == nothing
     @test set(print_size="10,10") == nothing
+    @test set(debug=true) == nothing
+    @test set(debug=false) == nothing
 end
 
 @testset "2-D plots" begin
@@ -593,5 +595,6 @@ end
     @test_throws MethodError set(print_font=3)
     @test_throws MethodError set(print_linewidth=3)
     @test_throws MethodError set(print_size=10)
+    @test_throws DomainError set(debug="oo")
     closeall()
 end
