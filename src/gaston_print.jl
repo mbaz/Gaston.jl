@@ -12,10 +12,6 @@ function printfigure(;handle::Handle    = gnuplot_state.current,
                      outputfile::String = config[:print][:print_outputfile]
                     )
 
-    # disable this command in IJulia
-    # TODO: see if it's desirable and/or possible to re-enable it
-    IsJupyterOrJuno && error("printfigure command disabled in Jupyter notebook.")
-
     h = findfigure(handle)
     h == 0 && throw(DomainError(h, "requested figure does not exist."))
     isempty(outputfile) && throw(DomainError("Please specify an output filename."))
