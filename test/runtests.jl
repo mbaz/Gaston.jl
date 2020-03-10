@@ -262,8 +262,14 @@ end
         set(reset=true)
         set(mode="ijulia")
         a = repr("text/plain", plot(1:10))
-        a[1:35] == "<?xml version=\"1.0\" encoding=\"utf-8"
+        a[1:29] == "<?xml version=\"1.0\" encoding="
     end == true
+    @test begin
+        set(reset=true)
+        set(mode="ijulia")
+        a = repr("text/plain", plot(1:10))
+        findlast("</svg>",a)
+    end != nothing
     # matrix plotting
     @test begin
         ps=["points","linespoints"];lc=["blue","red","green"]
