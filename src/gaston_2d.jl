@@ -1,70 +1,73 @@
 # 2D plots
-function plot(x::Coord,y::Coord;
-             legend::String     = "",
-             title::String      = "",
-             xlabel::String     = "",
-             ylabel::String     = "",
-             plotstyle::String  = config[:curve][:plotstyle],
-             linecolor::String  = config[:curve][:linecolor],
-             linewidth::String  = "1",
-             linestyle::String  = config[:curve][:linestyle],
-             pointtype::String  = config[:curve][:pointtype],
-             pointsize::String  = config[:curve][:pointsize],
-             fillcolor::String  = config[:curve][:fillcolor],
-             fillstyle::String  = config[:curve][:fillstyle],
-             grid::String       = config[:axes][:grid],
-             boxwidth::String   = config[:axes][:boxwidth],
-             keyoptions::String = config[:axes][:keyoptions],
-             axis::String       = config[:axes][:axis],
-             xrange::String     = config[:axes][:xrange],
-             yrange::String     = config[:axes][:yrange],
-             xzeroaxis::String  = config[:axes][:xzeroaxis],
-             yzeroaxis::String  = config[:axes][:yzeroaxis],
-             font::String       = config[:term][:font],
-             size::String       = config[:term][:size],
-             background::String = config[:term][:background],
-             financial::FCuN    = FinancialCoords(),
-             err::ECuN          = ErrorCoords(),
-             handle::Handle     = gnuplot_state.current,
-             gpcom::String      = ""
-            )
-    # validation
-    valid_2Dplotstyle(plotstyle)
-    valid_linestyle(linestyle)
-    valid_pointtype(pointtype)
-    valid_axis(axis)
-    valid_range(xrange)
-    valid_range(yrange)
-    valid_coords(x,y,err=err,fin=financial)
+function plot(x::Coord, y::Coord;
+              financial::FCuN = FinancialCoords(),
+              err::ECuN = ErrorCoords(),
+              handle::Handle = gnuplot_state.current,
+              args...)
 
+    # process arguments
+    PA = PlotArgs()
+    for k in keys(args)
+        for f in fieldnames(PlotArgs)
+            k == f && setfield!(PA, f, String(args[k]))
+        end
+    end
+
+    # validation and defaults
+    valid_2Dplotstyle(PA.plotstyle)
+    valid_linestyle(PA.linestyle)
+    valid_pointtype(PA.pointtype)
+    valid_axis(PA.axis)
+    valid_range(PA.xrange)
+    valid_range(PA.yrange)
+    valid_coords(x,y,err=err,fin=financial)
     term = config[:term][:terminal]
-    font == "" && (font = TerminalDefaults[term][:font])
-    size == "" && (size = TerminalDefaults[term][:size])
-    linewidth == "" && (linewidth = "1")
-    background == "" && (background = TerminalDefaults[term][:background])
+    PA.font == "" && (PA.font = TerminalDefaults[term][:font])
+    PA.size == "" && (PA.size = TerminalDefaults[term][:size])
+    PA.linewidth == "" && (PA.linewidth = "1")
+    PA.background == "" && (PA.background = TerminalDefaults[term][:background])
 
     # determine handle and clear figure
     handle = figure(handle, redraw = false)
     clearfigure(handle)
 
-    # create figure configuration
-    tc = TermConf(font,size,linewidth,background)
-    ac = AxesConf(title = title,
-                  xlabel = xlabel,
-                  ylabel = ylabel,
-                  grid = grid,
-                  boxwidth = boxwidth,
-                  keyoptions = keyoptions,
-                  axis = axis,
-                  xrange = xrange,
-                  yrange = yrange,
-                  xzeroaxis = xzeroaxis,
-                  yzeroaxis = yzeroaxis,
+    # create curve
+    tc = TermConf(font       = PA.font,
+                  size       = PA.size,
+                  linewidth  = PA.linewidth,
+                  background = PA.background)
+
+    ac = AxesConf(title      = PA.title,
+                  xlabel     = PA.xlabel,
+                  ylabel     = PA.ylabel,
+                  grid       = PA.grid,
+                  boxwidth   = PA.boxwidth,
+                  keyoptions = PA.keyoptions,
+                  axis       = PA.axis,
+                  xrange     = PA.xrange,
+                  yrange     = PA.yrange,
+                  xzeroaxis  = PA.xzeroaxis,
+                  yzeroaxis  = PA.yzeroaxis,
                  )
-    cc = CurveConf(legend,plotstyle,linecolor,linewidth,
-                   linestyle,pointtype,pointsize,fillstyle,fillcolor)
-    c = Curve(x=x,y=y,F=financial,E=err,conf=cc)
-    push_figure!(handle,tc,ac,c,gpcom)
+
+    cc = CurveConf(legend    = PA.legend,
+                   plotstyle = PA.plotstyle,
+                   linecolor = PA.linecolor,
+                   linewidth = PA.linewidth,
+                   linestyle = PA.linestyle,
+                   pointtype = PA.pointtype,
+                   pointsize = PA.pointsize,
+                   fillstyle = PA.fillstyle,
+                   fillcolor = PA.fillcolor)
+
+    c = Curve(x    = x,
+              y    = y,
+              F    = financial,
+              E    = err,
+              conf = cc)
+
+    # push curve we just created to current figure
+    push_figure!(handle,tc,ac,c,PA.gpcom)
 
     return gnuplot_state.figs[findfigure(handle)]
 end
@@ -78,34 +81,21 @@ plot(c::ComplexCoord;args...) = plot(real(c),imag(c);args...)
 plot(M::Matrix;args...) = plot(1:size(M)[1],M;args...)
 
 function plot(x::Coord,M::Matrix;
-             legend     = "",
-             title      = "",
-             xlabel     = "",
-             ylabel     = "",
-             plotstyle  = config[:curve][:plotstyle],
-             linecolor  = config[:curve][:linecolor],
-             linewidth  = "1",
-             linestyle  = config[:curve][:linestyle],
-             pointtype  = config[:curve][:pointtype],
-             pointsize  = config[:curve][:pointsize],
-             fillcolor  = config[:curve][:fillcolor],
-             fillstyle  = config[:curve][:fillstyle],
-             grid       = config[:axes][:grid],
-             boxwidth   = config[:axes][:boxwidth],
-             keyoptions = config[:axes][:keyoptions],
-             axis       = config[:axes][:axis],
-             xrange     = config[:axes][:xrange],
-             yrange     = config[:axes][:yrange],
-             xzeroaxis  = config[:axes][:xzeroaxis],
-             yzeroaxis  = config[:axes][:yzeroaxis],
-             font       = config[:term][:font],
-             size       = config[:term][:size],
-             background = config[:term][:background],
-             financial  = FinancialCoords(),
-             err        = ErrorCoords(),
-             handle::Handle     = gnuplot_state.current,
-             gpcom::String      = ""
-             )
+              legend     = "",
+              linewidth  = "1",
+              plotstyle  = config[:curve][:plotstyle],
+              linecolor  = config[:curve][:linecolor],
+              linestyle  = config[:curve][:linestyle],
+              pointtype  = config[:curve][:pointtype],
+              pointsize  = config[:curve][:pointsize],
+              fillcolor  = config[:curve][:fillcolor],
+              fillstyle  = config[:curve][:fillstyle],
+              financial  = FinancialCoords(),
+              err        = ErrorCoords(),
+              handle     = gnuplot_state.current,
+              args...)
+
+    # the following arguments need to be vectors
     legend isa Vector{String} && (lg = legend)
     legend isa String && (lg = [legend])
     lgn = length(lg)
@@ -133,9 +123,6 @@ function plot(x::Coord,M::Matrix;
     fillstyle isa Vector{String} && (fs = fillstyle)
     fillstyle isa String && (fs = [fillstyle])
     fsn = length(fs)
-    boxwidth isa Vector{String} && (bw = boxwidth)
-    boxwidth isa String && (bw = [boxwidth])
-    bwn = length(bw)
     financial isa Vector{FCuN} && (fn = financial)
     financial isa FCuN && (fn = [financial])
     fnn = length(fn)
@@ -143,8 +130,9 @@ function plot(x::Coord,M::Matrix;
     err isa ECuN && (er = [err])
     ern = length(er)
 
+    # plot first columnt
     ans = plot(x,M[:,1],
-               legend = lg[1],
+               legend    = lg[1],
                plotstyle = ps[1],
                linecolor = lc[1],
                linewidth = lw[1],
@@ -153,29 +141,14 @@ function plot(x::Coord,M::Matrix;
                pointsize = pz[1],
                fillcolor = fc[1],
                fillstyle = fs[1],
-               boxwidth = bw[1],
                financial = fn[1],
-               err = er[1],
-               title = title,
-               xlabel = xlabel,
-               ylabel = ylabel,
-               grid = grid,
-               keyoptions = keyoptions,
-               axis = axis,
-               xrange = xrange,
-               yrange = yrange,
-               xzeroaxis = xzeroaxis,
-               yzeroaxis = yzeroaxis,
-               font = font,
-               size = size,
-               background = background,
-               handle = handle,
-               gpcom = gpcom
-              )
-
+               err       = er[1],
+               handle    = handle;
+               args...)
+    # plot subsequent columns
     for col in 2:Base.size(M)[2]
-        ans = plot!(x,M[:,col],
-                    legend = lg[(col-1)%lgn+1],
+        ans = plot!(x,M[:,col];
+                    legend    = lg[(col-1)%lgn+1],
                     plotstyle = ps[(col-1)%psn+1],
                     linecolor = lc[(col-1)%lcn+1],
                     linewidth = lw[(col-1)%lwn+1],
@@ -185,41 +158,54 @@ function plot(x::Coord,M::Matrix;
                     fillcolor = fc[(col-1)%fcn+1],
                     fillstyle = fs[(col-1)%fsn+1],
                     financial = fn[(col-1)%fnn+1],
-                    err = er[(col-1)%ern+1],
-                    handle = handle)
+                    err       = er[(col-1)%ern+1],
+                    handle    = gnuplot_state.current)
     end
     return ans
 end
 
 # Add a curve to an existing figure
 function plot!(x::Coord,y::Coord;
-             legend::String    = "",
-             plotstyle::String = config[:curve][:plotstyle],
-             linecolor::String = config[:curve][:linecolor],
-             linewidth::String = "1",
-             linestyle::String = config[:curve][:linestyle],
-             pointtype::String = config[:curve][:pointtype],
-             pointsize::String = config[:curve][:pointsize],
-             fillcolor::String  = config[:curve][:fillcolor],
-             fillstyle::String  = config[:curve][:fillstyle],
              financial::FCuN = FinancialCoords(),
              err::ECuN       = ErrorCoords(),
-             handle::Handle  = gnuplot_state.current
+             handle::Handle  = gnuplot_state.current,
+             args...
          )
 
+    # process arguments
+    PA = Plot!Args()
+    for k in keys(args)
+        for f in fieldnames(PlotArgs)
+            k == f && setfield!(PA, f, String(args[k]))
+        end
+    end
     # validation
-    valid_2Dplotstyle(plotstyle)
-    valid_pointtype(pointtype)
-    valid_linestyle(linestyle)
+    valid_2Dplotstyle(PA.plotstyle)
+    valid_pointtype(PA.pointtype)
+    valid_linestyle(PA.linestyle)
     valid_coords(x,y,err=err,fin=financial)
-
-    # verify that handle exists
-    handles =gethandles()
+    handles = gethandles()
     handle ∈ handles || error("Cannot append curve to non-existing handle")
     handle = figure(handle, redraw = false)
-    cc = CurveConf(legend,plotstyle,linecolor,linewidth,linestyle,pointtype,
-                   pointsize,fillstyle,fillcolor)
-    c = Curve(x=x,y=y,F=financial,E=err,conf=cc)
+
+    # create new curve
+    cc = CurveConf(legend    = PA.legend,
+                   plotstyle = PA.plotstyle,
+                   linecolor = PA.linecolor,
+                   linewidth = PA.linewidth,
+                   linestyle = PA.linestyle,
+                   pointtype = PA.pointtype,
+                   pointsize = PA.pointsize,
+                   fillstyle = PA.fillstyle,
+                   fillcolor = PA.fillcolor)
+
+    c = Curve(x    = x,
+              y    = y,
+              F    = financial,
+              E    = err,
+              conf = cc)
+
+    # push new curve to current figure
     push_figure!(handle,c)
     return gnuplot_state.figs[findfigure(handle)]
 end
@@ -260,5 +246,3 @@ function bar(x::Coord,y::Coord;
          plotstyle="boxes",boxwidth="0.8 relative",fillstyle="solid 0.5",args...)
 end
 bar(y;handle=gnuplot_state.current,args...) = bar(1:length(y),y;handle=handle,args...)
-
-

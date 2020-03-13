@@ -7,13 +7,12 @@
 # Structs to define a figure
 
 ## Term configuration
-mutable struct TermConf
-    font::String
-    size::String
-    linewidth::String
-    background::String
+Base.@kwdef mutable struct TermConf
+    font::String = ""
+    size::String = ""
+    linewidth::String = ""
+    background::String = ""
 end
-TermConf() = TermConf("","","","")
 
 mutable struct PrintConf
     print_term::String
@@ -96,6 +95,7 @@ end
 # At the top level, a figure is a handle, an axes configuration, and a
 # set of curves.
 const Handle = Union{Int,Nothing}  # handle type
+
 mutable struct Figure
     handle::Handle               # each figure has a unique handle
     term::TermConf               # term options
@@ -120,3 +120,43 @@ mutable struct GnuplotState
 end
 
 GnuplotState() = GnuplotState(nothing,nothing,"","","",false,Figure[])
+
+# Types for dealing with arguments to `plot`
+Base.@kwdef mutable struct PlotArgs
+    legend::String     = ""
+    title::String      = ""
+    xlabel::String     = ""
+    ylabel::String     = ""
+    plotstyle::String  = config[:curve][:plotstyle]
+    linecolor::String  = config[:curve][:linecolor]
+    linewidth::String  = "1"
+    linestyle::String  = config[:curve][:linestyle]
+    pointtype::String  = config[:curve][:pointtype]
+    pointsize::String  = config[:curve][:pointsize]
+    fillcolor::String  = config[:curve][:fillcolor]
+    fillstyle::String  = config[:curve][:fillstyle]
+    grid::String       = config[:axes][:grid]
+    boxwidth::String   = config[:axes][:boxwidth]
+    keyoptions::String = config[:axes][:keyoptions]
+    axis::String       = config[:axes][:axis]
+    xrange::String     = config[:axes][:xrange]
+    yrange::String     = config[:axes][:yrange]
+    xzeroaxis::String  = config[:axes][:xzeroaxis]
+    yzeroaxis::String  = config[:axes][:yzeroaxis]
+    font::String       = config[:term][:font]
+    size::String       = config[:term][:size]
+    background::String = config[:term][:background]
+    gpcom::String      = ""
+end
+
+Base.@kwdef mutable struct Plot!Args
+    legend::String    = ""
+    plotstyle::String = config[:curve][:plotstyle]
+    linecolor::String = config[:curve][:linecolor]
+    linewidth::String = "1"
+    linestyle::String = config[:curve][:linestyle]
+    pointtype::String = config[:curve][:pointtype]
+    pointsize::String = config[:curve][:pointsize]
+    fillcolor::String = config[:curve][:fillcolor]
+    fillstyle::String = config[:curve][:fillstyle]
+end
