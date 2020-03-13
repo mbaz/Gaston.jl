@@ -9,7 +9,7 @@ function plot(x::Coord, y::Coord;
     PA = PlotArgs()
     for k in keys(args)
         for f in fieldnames(PlotArgs)
-            k == f && setfield!(PA, f, String(args[k]))
+            k == f && setfield!(PA, f, string(args[k]))
         end
     end
 
@@ -176,7 +176,7 @@ function plot!(x::Coord,y::Coord;
     PA = Plot!Args()
     for k in keys(args)
         for f in fieldnames(PlotArgs)
-            k == f && setfield!(PA, f, String(args[k]))
+            k == f && setfield!(PA, f, string(args[k]))
         end
     end
     # validation
