@@ -10,19 +10,17 @@
 Base.@kwdef mutable struct TermConf
     font::String = ""
     size::String = ""
-    linewidth::String = ""
     background::String = ""
 end
 
-mutable struct PrintConf
-    print_term::String
-    print_font::String
-    print_size::String
-    print_linewidth::String
-    print_background::String
-    print_outputfile::String
+Base.@kwdef mutable struct PrintConf
+    print_term::String       = config[:print][:print_term]
+    print_font::String       = config[:print][:print_font]
+    print_size::String       = config[:print][:print_size]
+    print_linewidth::String  = config[:print][:print_linewidth]
+    print_background::String = config[:print][:print_background]
+    print_outputfile::String = config[:print][:print_outputfile]
 end
-PrintConf() = PrintConf("","","","","","")
 
 ## Coordinates
 const Coord = Union{AbstractRange{T},Array{T}} where T <: Real
@@ -54,11 +52,11 @@ Base.@kwdef struct CurveConf
     legend::String    = ""
     plotstyle::String = config[:curve][:plotstyle]
     linecolor::String = config[:curve][:linecolor]
-    linewidth::String = "1"
+    linewidth::String = config[:curve][:linewidth]
     linestyle::String = config[:curve][:linestyle]
     pointtype::String = config[:curve][:pointtype]
     pointsize::String = config[:curve][:pointsize]
-    fillstyle::String = ""
+    fillstyle::String = config[:curve][:fillstyle]
     fillcolor::String = config[:curve][:pointsize]
 end
 
@@ -123,40 +121,37 @@ GnuplotState() = GnuplotState(nothing,nothing,"","","",false,Figure[])
 
 # Types for dealing with arguments to `plot`
 Base.@kwdef mutable struct PlotArgs
-    legend::String     = ""
-    title::String      = ""
-    xlabel::String     = ""
-    ylabel::String     = ""
-    plotstyle::String  = config[:curve][:plotstyle]
-    linecolor::String  = config[:curve][:linecolor]
-    linewidth::String  = "1"
-    linestyle::String  = config[:curve][:linestyle]
-    pointtype::String  = config[:curve][:pointtype]
-    pointsize::String  = config[:curve][:pointsize]
-    fillcolor::String  = config[:curve][:fillcolor]
-    fillstyle::String  = config[:curve][:fillstyle]
-    grid::String       = config[:axes][:grid]
-    boxwidth::String   = config[:axes][:boxwidth]
-    keyoptions::String = config[:axes][:keyoptions]
-    axis::String       = config[:axes][:axis]
-    xrange::String     = config[:axes][:xrange]
-    yrange::String     = config[:axes][:yrange]
-    xzeroaxis::String  = config[:axes][:xzeroaxis]
-    yzeroaxis::String  = config[:axes][:yzeroaxis]
-    font::String       = config[:term][:font]
-    size::String       = config[:term][:size]
-    background::String = config[:term][:background]
-    gpcom::String      = ""
-end
-
-Base.@kwdef mutable struct Plot!Args
-    legend::String    = ""
-    plotstyle::String = config[:curve][:plotstyle]
-    linecolor::String = config[:curve][:linecolor]
-    linewidth::String = "1"
-    linestyle::String = config[:curve][:linestyle]
-    pointtype::String = config[:curve][:pointtype]
-    pointsize::String = config[:curve][:pointsize]
-    fillcolor::String = config[:curve][:fillcolor]
-    fillstyle::String = config[:curve][:fillstyle]
+    legend::String          = ""
+    title::String           = ""
+    xlabel::String          = ""
+    ylabel::String          = ""
+    zlabel::String          = ""
+    plotstyle::String       = config[:curve][:plotstyle]
+    linecolor::String       = config[:curve][:linecolor]
+    linewidth::String       = config[:curve][:linewidth]
+    linestyle::String       = config[:curve][:linestyle]
+    pointtype::String       = config[:curve][:pointtype]
+    pointsize::String       = config[:curve][:pointsize]
+    fillcolor::String       = config[:curve][:fillcolor]
+    fillstyle::String       = config[:curve][:fillstyle]
+    grid::String            = config[:axes][:grid]
+    boxwidth::String        = config[:axes][:boxwidth]
+    keyoptions::String      = config[:axes][:keyoptions]
+    axis::String            = config[:axes][:axis]
+    xrange::String          = config[:axes][:xrange]
+    yrange::String          = config[:axes][:yrange]
+    zrange::String          = config[:axes][:zrange]
+    xzeroaxis::String       = config[:axes][:xzeroaxis]
+    yzeroaxis::String       = config[:axes][:yzeroaxis]
+    zzeroaxis::String       = config[:axes][:zzeroaxis]
+    palette::String         = config[:axes][:palette]
+    font::String            = config[:term][:font]
+    size::String            = config[:term][:size]
+    background::String      = config[:term][:background]
+    outputfile::String      = config[:print][:print_outputfile]
+    printfont::String       = config[:print][:print_font]
+    printsize::String       = config[:print][:print_size]
+    printlinewidth::String  = config[:print][:print_linewidth]
+    printbackground::String = config[:print][:print_background]
+    gpcom::String           = ""
 end

@@ -129,6 +129,18 @@ end
         Gaston.gnuplot_state.gp_error
     end == false
     @test begin
+        plot!(cos.(-3:0.01:3),
+              legend = "cos",
+              ps = :linespoints,
+              lc = :red,
+              lw = 2,
+              ls = :.,
+              pt = :fcircle,
+              pz = :1
+             )
+        Gaston.gnuplot_state.gp_error
+    end == false
+    @test begin
         plot(1:10,xrange = "[:3.4]")
         Gaston.gnuplot_state.gp_error
     end == false
@@ -378,6 +390,30 @@ end
     @test begin
         x=[0,1,2,3]; y=[0,1,2]; Z=[10 10 10; 10 5 10;10 1 10; 10 0 10]
         surf(x, y, Z,
+             legend = :test,
+             ps = :lines,
+             lc = :black,
+             pt = :ecircle,
+             title = :test,
+             xlabel = :x,
+             ylabel = :y,
+             zlabel = :z,
+             ko = "inside horizontal left top",
+             xrange = "",
+             yrange = "",
+             zrange = "",
+             xzeroaxis = :on,
+             yzeroaxis = :on,
+             zzeroaxis = :on,
+             font = "Arial, 12",
+             size = "79,24",
+             gpcom = "set view 90,60"
+            )
+        Gaston.gnuplot_state.gp_error
+    end == false
+    @test begin
+        x=[0,1,2,3]; y=[0,1,2]; Z=[10 10 10; 10 5 10;10 1 10; 10 0 10]
+        surf(x, y, Z,
              legend = "test",
              plotstyle = "lines",
              linecolor = "black",
@@ -412,7 +448,17 @@ end
         Gaston.gnuplot_state.gp_error
     end == false
     @test begin
+        surf(0:9,2:11,(x,y)->x*y)
+        surf!(0:9,2:11,(x,y)->x/y)
+        Gaston.gnuplot_state.gp_error
+    end == false
+    @test begin
         scatter3(rand(10),rand(10),rand(10),pointtype="fcircle",linecolor="red")
+        Gaston.gnuplot_state.gp_error
+    end == false
+    @test begin
+        scatter3(rand(10),rand(10),rand(10))
+        scatter3(rand(8),rand(8),rand(8),lc=:black)
         Gaston.gnuplot_state.gp_error
     end == false
 end
@@ -549,27 +595,35 @@ end
     @test_throws DimensionMismatch plot(0:10,0:11)
     @test_throws DimensionMismatch surf([1,2],[3,4],[5,6,7])
     @test_throws DimensionMismatch surf([1,2,3],[3,4],[5,6,7])
-    @test_throws MethodError surf([1,2,3],[3,4],"a")
-    @test_throws MethodError plot(0:10,legend=0)
     @test_throws DomainError plot(0:10,plotstyle="invalid")
     @test_throws DomainError plot(0:10,pointtype="invalid")
-    @test_throws MethodError plot(0:10,pointtype=0)
-    @test_throws MethodError plot(0:10,linewidth=im)
-    @test_throws MethodError plot(0:10,pointsize=im)
-    @test_throws MethodError plot(0:10,title=0)
-    @test_throws MethodError plot(0:10,xlabel=0)
-    @test_throws MethodError plot(0:10,ylabel=0)
+    @test_throws DomainError plot(0:10,pointtype="ab")
+    @test_throws DomainError plot(0:10,linewidth=im)
+    @test_throws DomainError plot(0:10,linewidth=-3)
+    @test_throws DomainError plot(0:10,pointsize=im)
+    @test_throws DomainError plot(0:10,pointsize=-3)
     @test_throws DomainError plot(0:10,axis="invalid")
     @test_throws DomainError plot(1:10,xrange = "2:3")
     @test_throws DomainError plot(1:10,yrange = "ab")
+    @test_throws MethodError surf([1,2,3],[3,4],"a")
+    @test_throws DomainError surf(0:10,0:10,0:10,plotstyle="invalid")
+    @test_throws DomainError surf(0:10,0:10,0:10,pointtype="invalid")
+    @test_throws DomainError surf(0:10,0:10,0:10,pointtype="ab")
+    @test_throws DomainError surf(0:10,0:10,0:10,linewidth=im)
+    @test_throws DomainError surf(0:10,0:10,0:10,linewidth=-3)
+    @test_throws DomainError surf(0:10,0:10,0:10,pointsize=im)
+    @test_throws DomainError surf(0:10,0:10,0:10,pointsize=-3)
+    @test_throws DomainError surf(0:10,0:10,0:10,axis="invalid")
+    @test_throws DomainError surf(1:10,0:10,0:10,xrange = "2:3")
+    @test_throws DomainError surf(1:10,0:10,0:10,yrange = "ab")
+    @test_throws DomainError surf(1:10,0:10,0:10,zrange = "ab")
     f = Gaston.FinancialCoords([1,2],[1,2],[1,2],[1,2])
     @test_throws DimensionMismatch plot(1:10,financial=f)
     er = Gaston.ErrorCoords([0.1,0.1])
     @test_throws DimensionMismatch plot(1:10,err=er)
     # plot!
-    plot(1:10)
-    @test_throws MethodError plot!(0:10,legend=0)
-    @test_throws ErrorException plot!(0:10,axis="loglog")
+    closeall()
+    @test_throws ErrorException plot!(0:10)
     # imagesc
     z = rand(5,6)
     @test_throws DimensionMismatch imagesc(1:5,1:7,z)
@@ -587,20 +641,15 @@ end
     @test_throws ErrorException plot!(rand(10),handle=10)
     # set
     set(mode="normal")
-    @test_throws MethodError set(legend=3)
     @test_throws DomainError set(plotstyle="A")
-    @test_throws MethodError set(color=3)
     @test_throws DomainError set(pointtype="xyz")
-    @test_throws MethodError set(title=3)
-    @test_throws MethodError set(xlabel=3)
-    @test_throws MethodError set(ylabel=3)
-    @test_throws MethodError set(zlabel=3)
     @test_throws DomainError set(terminal="x12")
-    @test_throws MethodError set(print_outputfile=3)
-    @test_throws MethodError set(print_color=3)
-    @test_throws MethodError set(print_font=3)
-    @test_throws MethodError set(print_linewidth=3)
-    @test_throws MethodError set(print_size=10)
+    @test_throws ArgumentError set(color=3)
+    @test_throws ArgumentError set(title=3)
+    @test_throws ArgumentError set(xlabel=3)
+    @test_throws ArgumentError set(ylabel=3)
+    @test_throws ArgumentError set(zlabel=3)
+    @test_throws ArgumentError set(print_color=3)
     @test_throws DomainError set(debug="oo")
     closeall()
 end

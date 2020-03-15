@@ -2,115 +2,143 @@
 
 # surface plots
 function surf(x::Coord,y::Coord,Z::Coord;
-              legend::String     = "",
-              title::String      = "",
-              xlabel::String     = "",
-              ylabel::String     = "",
-              zlabel::String     = "",
-              plotstyle::String  = config[:curve][:plotstyle],
-              linecolor::String  = config[:curve][:linecolor],
-              linewidth::String  = "1",
-              pointtype::String  = config[:curve][:pointtype],
-              pointsize::String  = config[:curve][:pointsize],
-              keyoptions::String = config[:axes][:keyoptions],
-              xrange::String     = config[:axes][:xrange],
-              yrange::String     = config[:axes][:yrange],
-              zrange::String     = config[:axes][:zrange],
-              xzeroaxis::String  = config[:axes][:xzeroaxis],
-              yzeroaxis::String  = config[:axes][:yzeroaxis],
-              zzeroaxis::String  = config[:axes][:zzeroaxis],
-              palette::String    = config[:axes][:palette],
-              font::String       = config[:term][:font],
-              size::String       = config[:term][:size],
-              background::String = config[:term][:background],
-              handle::Handle     = gnuplot_state.current,
-              gpcom::String      = ""
-              )
-    # validation
-    valid_3Dplotstyle(plotstyle)
-    valid_pointtype(pointtype)
-    valid_range(xrange)
-    valid_range(yrange)
-    valid_range(zrange)
+              handle::Handle = gnuplot_state.current,
+              args...)
+
+    # process arguments
+    PA = PlotArgs()
+    for k in keys(args)
+        # substitute synonyms
+        key = k
+        for s in syn
+            key ∈ s && (key = s[1]; break)
+        end
+        # store arguments
+        for f in fieldnames(PlotArgs)
+            f == key && (setfield!(PA, f, string(args[k])); break)
+        end
+    end
+
+    # validation and defaults
+    valid_3Dplotstyle(PA.plotstyle)
+    valid_numeric(PA.linewidth)
+    valid_linestyle(PA.linestyle)
+    valid_pointtype(PA.pointtype)
+    valid_numeric(PA.pointsize)
+    valid_axis(PA.axis)
+    valid_range(PA.xrange)
+    valid_range(PA.yrange)
+    valid_range(PA.zrange)
+
     if isa(Z, Matrix)
-        length(x) == Base.size(Z)[1] ||
-            throw(DimensionMismatch("invalid X coordinates in surface plot."))
-        length(y) == Base.size(Z)[2]  ||
-            throw(DimensionMismatch("Invalid Y coordinates in surface plot."))
-    elseif isa(Z, Coord)
-        length(x) == length(y) || throw(DimensionMismatch("in a 3D scatter plot, all coordinates must have the same dimension."))
-        length(x) == length(Z) || throw(DimensionMismatch("in a 3D scatter plot, all coordinates must have the same dimension."))
+        if length(x) != Base.size(Z)[1] || length(y) != Base.size(Z)[2]
+            throw(DimensionMismatch("invalid coordinates in surface plot."))
+        end
+    elseif isa(Z, Vector)
+        if length(x) != length(y) || length(x) != length(Z)
+            throw(DimensionMismatch("all coordinates must have the same dimension"))
+        end
     else
         throw(DimensionMismatch("Z must be a matrix or a vector."))
     end
 
+    term = config[:term][:terminal]
+    PA.font == "" && (PA.font = TerminalDefaults[term][:font])
+    PA.size == "" && (PA.size = TerminalDefaults[term][:size])
+    PA.linewidth == "" && (PA.linewidth = "1")
+    PA.background == "" && (PA.background = TerminalDefaults[term][:background])
+
     handle = figure(handle, redraw = false)
     clearfigure(handle)
 
-    # create figure configuration
-    ac = AxesConf(title = title,
-                  xlabel = xlabel,
-                  ylabel = ylabel,
-                  zlabel = zlabel,
-                  keyoptions = keyoptions,
-                  xrange = xrange,
-                  yrange = yrange,
-                  zrange = zrange,
-                  xzeroaxis = xzeroaxis,
-                  yzeroaxis = yzeroaxis,
-                  zzeroaxis = zzeroaxis,
-                  palette = palette)
-    term = config[:term][:terminal]
-    font == "" && (font = TerminalDefaults[term][:font])
-    size == "" && (size = TerminalDefaults[term][:size])
-    background == "" && (background = TerminalDefaults[term][:background])
-    tc = TermConf(font,size,"1",background)
-    cc = CurveConf(plotstyle = plotstyle,
-                   legend = legend,
-                   linecolor = linecolor,
-                   pointtype = pointtype,
-                   linewidth = linewidth,
-                   pointsize = pointsize)
-    c = Curve(x=x,y=y,Z=Z,conf=cc)
-    push_figure!(handle,tc,ac,c,gpcom)
+    # create curve
+    tc = TermConf(font       = PA.font,
+                  size       = PA.size,
+                  background = PA.background)
+
+    ac = AxesConf(title      = PA.title,
+                  xlabel     = PA.xlabel,
+                  ylabel     = PA.ylabel,
+                  zlabel     = PA.zlabel,
+                  keyoptions = PA.keyoptions,
+                  xrange     = PA.xrange,
+                  yrange     = PA.yrange,
+                  zrange     = PA.zrange,
+                  xzeroaxis  = PA.xzeroaxis,
+                  yzeroaxis  = PA.yzeroaxis,
+                  zzeroaxis  = PA.zzeroaxis,
+                  palette    = PA.palette)
+
+    cc = CurveConf(plotstyle = PA.plotstyle,
+                   legend    = PA.legend,
+                   linecolor = PA.linecolor,
+                   pointtype = PA.pointtype,
+                   linewidth = PA.linewidth,
+                   pointsize = PA.pointsize)
+
+    c = Curve(x    = x,
+              y    = y,
+              Z    = Z,
+              conf = cc)
+
+    # push curve we just created to current figure
+    push_figure!(handle,tc,ac,c,PA.gpcom)
+
     return gnuplot_state.figs[findfigure(handle)]
 end
 surf(x::Coord,y::Coord,f::Function;args...) = surf(x,y,meshgrid(x,y,f);args...)
 surf(Z::Matrix;args...) = surf(1:size(Z)[2],1:size(Z)[1],Z;args...)
 
 function surf!(x::Coord,y::Coord,Z::Coord;
-      legend::String     = "",
-      plotstyle::String  = config[:curve][:plotstyle],
-      linecolor::String  = config[:curve][:linecolor],
-      linewidth::String  = "1",
-      pointtype::String  = config[:curve][:pointtype],
-      pointsize::String  = config[:curve][:pointsize],
-      handle::Handle     = gnuplot_state.current
-     )
-    valid_3Dplotstyle(plotstyle)
-    valid_pointtype(pointtype)
+               handle::Handle = gnuplot_state.current,
+               args...)
+
+    # process arguments
+    PA = PlotArgs()
+    for k in keys(args)
+        for f in fieldnames(PlotArgs)
+            k == f && setfield!(PA, f, string(args[k]))
+        end
+    end
+    # validation and defaults
+    valid_3Dplotstyle(PA.plotstyle)
+    valid_linestyle(PA.linestyle)
+    valid_pointtype(PA.pointtype)
+    valid_numeric(PA.pointsize)
+    valid_pointtype(PA.pointtype)
+    valid_numeric(PA.linewidth)
+
     if isa(Z, Matrix)
-        length(x) == Base.size(Z)[1] ||
-        throw(DimensionMismatch("invalid X coordinates in surface plot."))
-        length(y) == Base.size(Z)[2]  ||
-        throw(DimensionMismatch("Invalid Y coordinates in surface plot."))
-    elseif isa(Z, Coord)
-        length(x) == length(y) || throw(DimensionMismatch("in a 3D scatter plot, all coordinates must have the same dimension."))
-        length(x) == length(Z) || throw(DimensionMismatch("in a 3D scatter plot, all coordinates must have the same dimension."))
+        if length(x) != Base.size(Z)[1] || length(y) != Base.size(Z)[2]
+            throw(DimensionMismatch("invalid coordinates in surface plot."))
+        end
+    elseif isa(Z, Vector)
+        if length(x) != length(y) || length(x) != length(Z)
+            throw(DimensionMismatch("all coordinates must have the same dimension"))
+        end
     else
         throw(DimensionMismatch("Z must be a matrix or a vector."))
     end
-    handles =gethandles()
+
+    handles = gethandles()
     handle ∈ handles || error("Cannot append curve to non-existing handle")
     handle = figure(handle, redraw = false)
-    cc = CurveConf(plotstyle = plotstyle,
-                   legend = legend,
-                   linecolor = linecolor,
-                   pointtype = pointtype,
-                   linewidth = linewidth,
-                   pointsize = pointsize)
-    c = Curve(x=x,y=y,Z=Z,conf=cc)
+
+    # configure curve
+    cc = CurveConf(plotstyle = PA.plotstyle,
+                   legend    = PA.legend,
+                   linecolor = PA.linecolor,
+                   pointtype = PA.pointtype,
+                   linewidth = PA.linewidth,
+                   pointsize = PA.pointsize)
+
+    c = Curve(x    = x,
+              y    = y,
+              Z    = Z,
+              conf = cc)
+
     push_figure!(handle,c)
+
     return gnuplot_state.figs[findfigure(handle)]
 end
 surf!(x::Coord,y::Coord,f::Function;args...) = surf!(x,y,meshgrid(x,y,f);args...)
@@ -132,5 +160,3 @@ contour(Z::Matrix;args...) = contour(1:size(Z)[2],1:size(Z)[1],Z;args...)
 
 scatter3(x::Coord,y::Coord,Z::Coord;args...) = surf(x,y,Z,plotstyle="points";args...)
 scatter3!(x::Coord,y::Coord,Z::Coord;args...) = surf!(x,y,Z,plotstyle="points";args...)
-
-

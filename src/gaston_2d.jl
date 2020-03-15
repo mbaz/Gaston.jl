@@ -8,8 +8,14 @@ function plot(x::Coord, y::Coord;
     # process arguments
     PA = PlotArgs()
     for k in keys(args)
+        # substitute synonyms
+        key = k
+        for s in syn
+            key ∈ s && (key = s[1]; break)
+        end
+        # store arguments
         for f in fieldnames(PlotArgs)
-            k == f && setfield!(PA, f, string(args[k]))
+            f == key && (setfield!(PA, f, string(args[k])); break)
         end
     end
 
@@ -21,6 +27,9 @@ function plot(x::Coord, y::Coord;
     valid_range(PA.xrange)
     valid_range(PA.yrange)
     valid_coords(x,y,err=err,fin=financial)
+    valid_numeric(PA.pointsize)
+    valid_numeric(PA.linewidth)
+
     term = config[:term][:terminal]
     PA.font == "" && (PA.font = TerminalDefaults[term][:font])
     PA.size == "" && (PA.size = TerminalDefaults[term][:size])
@@ -34,7 +43,6 @@ function plot(x::Coord, y::Coord;
     # create curve
     tc = TermConf(font       = PA.font,
                   size       = PA.size,
-                  linewidth  = PA.linewidth,
                   background = PA.background)
 
     ac = AxesConf(title      = PA.title,
@@ -169,11 +177,10 @@ function plot!(x::Coord,y::Coord;
              financial::FCuN = FinancialCoords(),
              err::ECuN       = ErrorCoords(),
              handle::Handle  = gnuplot_state.current,
-             args...
-         )
+             args...)
 
     # process arguments
-    PA = Plot!Args()
+    PA = PlotArgs()
     for k in keys(args)
         for f in fieldnames(PlotArgs)
             k == f && setfield!(PA, f, string(args[k]))

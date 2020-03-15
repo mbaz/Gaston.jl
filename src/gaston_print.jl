@@ -5,16 +5,30 @@
 # print a figure to a file
 function printfigure(;handle::Handle    = gnuplot_state.current,
                      term::String       = config[:print][:print_term],
-                     font::String       = config[:print][:print_font],
-                     size::String       = config[:print][:print_size],
-                     linewidth::String  = config[:print][:print_linewidth],
-                     background::String = config[:print][:print_background],
-                     outputfile::String = config[:print][:print_outputfile]
-                    )
+                     args...)
+
+    # process arguments
+    PA = PlotArgs()
+    for k in keys(args)
+        # substitute synonyms
+        key = k
+        for s in syn
+            key ∈ s && (key = s[1]; break)
+        end
+        # substitute print arguments
+        key == :font && (key = :printfont)
+        key == :size && (key = :printsize)
+        key == :linewidth && (key = :printlinewidth)
+        key == :background && (key = :printbackground)
+        # store arguments
+        for f in fieldnames(PlotArgs)
+            f == key && (setfield!(PA, f, string(args[k])); break)
+        end
+    end
 
     h = findfigure(handle)
     h == 0 && throw(DomainError(h, "requested figure does not exist."))
-    isempty(outputfile) && throw(DomainError("Please specify an output filename."))
+    isempty(PA.outputfile) && throw(DomainError("Please specify an output filename."))
 
     # set figure's print parameters
     term == "pdf" && (term = "pdfcairo")
@@ -22,13 +36,18 @@ function printfigure(;handle::Handle    = gnuplot_state.current,
     term == "eps" && (term = "epscairo")
     valid_file_term(term)
 
-    font == "" && (font = TerminalDefaults[term][:font])
-    size == "" && (size = TerminalDefaults[term][:size])
-    linewidth == "" && (linewidth = "1")
-    background == "" && (background = TerminalDefaults[term][:background])
+    PA.printfont == "" && (printfont = TerminalDefaults[term][:font])
+    PA.printsize == "" && (printsize = TerminalDefaults[term][:size])
+    PA.printlinewidth == "" && (printlinewidth = "1")
+    PA.printbackground == "" && (printbackground = TerminalDefaults[term][:background])
 
     fig = gnuplot_state.figs[h]
-    pc = PrintConf(term,font,size,linewidth,background,outputfile)
+    pc = PrintConf(print_term       = term,
+                   print_font       = PA.printfont,
+                   print_size       = PA.printsize,
+                   print_linewidth  = PA.printlinewidth,
+                   print_background = PA.printbackground,
+                   print_outputfile = PA.outputfile)
     fig.print = pc
     llplot(fig,print=true)
     gnuplot_send("set output") # gnuplot needs this to close the output file

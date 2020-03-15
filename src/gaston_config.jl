@@ -51,7 +51,6 @@ default_config() = Dict(:mode => IsJupyterOrJuno ? "ijulia" : "normal",
                         :term => Dict(:terminal => IsJupyterOrJuno ? "svg" : "qt",
                                       :font => "",
                                       :size => "",
-                                      :linewidth => "",
                                       :background => "",
                                       :termopts => ""),
                         :axes => Dict(:axis => "",
@@ -69,6 +68,7 @@ default_config() = Dict(:mode => IsJupyterOrJuno ? "ijulia" : "normal",
                                       :onlyimpulses => false),
                         :curve => Dict(:plotstyle => "",
                                        :linecolor => "",
+                                       :linewidth => "",
                                        :linestyle => "",
                                        :pointtype => "",
                                        :pointsize => "",
@@ -105,8 +105,8 @@ function set(;reset = false, terminal=config[:term][:terminal],
 
     for k in keys(kw)
         if k == :debug
-            valid_debug(kw[k]) && (config[:debug] = kw[k])
-            continue
+            kw[k] isa Bool && (config[:debug] = kw[k]; continue)
+            throw(DomainError("argument to debug must be Bool"))
         end
         k == :plotstyle && valid_plotstyle(kw[k])
         k == :linestyle && valid_linestyle(kw[k])
@@ -118,9 +118,9 @@ function set(;reset = false, terminal=config[:term][:terminal],
         flag = true
         for i in [:timeouts, :term, :axes, :curve, :print]
             c = config[i]
-            haskey(c, k) && (flag=false; c[k] = kw[k])
+            haskey(c, k) && (flag=false; c[k] = string(kw[k]))
         end
-        flag && throw(MethodError(set, "invalid setting"))
+        flag && throw(ArgumentError("$k is an invalid setting"))
     end
 
     return nothing
@@ -167,11 +167,6 @@ const ps_sup_points = ["linespoints", "points"]
 # Validation functions
 #
 
-function valid_debug(s)
-    s isa Bool && return true
-    throw(DomainError(s,"debug must be set to a Bool"))
-end
-
 function valid_file_term(s)
     s ∈ term_file && return true
     throw(DomainError(s,"supported terminals are: $term_file"))
@@ -194,9 +189,16 @@ function valid_3Dplotstyle(s)
     throw(DomainError(s,"supported 3-D plotstyles are: $supported_3Dplotstyles"))
 end
 function valid_pointtype(s)
-    s ∈ supported_pointtypes && return true
+    isempty(s) && return true
     length(s) == 1 && return true
-    throw(DomainError(s,"supported point types are: $supported_pointtypes or single-character UTF-8 strings"))
+    s ∈ supported_pointtypes && return true
+    throw(DomainError(s,"supported point types are: $supported_pointtypes or single-character strings"))
+end
+function valid_numeric(s)
+    isempty(s) && return true
+    ss = tryparse(Float64,s)
+    (ss != nothing && ss >= 0) && return true
+    throw(DomainError(s,"not a valid numeric argument"))
 end
 function valid_axis(s)
     s ∈ supported_axis && return true
@@ -265,4 +267,26 @@ function valid_coords(x,y;err=ErrorCoords(),fin=FinancialCoords())
     invalid && throw(DimensionMismatch("input vectors must have the same number of elements."))
 
     return true
+
 end
+
+# Define plot argument synonyms
+const ps_syn = [:plotstyle, :ps]
+const lc_syn = [:linecolor, :lc]
+const lw_syn = [:linewidth, :lw]
+const ls_syn = [:linestyle, :ls]
+const pt_syn = [:pointtype, :pt, :marker, :mk]
+const pz_syn = [:pointsize, :ps, :markersize, :mks]
+const fc_syn = [:fillcolor, :fc]
+const fs_syn = [:fillstyle, :fs]
+const bw_syn = [:boxwidth, :bw]
+const ko_syn = [:keyoptions, :ko]
+const bg_syn = [:background, :bg]
+const of_syn = [:outputfile, :of, :filename]
+const zax_syn = [:xzeroaxis, :xza]
+const zay_syn = [:yzeroaxis, :yza]
+const zaz_syn = [:zzeroaxis, :zza]
+
+const syn = [ps_syn, lc_syn, lw_syn, ls_syn, pt_syn, pz_syn,
+             fc_syn, fs_syn, bw_syn, ko_syn, bg_syn, of_syn,
+             zax_syn, zay_syn, zaz_syn]
