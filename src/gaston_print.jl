@@ -50,7 +50,6 @@ function printfigure(;handle::Handle    = gnuplot_state.current,
                    print_outputfile = PA.outputfile)
     fig.print = pc
     llplot(fig,print=true)
-    gnuplot_send("set output") # gnuplot needs this to close the output file
 
     return nothing
 end

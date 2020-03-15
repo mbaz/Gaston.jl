@@ -185,6 +185,8 @@ function llplot(fig::Figure;print=false)
         # send command to gnuplot
         gnuplot_send(linestr(fig.curves, "splot",filename))
     end
+    # Close output files, if any
+    gnuplot_send("set output")
 
     # Make sure gnuplot is done; if terminal is text, read data
     # reset error handling
