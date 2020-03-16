@@ -156,8 +156,16 @@ function termstring(f::Figure,print=false)
         isempty(background) ? s = "" : s = " background \""*background*"\" "
         term ∈ term_sup_bkgnd && (ts *= s)
 
+        # terminal options
         print || (ts *= config[:term][:termopts]*" ")
-        print && (ts = ts*"\nset output \"$(pc.print_outputfile)\" ")
+        print && (ts *= config[:print][:print_termopts]*" ")
+
+        # set output file
+        if term ∈ term_file
+            s = ""
+            isempty(ac.output) || (s = "\nset output \"$(ac.output)\" ")
+            ts = ts*s
+        end
     end
     return ts
 end

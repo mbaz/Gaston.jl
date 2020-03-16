@@ -19,7 +19,6 @@ Base.@kwdef mutable struct PrintConf
     print_size::String       = config[:print][:print_size]
     print_linewidth::String  = config[:print][:print_linewidth]
     print_background::String = config[:print][:print_background]
-    print_outputfile::String = config[:print][:print_outputfile]
 end
 
 ## Coordinates
@@ -88,6 +87,7 @@ Base.@kwdef mutable struct AxesConf
     yzeroaxis::String  = config[:axes][:yzeroaxis]
     zzeroaxis::String  = config[:axes][:zzeroaxis]
     palette::String    = config[:axes][:palette]
+    output::String     = config[:axes][:output]
 end
 
 # At the top level, a figure is a handle, an axes configuration, and a
@@ -145,10 +145,10 @@ Base.@kwdef mutable struct PlotArgs
     yzeroaxis::String       = config[:axes][:yzeroaxis]
     zzeroaxis::String       = config[:axes][:zzeroaxis]
     palette::String         = config[:axes][:palette]
+    output::String          = config[:axes][:output]
     font::String            = config[:term][:font]
     size::String            = config[:term][:size]
     background::String      = config[:term][:background]
-    outputfile::String      = config[:print][:print_outputfile]
     printfont::String       = config[:print][:print_font]
     printsize::String       = config[:print][:print_size]
     printlinewidth::String  = config[:print][:print_linewidth]

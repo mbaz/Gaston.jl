@@ -28,7 +28,7 @@ function printfigure(;handle::Handle    = gnuplot_state.current,
 
     h = findfigure(handle)
     h == 0 && throw(DomainError(h, "requested figure does not exist."))
-    isempty(PA.outputfile) && throw(DomainError("Please specify an output filename."))
+    isempty(PA.output) && throw(DomainError("Please specify an output filename."))
 
     # set figure's print parameters
     term == "pdf" && (term = "pdfcairo")
@@ -46,8 +46,7 @@ function printfigure(;handle::Handle    = gnuplot_state.current,
                    print_font       = PA.printfont,
                    print_size       = PA.printsize,
                    print_linewidth  = PA.printlinewidth,
-                   print_background = PA.printbackground,
-                   print_outputfile = PA.outputfile)
+                   print_background = PA.printbackground)
     fig.print = pc
     llplot(fig,print=true)
 

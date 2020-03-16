@@ -40,8 +40,13 @@ const TerminalDefaults = Dict("wxt" => Dict(:font       => "Sans,10",
                                                  :background => "white"),
                               "epscairo" => Dict(:font       => "Sans,12",
                                                  :size       => "5,3",
-                                                 :background => "white")
-)
+                                                 :background => "white"),
+                              "epslatex" => Dict(:font       => "Sans,12",
+                                                 :size       => "5,3",
+                                                 :background => "white"),
+                              "cairolatex" => Dict(:font       => "Sans,12",
+                                                 :size         => "5,3",
+                                                 :background   => "white"))
 
 # Dicts to store user-specified configuration
 default_config() = Dict(:mode => IsJupyterOrJuno ? "ijulia" : "normal",
@@ -65,7 +70,8 @@ default_config() = Dict(:mode => IsJupyterOrJuno ? "ijulia" : "normal",
                                       :zzeroaxis => "",
                                       :keyoptions => "",
                                       :palette => "",
-                                      :onlyimpulses => false),
+                                      :onlyimpulses => false,
+                                      :output => ""),
                         :curve => Dict(:plotstyle => "",
                                        :linecolor => "",
                                        :linewidth => "",
@@ -75,12 +81,12 @@ default_config() = Dict(:mode => IsJupyterOrJuno ? "ijulia" : "normal",
                                        :fillcolor => "",
                                        :fillstyle => ""),
                         :print => Dict(:print_term => "pdfcairo",
+                                       :print_termopts => "",
                                        :print_font => "",
                                        :print_size => "",
                                        :print_linewidth => "",
-                                       :print_background => "",
-                                       :print_outputfile => ""))
-
+                                       :print_background => ""))
+*
 # Set any of Gaston's configuration variables
 function set(;reset = false, terminal=config[:term][:terminal],
              mode = config[:mode], kw...)
@@ -132,22 +138,24 @@ const term_window = ["qt", "wxt", "x11", "aqua"]
 # outputs text
 const term_text = ["dumb", "sixelgd"]
 # outputs to a file
-const term_file = ["svg", "gif", "pngcairo", "pdfcairo", "epscairo"]
+const term_file = ["svg", "gif", "pngcairo", "pdfcairo", "epscairo",
+                   "epslatex", "cairolatex"]
 # supports size
 const term_sup_size = ["qt", "wxt", "x11", "sixelgd", "svg", "gif",
-                       "dumb", "pngcairo", "pdfcairo", "epscairo"]
+                       "dumb", "pngcairo", "pdfcairo", "epscairo",
+                       "epslatex", "cairolatex"]
 # supports font
 const term_sup_font = ["qt", "wxt", "x11", "aqua", "sixelgd", "svg",
-                       "gif","pngcairo", "pdfcairo", "epscairo"]
-# supports linewidth
-const term_sup_lw = ["qt", "wxt", "x11", "aqua", "sixelgd", "svg",
-                     "gif", "pngcairo", "pdfcairo", "epscairo"]
+                       "gif","pngcairo", "pdfcairo", "epscairo",
+                       "epslatex", "cairolatex"]
 # supports background color
-const term_sup_bkgnd = ["sixelgd", "svg", "wxt", "gif", "pdfcairo", "pngcairo", "epscairo"]
+const term_sup_bkgnd = ["sixelgd", "svg", "wxt", "gif", "pdfcairo",
+                        "pngcairo", "epscairo", "epslatex", "cairolatex"]
 
 # List of valid configuration values
 const supported_terminals = ["", "qt", "wxt", "x11", "aqua", "dumb", "sixelgd",
-                             "svg", "gif", "pngcairo", "pdfcairo", "epscairo"]
+                             "svg", "gif", "pngcairo", "pdfcairo", "epscairo",
+                             "epslatex", "cairolatex"]
 const supported_2Dplotstyles = ["", "lines", "linespoints", "points",
                                 "impulses", "boxes", "errorlines", "errorbars",
                                 "dots", "steps", "fsteps", "fillsteps",
@@ -282,7 +290,7 @@ const fs_syn = [:fillstyle, :fs]
 const bw_syn = [:boxwidth, :bw]
 const ko_syn = [:keyoptions, :ko]
 const bg_syn = [:background, :bg]
-const of_syn = [:outputfile, :of, :filename]
+const of_syn = [:output, :of, :filename]
 const zax_syn = [:xzeroaxis, :xza]
 const zay_syn = [:yzeroaxis, :yza]
 const zaz_syn = [:zzeroaxis, :zza]

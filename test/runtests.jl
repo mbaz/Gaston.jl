@@ -62,7 +62,7 @@ using Gaston, Test
     end
     @test set(terminal="x11") == nothing
     @test set(termopts="noenhanced") == nothing
-    @test set(print_outputfile="A") == nothing
+    @test set(output="A") == nothing
     @test set(print_font="A") == nothing
     @test set(print_linewidth="3") == nothing
     @test set(print_size="10,10") == nothing
@@ -467,7 +467,7 @@ end
     closeall()
     set(reset=true)
     set(mode="null")
-    set(print_outputfile=tempname())
+    set(output=tempname())
     plot(1:10)
     @test begin
         printfigure()
