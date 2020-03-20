@@ -219,8 +219,6 @@ function gnuplot_send_fig_config(config)
     config.palette != "" && gnuplot_send("set palette "*config.palette)
 end
 
-version() = "0.10.0-pre"
-
 # write commands to gnuplot's pipe
 function gnuplot_send(s)
     config[:debug] && println(s)  # print gnuplot commands if debug enabled

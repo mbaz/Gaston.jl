@@ -15,6 +15,8 @@ import Base.show, Base.isempty
 using Random
 using DelimitedFiles
 
+const VERSION = v"0.11"
+
 ## Handle Unix/Windows differences
 #
 # Define gnuplot's end-of-plot delimiter. It is different in Windows
