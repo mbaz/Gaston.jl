@@ -89,6 +89,18 @@ end
     end == false
     @test closeall() == 3
     @test begin
+        plot(1:10,cos)
+        Gaston.gnuplot_state.gp_error
+    end == false
+    @test begin
+        plot!(1:10,cos)
+        Gaston.gnuplot_state.gp_error
+    end == false
+    @test begin
+        stem(1:10,cos)
+        Gaston.gnuplot_state.gp_error
+    end == false
+    @test begin
         set(termopts="feed noenhanced ansi")
         plot(sin.(-3:0.01:3),
              legend = "sine",

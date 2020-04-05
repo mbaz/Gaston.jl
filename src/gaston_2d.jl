@@ -84,6 +84,7 @@ plot(x::Real,y::Real;args...) = plot([x],[y];args...)  # plot a single point
 # plot complex inputs
 plot(c::Complex;args...) = plot(real(c),imag(c);args...)
 plot(c::ComplexCoord;args...) = plot(real(c),imag(c);args...)
+plot(x::Coord,f::Function;args...) = plot(x, [f(xx) for xx in x]; args...)
 
 # plot a matrix
 plot(M::Matrix;args...) = plot(1:size(M)[1],M;args...)
@@ -220,14 +221,14 @@ plot!(y::Coord;args...) = plot!(1:length(y),y;args...)
 plot!(x::Real,y::Real;args...) = plot!([x],[y];args...)
 plot!(c::Complex;args...) = plot!(real(c),imag(c);args...)
 plot!(c::ComplexCoord;args...) = plot!(real(c),imag(c);args...)
-
-scatter(y::ComplexCoord;args...) = scatter(real(y),imag(y);args...)
+plot!(x::Coord,f::Function;args...) = plot!(x, [f(xx) for xx in x];args...)
 
 function scatter(x::Coord,y::Coord;
                  handle::Handle = gnuplot_state.current,
                  args...)
     plot(x,y,plotstyle="points",handle=handle;args...)
 end
+scatter(y::ComplexCoord;args...) = scatter(real(y),imag(y);args...)
 
 scatter!(y::ComplexCoord;args...) = scatter!(real(y),imag(y);args...)
 scatter!(x::Coord,y::Coord;handle::Handle = gnuplot_state.current,args...) =
@@ -246,6 +247,7 @@ function stem(y;handle=gnuplot_state.current,
               onlyimpulses=config[:axes][:onlyimpulses],args...)
     stem(1:length(y),y;handle=handle,onlyimpulses=onlyimpulses,args...)
 end
+stem(x::Coord,f::Function;args...) = stem(x, [f(xx) for xx in x]; args...)
 
 function bar(x::Coord,y::Coord;
              handle::Handle = gnuplot_state.current, args...)
