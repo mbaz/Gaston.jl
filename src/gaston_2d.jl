@@ -1,93 +1,206 @@
 # 2D plots
-function plot(x::Coord, y::Coord;
+function plot(x::Coord, y::Coord, z::Coord = Coord();
+              gpcom           = "",
+              handle::Handle  = gnuplot_state.current,
               financial::FCuN = FinancialCoords(),
-              err::ECuN = ErrorCoords(),
-              handle::Handle = gnuplot_state.current,
+              err::ECuN       = ErrorCoords(),
               args...)
 
-    # process arguments
-    PA = PlotArgs()
+    # Create new figure configuration with default values.
+    tc = TermConf()
+    ac = AxesConf()
+    cc = CurveConf()
+
+    ## Process optional keyword arguments.
+    # in `title = "graph"`, we call `title` the argument and `"graph"` the value
     for k in keys(args)
-        # substitute synonyms
-        key = k
-        for s in syn
-            key ∈ s && (key = s[1]; break)
+        # verify argument is valid
+        k in syn_list || throw(ArgumentError("unknown argument $k"))
+        # find official name if a synonym was used, store it in `argument`,
+        #   and store its value in `value`.
+        # the keys of dict `synonyms` are the official argument names
+        argument, value = nothing, nothing
+        for a in keys(synonyms)
+            if k ∈ synonyms[a]
+                argument = a
+                value = args[k]
+                break
+            end
         end
-        # store arguments
-        for f in fieldnames(PlotArgs)
-            f == key && (setfield!(PA, f, string(args[k])); break)
+        # translate argument to a valid gnuplot command
+        value = parse(argument, value)
+        # store arguments in figure configuration structs
+        for c in (tc, ac, cc)
+            if argument in fieldnames(typeof(c))
+                setfield!(c, argument, value)
+                break
+            end
         end
     end
 
-    # validation and defaults
-    valid_2Dplotstyle(PA.plotstyle)
-    valid_linestyle(PA.linestyle)
-    valid_pointtype(PA.pointtype)
-    valid_axis(PA.axis)
-    valid_range(PA.xrange)
-    valid_range(PA.yrange)
-    valid_coords(x,y,err=err,fin=financial)
-    valid_numeric(PA.pointsize)
-    valid_numeric(PA.linewidth)
-
-    term = config[:term][:terminal]
-    PA.font == "" && (PA.font = TerminalDefaults[term][:font])
-    PA.size == "" && (PA.size = TerminalDefaults[term][:size])
-    PA.linewidth == "" && (PA.linewidth = "1")
-    PA.background == "" && (PA.background = TerminalDefaults[term][:background])
+    # validate what we can
+    valid(ac)
+    valid(cc)
+    valid(tc)
+    valid(x, y, z, err=err, fin=financial)
 
     # determine handle and clear figure
     handle = figure(handle, redraw = false)
     clearfigure(handle)
 
     # create curve
-    tc = TermConf(font       = PA.font,
-                  size       = PA.size,
-                  background = PA.background)
-
-    ac = AxesConf(title      = PA.title,
-                  xlabel     = PA.xlabel,
-                  ylabel     = PA.ylabel,
-                  grid       = PA.grid,
-                  boxwidth   = PA.boxwidth,
-                  keyoptions = PA.keyoptions,
-                  axis       = PA.axis,
-                  xrange     = PA.xrange,
-                  yrange     = PA.yrange,
-                  xzeroaxis  = PA.xzeroaxis,
-                  yzeroaxis  = PA.yzeroaxis,
-                 )
-
-    cc = CurveConf(legend    = PA.legend,
-                   plotstyle = PA.plotstyle,
-                   linecolor = PA.linecolor,
-                   linewidth = PA.linewidth,
-                   linestyle = PA.linestyle,
-                   pointtype = PA.pointtype,
-                   pointsize = PA.pointsize,
-                   fillstyle = PA.fillstyle,
-                   fillcolor = PA.fillcolor)
-
     c = Curve(x    = x,
               y    = y,
+              z    = z,
               F    = financial,
               E    = err,
               conf = cc)
 
     # push curve we just created to current figure
-    push_figure!(handle,tc,ac,c,PA.gpcom)
+    push_figure!(handle,tc,ac,c,gpcom)
 
     return gnuplot_state.figs[findfigure(handle)]
 end
-plot(y::Coord;args...) = plot(1:length(y),y;args...)
-plot(x::Real,y::Real;args...) = plot([x],[y];args...)  # plot a single point
-# plot complex inputs
-plot(c::Complex;args...) = plot(real(c),imag(c);args...)
-plot(c::ComplexCoord;args...) = plot(real(c),imag(c);args...)
+
+# Add a curve to an existing figure
+function plot!(x::Coord,y::Coord, z::Coord = Coord();
+               handle::Handle  = gnuplot_state.current,
+               financial::FCuN = FinancialCoords(),
+               err::ECuN       = ErrorCoords(),
+               args...)
+
+    # Create a new curve configuration with default values.
+    cc = CurveConf()
+
+    # Process optional keyword arguments.
+    for k in keys(args)
+        # verify argument is valid
+        k in syn_list || throw(ArgumentError("unknown argument $k"))
+        # find official name if a synonym was used, store it in `argument`,
+        #   and store its value in `value`.
+        # the keys of dict `synonyms` are the official argument names
+        argument, value = nothing, nothing
+        for a in keys(synonyms)
+            if k ∈ synonyms[a]
+                argument = a
+                value = args[k]
+                break
+            end
+        end
+        # translate argument to a valid gnuplot command
+        value = parse(argument, value)
+        # store arguments in curve configuration struct
+        if argument in fieldnames(CurveConf)
+            setfield!(cc, argument, value)
+        end
+    end
+
+    # validate what we can
+    valid(cc)
+
+    # determine handle
+    handles = gethandles()
+    handle ∈ handles || error("Cannot append curve to non-existing handle")
+    handle = figure(handle, redraw = false)
+
+    # create curve
+    c = Curve(x    = x,
+              y    = y,
+              z    = z,
+              F    = financial,
+              E    = err,
+              conf = cc)
+
+    # push new curve to current figure
+    push_figure!(handle,c)
+    return gnuplot_state.figs[findfigure(handle)]
+end
+
+# Alternative `plot` methods
+plot(y::Coord;args...) = plot(1:length(y),y;args...)     # omit `x` coordinate
+plot(x::Real,y::Real;args...) = plot([x],[y];args...)    # single real point
+plot(c::Complex;args...) = plot(real(c),imag(c);args...) # complex point
+plot(c::ComplexCoord;args...) = plot(real(c),imag(c);args...) # complex vector
+plot(x::Coord,f::Function;args...) = plot(x,f.(x);args...) # function
+plot(M::Matrix;args...) = plot(1:size(M)[1],M;args...) # a matrix
+
+plot!(y::Coord;args...) = plot!(1:length(y),y;args...) # missing `x` coordinate
+plot!(x::Real,y::Real;args...) = plot!([x],[y];args...) # single real point
+plot!(c::Complex;args...) = plot!(real(c),imag(c);args...) # complex point
+plot!(c::ComplexCoord;args...) = plot!(real(c),imag(c);args...) # complex vector
+plot!(x::Coord,f::Function;args...) = plot!(x,f.(x);args...) # function
+
+# scatter plots
+scatter(x::Coord,y::Coord; args...) = plot(x,y,ps=:points;args...)
+scatter(y::ComplexCoord;args...) = scatter(real(y),imag(y);args...) # complex
+scatter!(x::Coord,y::Coord;args...) = plot!(x,y,ps=:points;args...)
+scatter!(y::ComplexCoord;args...) = scatter!(real(y),imag(y);args...) # complex
+
+# stem plots
+function stem(x::Coord,y::Coord;onlyimpulses=config[:axes][:onlyimpulses],args...)
+    p = plot(x,y;ps=:impulses, lc=:blue,lw=1.25,args...)
+    onlyimpulses || (p = plot!(x,y;ps=:points,lc=:blue,mk="ecircle",ms=1.5,args...))
+    return p
+end
+function stem(y::Coord;onlyimpulses=config[:axes][:onlyimpulses],args...)
+    stem(1:length(y),y;onlyimpulses=onlyimpulses,args...)
+end
+
+# bar plots
+function bar(x::Coord,y::Coord;args...)
+    plot(x,y;ps="boxes",bw="0.8 relative",fs="solid 0.5",args...)
+end
+bar(y;args...) = bar(1:length(y),y;args...)
+
+# histogram
+function histogram(data::Coord;bins::Int=10,norm::Real=1.0,args...)
+    # validation
+    bins < 1 && throw(DomainError(bins, "at least one bin is required"))
+    norm < 0 && throw(DomainError(norm, "norm must be a positive number."))
+
+    x, y = hist(data,bins)
+    y = norm*y/(step(x)*sum(y))  # make area under histogram equal to norm
+
+    bar(x, y; boxwidth="0.9 relative", fillstyle="solid 0.5", args...)
+end
+
+# Image plots
+function imagesc(x::Coord,y::Coord,z::Coord; args...)
+    ps = "image pixels"
+    ndims(z) == 3 && (ps = "rgbimage")
+    plot(x,y,z,ps=ps)
+end
+imagesc(z::Matrix;args...) = imagesc(1:size(z)[2],1:size(z)[1],z;args...)
+imagesc(z::AbstractArray{<:Real,3};args...) = imagesc(1:size(z)[3],1:size(z)[2],z;args...)
+
+# 3-D surface plots
+surf(x::Coord,y::Coord,z::Coord;args...) = plot(x,y,z;args...)
+surf!(x::Coord,y::Coord,z::Coord;args...) = plot!(x,y,z;args...)
+surf(x::Coord,y::Coord,f::Function;args...) = plot(x,y,meshgrid(x,y,f);args...) # 3D function
+surf!(x::Coord,y::Coord,f::Function;args...) = plot!(x,y,meshgrid(x,y,f);args...) # 3D function
+surf(z::Matrix;args...) = surf(1:size(z)[2],1:size(z)[1],z;args...) # matrix
+surf!(z::Matrix;args...) = surf!(1:size(z)[2],1:size(z)[1],z;args...) # matrix
+
+# 3-D contour plots
+function contour(x::Coord,y::Coord,z::Coord;labels=true,gpcom="",args...)
+    gp = gpcom*"""unset key
+            set view map
+            set contour base
+            unset surface
+            set cntrlabel font ",7"
+            set cntrparam levels 10"""
+    p = surf(x,y,z;gpcom=gp,args...)
+    labels && (p = surf!(x,y,z;plotstyle="labels"))
+    return p
+end
+contour(x::Coord,y::Coord,f::Function;args...) = contour(x,y,meshgrid(x,y,f);args...)
+contour(z::Matrix;args...) = contour(1:size(z)[2],1:size(z)[1],z;args...)
+
+# 3-D scatter plots
+scatter3(x::Coord,y::Coord,z::Coord;args...) = surf(x,y,z,ps="points";args...)
+scatter3!(x::Coord,y::Coord,z::Coord;args...) = surf!(x,y,z,ps="points";args...)
 
 # plot a matrix
-plot(M::Matrix;args...) = plot(1:size(M)[1],M;args...)
-
 function plot(x::Coord,M::Matrix;
               legend     = "",
               linewidth  = "1",
@@ -172,84 +285,3 @@ function plot(x::Coord,M::Matrix;
     return ans
 end
 
-# Add a curve to an existing figure
-function plot!(x::Coord,y::Coord;
-             financial::FCuN = FinancialCoords(),
-             err::ECuN       = ErrorCoords(),
-             handle::Handle  = gnuplot_state.current,
-             args...)
-
-    # process arguments
-    PA = PlotArgs()
-    for k in keys(args)
-        for f in fieldnames(PlotArgs)
-            k == f && setfield!(PA, f, string(args[k]))
-        end
-    end
-    # validation
-    valid_2Dplotstyle(PA.plotstyle)
-    valid_pointtype(PA.pointtype)
-    valid_linestyle(PA.linestyle)
-    valid_coords(x,y,err=err,fin=financial)
-    handles = gethandles()
-    handle ∈ handles || error("Cannot append curve to non-existing handle")
-    handle = figure(handle, redraw = false)
-
-    # create new curve
-    cc = CurveConf(legend    = PA.legend,
-                   plotstyle = PA.plotstyle,
-                   linecolor = PA.linecolor,
-                   linewidth = PA.linewidth,
-                   linestyle = PA.linestyle,
-                   pointtype = PA.pointtype,
-                   pointsize = PA.pointsize,
-                   fillstyle = PA.fillstyle,
-                   fillcolor = PA.fillcolor)
-
-    c = Curve(x    = x,
-              y    = y,
-              F    = financial,
-              E    = err,
-              conf = cc)
-
-    # push new curve to current figure
-    push_figure!(handle,c)
-    return gnuplot_state.figs[findfigure(handle)]
-end
-plot!(y::Coord;args...) = plot!(1:length(y),y;args...)
-plot!(x::Real,y::Real;args...) = plot!([x],[y];args...)
-plot!(c::Complex;args...) = plot!(real(c),imag(c);args...)
-plot!(c::ComplexCoord;args...) = plot!(real(c),imag(c);args...)
-
-scatter(y::ComplexCoord;args...) = scatter(real(y),imag(y);args...)
-
-function scatter(x::Coord,y::Coord;
-                 handle::Handle = gnuplot_state.current,
-                 args...)
-    plot(x,y,plotstyle="points",handle=handle;args...)
-end
-
-scatter!(y::ComplexCoord;args...) = scatter!(real(y),imag(y);args...)
-scatter!(x::Coord,y::Coord;handle::Handle = gnuplot_state.current,args...) =
-    plot!(x,y,plotstyle="points";handle=handle,args...)
-
-function stem(x::Coord,y::Coord;
-              onlyimpulses = config[:axes][:onlyimpulses],
-              handle::Handle = gnuplot_state.current, args...)
-    p = plot(x,y;handle=handle,
-             plotstyle="impulses", linecolor="blue",linewidth="1.25",args...)
-    onlyimpulses || (p = plot!(x,y;plotstyle="points", linecolor="blue",
-                               pointtype="ecircle", pointsize="1.5",args...))
-    return p
-end
-function stem(y;handle=gnuplot_state.current,
-              onlyimpulses=config[:axes][:onlyimpulses],args...)
-    stem(1:length(y),y;handle=handle,onlyimpulses=onlyimpulses,args...)
-end
-
-function bar(x::Coord,y::Coord;
-             handle::Handle = gnuplot_state.current, args...)
-    plot(x,y; handle=handle,
-         plotstyle="boxes",boxwidth="0.8 relative",fillstyle="solid 0.5",args...)
-end
-bar(y;handle=gnuplot_state.current,args...) = bar(1:length(y),y;handle=handle,args...)

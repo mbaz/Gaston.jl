@@ -35,9 +35,6 @@ include("gaston_config.jl")
 include("gaston_figures.jl")
 include("gaston_llplot.jl")
 include("gaston_2d.jl")
-include("gaston_3d.jl")
-include("gaston_histograms.jl")
-include("gaston_images.jl")
 include("gaston_print.jl")
 
 # define function to determine if function is empty

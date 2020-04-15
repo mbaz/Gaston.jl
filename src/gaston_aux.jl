@@ -22,13 +22,18 @@ function pointtype(x::String)
     return "1"
 end
 
-# create a Z-coordinate matrix from x, y coordinates and a function
+""" mesgrid(x, y, z)
+
+    Create a z-coordinate matrix from `x`, `y` coordinates and a function `f`,
+    such that `z[row,col] = f(x[col], y[row)`"""
 function meshgrid(x,y,f)
-    Z = zeros(length(x),length(y))
-    for k = 1:length(x)
-        Z[k,:] = [ f(i,j) for i=x[k], j=y ]
+    z = zeros(length(y),length(x))
+    for (yi,yy) in enumerate(y)
+        for (xi,xx) in enumerate(x)
+            z[yi,xi] = f(xx,yy)
+        end
     end
-    return Z
+    return z
 end
 
 # create x,y coordinates for a histogram, from a sample vector, using a number
@@ -218,6 +223,15 @@ function gnuplot_send_fig_config(config)
     end
     config.palette != "" && gnuplot_send("set palette "*config.palette)
 end
+
+# parse arguments
+parse(a, v) = string(v)  # placeholder
+
+# validate arguments
+valid(tc::TermConf) = true
+valid(ac::AxesConf) = true
+valid(cc::CurveConf) = true
+valid(x,y,z;err=[],fin=[]) = true
 
 # write commands to gnuplot's pipe
 function gnuplot_send(s)

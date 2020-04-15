@@ -58,13 +58,20 @@ default_config() = Dict(:mode => IsJupyterOrJuno ? "ijulia" : "normal",
                                       :size => "",
                                       :background => "",
                                       :termopts => ""),
-                        :axes => Dict(:axis => "",
+                        :axes => Dict(:title => "",
+                                      :xlabel => "",
+                                      :ylabel => "",
+                                      :zlabel => "",
+                                      :axis => "",
                                       :xrange => "",
                                       :yrange => "",
                                       :zrange => "",
                                       :fillstyle => "",
                                       :grid => "",
                                       :boxwidth => "",
+                                      :xtics => "",
+                                      :ytics => "",
+                                      :ztics => "",
                                       :xzeroaxis => "",
                                       :yzeroaxis => "",
                                       :zzeroaxis => "",
@@ -278,23 +285,38 @@ function valid_coords(x,y;err=ErrorCoords(),fin=FinancialCoords())
 
 end
 
-# Define plot argument synonyms
-const ps_syn = [:plotstyle, :ps]
-const lc_syn = [:linecolor, :lc]
-const lw_syn = [:linewidth, :lw]
-const ls_syn = [:linestyle, :ls]
-const pt_syn = [:pointtype, :pt, :marker, :mk]
-const pz_syn = [:pointsize, :ps, :markersize, :mks]
-const fc_syn = [:fillcolor, :fc]
-const fs_syn = [:fillstyle, :fs]
-const bw_syn = [:boxwidth, :bw]
-const ko_syn = [:keyoptions, :ko]
-const bg_syn = [:background, :bg]
-const of_syn = [:output, :of, :filename]
-const zax_syn = [:xzeroaxis, :xza]
-const zay_syn = [:yzeroaxis, :yza]
-const zaz_syn = [:zzeroaxis, :zza]
+# Define argument synonyms
+const synonyms = Dict(:title => [:title],
+                      :xlabel => [:xlabel, :xl, :xlab],
+                      :ylabel => [:ylabel, :yl, :ylab],
+                      :zlabel => [:zlabel, :zl, :zlab],
+                      :fillstyle => [:fillstyle, :fs],
+                      :grid => [:grid],
+                      :boxwidth => [:boxwidth, :bw],
+                      :keyoptions => [:keyoptions, :ko],
+                      :axis => [:axis],
+                      :xtics => [:xtics, :xt],
+                      :ytics => [:ytics, :yt],
+                      :ztics => [:ztics, :zt],
+                      :xrange => [:xrange, :xr],
+                      :yrange => [:yrange, :yr],
+                      :zrange => [:zrange, :zr],
+                      :xzeroaxis => [:xzeroaxis, :xza],
+                      :yzeroaxis => [:yzeroaxis, :yza],
+                      :zzeroaxis => [:zzeroaxis, :zza],
+                      :palette => [:palette],
+                      :output => [:output, :of, :filename],
+                      :legend => [:legend, :leg],
+                      :plotstyle => [:plotstyle, :ps],
+                      :linecolor => [:linecolor, :lc],
+                      :linewidth => [:linewidth, :lw],
+                      :linestyle => [:linestyle, :ls],
+                      :pointtype => [:pointtype, :pt, :marker, :mk],
+                      :pointsize => [:pointsize, :ps, :markersize, :ms],
+                      :fillcolor => [:fillcolor, :fc],
+                      :font => [:font],
+                      :size => [:size],
+                      :background => [:background, :bg]
+                     )
 
-const syn = [ps_syn, lc_syn, lw_syn, ls_syn, pt_syn, pz_syn,
-             fc_syn, fs_syn, bw_syn, ko_syn, bg_syn, of_syn,
-             zax_syn, zay_syn, zaz_syn]
+const syn_list = union(values(synonyms)...)

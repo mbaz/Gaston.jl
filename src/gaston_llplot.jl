@@ -63,128 +63,82 @@ function llplot(fig::Figure;print=false)
 
     # Send appropriate coordinates and data to gnuplot, depending on
     # whether we are doing 2-d, 3-d or image plots.
-
-    # 2-d plot: Z is empty or plostyle is {,rgb}image
-    if isempty(fig.curves[1].Z) ||
-        fig.curves[1].conf.plotstyle == "image" ||
-        fig.curves[1].conf.plotstyle == "rgbimage"
-        # create data file
-        for i in fig.curves
-            ps = i.conf.plotstyle
+    for curve in fig.curves
+        ps = curve.conf.plotstyle
+        # 2-d plot: z is empty
+        if isempty(curve.z)
+            # error bars
             if ps == "errorbars" || ps == "errorlines"
-                if isempty(i.E.yhigh)
+                if isempty(curve.E.yhigh)
                     # ydelta (single error coordinate)
-                    writedlm(f,[i.x i.y i.E.ylow],' ')
+                    writedlm(f,[curve.x curve.y curve.E.ylow])
                 else
                     # ylow, yhigh (double error coordinate)
-                    writedlm(f,[i.x i.y i.E.ylow i.E.yhigh],' ')
+                    writedlm(f,[curve.x curve.y curve.E.ylow curve.E.yhigh])
                 end
+            # financial bars
             elseif ps == "financebars"
-                # data is written to tmparr, which is then written to disk
-                tmparr = zeros(length(i.x),5)
-                # output matrix
-                for col = 1:length(i.x)
-                    tmparr[col,1] = i.x[col]
-                    tmparr[col,2] = i.F.open[col]
-                    tmparr[col,3] = i.F.low[col]
-                    tmparr[col,4] = i.F.high[col]
-                    tmparr[col,5] = i.F.close[col]
-                end
-                writedlm(f,tmparr,' ')
-            elseif ps == "image"
-                # data is written to tmparr, which is then written to disk
-                tmparr = zeros(length(i.x)*length(i.y),3)
-                tmparr_row_index = 1  # index into tmparr row
-                # output matrix
-                for row = 1:length(i.y)
-                    x = length(i.x)
-                    for col = 1:length(i.x)
-                        tmparr[tmparr_row_index,1] = i.x[col]
-                        tmparr[tmparr_row_index,2] = i.y[row]
-                        tmparr[tmparr_row_index,3] = i.Z[row,col]
-                        tmparr_row_index = tmparr_row_index+1
-                        x = x-1
-                    end
-                end
-                writedlm(f,tmparr,' ')
-            elseif ps == "rgbimage"
-                # data is written to tmparr, which is then written to disk
-                tmparr = zeros(length(i.x)*length(i.y), 5)
-                tmparr_row_index = 1
-                # output matrix
-                for col = 1:length(i.x)
-                    y = length(i.y)
-                    for row = 1:length(i.y)
-                        tmparr[tmparr_row_index,1] = i.x[col]
-                        tmparr[tmparr_row_index,2] = i.y[row]
-                        tmparr[tmparr_row_index,3] = i.Z[y,col,1]
-                        tmparr[tmparr_row_index,4] = i.Z[y,col,2]
-                        tmparr[tmparr_row_index,5] = i.Z[y,col,3]
-                        tmparr_row_index = tmparr_row_index+1
-                        y = y-1
-                    end
-                end
-                writedlm(f,tmparr,' ')
+                writedlm(f,[curve.x curve.F.open curve.F.low curve.F.high curve.F.close])
+            # regular plot; format is "x y"
             else
-                writedlm(f,[i.x i.y],' ')
+                writedlm(f,[curve.x curve.y])
             end
-            write(f,"\n\n")
-        end
-        close(f)
-
-        # Send gnuplot commands.
-        # Build figure configuration to gnuplot
-        gnuplot_send_fig_config(fig.axes)
-        # Send user command to gnuplot
-        !isempty(fig.gpcom) && gnuplot_send(fig.gpcom)
-        # send plot command to gnuplot
-        gnuplot_send(linestr(fig.curves, "plot", filename))
-
-    # 3-d plot: Z is not empty and plotstyle is not {,rgb}image
-    elseif !isempty(fig.curves[1].Z) &&
-            fig.curves[1].conf.plotstyle != "image" &&
-            fig.curves[1].conf.plotstyle != "rgbimage"
-        # create data file
-        if isa(fig.curves[1].Z, Matrix)  # surface plot
-            for i in fig.curves
-                # data is written to tmparr, which is then written to disk
-                tmparr = zeros(1, 3)
-                tmparr_row_index = 1
-                for row in 1:length(i.x)
-                    for col in 1:length(i.y)
-                        tmparr[1,1] = i.x[row]
-                        tmparr[1,2] = i.y[col]
-                        tmparr[1,3] = i.Z[row,col]
-                        writedlm(f,tmparr,' ')
-                    end
-                    write(f,"\n")
+        # image; format is "x y z" with reversed "y"
+        elseif length(ps)>4 && ps[1:5] == "image"
+            x = repeat(curve.x,inner=length(curve.y))
+            y = repeat(reverse(curve.y),length(curve.x))
+            z = vec(curve.z)
+            writedlm(f,[x y z])
+        # rgbimage; format is "x y r g b" with reversed "y"
+        elseif ps == "rgbimage"
+            x = repeat(curve.x,inner=length(curve.y))
+            y = repeat(reverse(curve.y),length(curve.x))
+            r = vec(curve.z[1,:,:])
+            g = vec(curve.z[2,:,:])
+            b = vec(curve.z[3,:,:])
+            writedlm(f,[x y r g b])
+        # 3-D image
+        else
+            # surface plot; format is in "triplets" (gnuplot manual, p. 197)
+            if isa(curve.z, Matrix)
+                ly = length(curve.y)
+                tmparr = zeros(ly, 3)
+                for (xi,x) in enumerate(curve.x)
+                    tmparr[:,1] .= x
+                    tmparr[:,2] = curve.y
+                    tmparr[:,3] = curve.z[:,xi]
+                    writedlm(f, tmparr)
+                    write(f,'\n')
                 end
-                write(f,"\n\n")
-            end
-        else # scatter plot
-            for i in fig.curves
-                # data is written to tmparr, which is then written to disk
-                tmparr = zeros(1, 3)
-                tmparr_row_index = 1
-                for k in 1:length(i.x)
-                    tmparr[1,1] = i.x[k]
-                    tmparr[1,2] = i.y[k]
-                    tmparr[1,3] = i.Z[k]
-                    writedlm(f,tmparr,' ')
+            # scatter plot: format is in "triplets"
+            else
+                tmparr = zeros(3)
+                for k in 1:length(curve.x)
+                    tmparr[1] = curve.x[k]
+                    tmparr[2] = curve.y[k]
+                    tmparr[3] = curve.z[k]
+                    writedlm(f,tmparr')
                 end
                 write(f,"\n")
             end
-            write(f,"\n\n")
         end
-
-        close(f)
-        # send figure configuration to gnuplot
-        gnuplot_send_fig_config(fig.axes)
-        # Send user command to gnuplot
-        !isempty(fig.gpcom) && gnuplot_send(fig.gpcom)
-        # send command to gnuplot
-        gnuplot_send(linestr(fig.curves, "splot",filename))
+        write(f,"\n\n")
     end
+    close(f)
+
+    # Send gnuplot commands.
+    # Build figure configuration to send to gnuplot
+    gnuplot_send_fig_config(fig.axes)
+    # Send user command to gnuplot
+    !isempty(fig.gpcom) && gnuplot_send(fig.gpcom)
+    # send plot command to gnuplot
+    if isempty(fig.curves[1].z) || occursin("image",fig.curves[1].conf.plotstyle)
+        pcom = "plot"
+    else
+        pcom = "splot"
+    end
+    gnuplot_send(linestr(fig.curves, pcom, filename))
+
     # Close output files, if any
     gnuplot_send("set output")
 
