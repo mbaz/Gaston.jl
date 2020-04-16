@@ -50,8 +50,8 @@ const TerminalDefaults = Dict("wxt" => Dict(:font       => "Sans,10",
 
 # Dicts to store user-specified configuration
 default_config() = Dict(:mode => IsJupyterOrJuno ? "ijulia" : "normal",
-                        :timeouts => Dict(:stdout_timeout => Sys.isunix() ? 2 : 20,
-                                          :stderr_timeout => Sys.isunix() ? 5 : 20),
+                        :timeouts => Dict(:stdout_timeout => Sys.isunix() ? 6 : 20,
+                                          :stderr_timeout => Sys.isunix() ? 6 : 20),
                         :debug => false,
                         :term => Dict(:terminal => IsJupyterOrJuno ? "svg" : "qt",
                                       :font => "",
@@ -121,6 +121,10 @@ function set(;reset = false, terminal=config[:term][:terminal],
             kw[k] isa Bool && (config[:debug] = kw[k]; continue)
             throw(DomainError("argument to debug must be Bool"))
         end
+        if k == :stdout_timeout || k == :stderr_timeout
+            kw[k] isa Real && kw[k] > 0 && (config[:timeouts][k] = kw[k]; continue)
+            throw(DomainError("timeout argument must be a positive number"))
+        end
         k == :plotstyle && valid_plotstyle(kw[k])
         k == :linestyle && valid_linestyle(kw[k])
         k == :pointtype && valid_pointtype(kw[k])
@@ -129,7 +133,7 @@ function set(;reset = false, terminal=config[:term][:terminal],
         k == :yrange && valid_range(kw[k])
         k == :zrange && valid_range(kw[k])
         flag = true
-        for i in [:timeouts, :term, :axes, :curve, :print]
+        for i in [:term, :axes, :curve, :print]
             c = config[i]
             haskey(c, k) && (flag=false; c[k] = string(kw[k]))
         end
