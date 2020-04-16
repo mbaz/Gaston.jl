@@ -36,7 +36,7 @@ Knowledge of gnuplot is not required. Users familiar with gnuplot, however, will
 Installation
 ------------
 
-Gaston requires gnuplot to be installed in your system. It has been tested with versions 5.0 and above, and version 5.2 is recommended. Gaston also requires Julia v1.1.
+Gaston requires gnuplot (i.e. gnuplot-qt) to be installed in your system. It has been tested with versions 5.0 and above, and version 5.2 is recommended. Gaston also requires Julia v1.1.
 
 To install Gaston using Julia's packaging system, enter Julia's package manager prompt with `]`, and run
 
