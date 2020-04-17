@@ -15,6 +15,8 @@ import Base.show, Base.isempty
 using Random
 using DelimitedFiles
 
+using ColorSchemes
+
 const VERSION = v"0.11"
 
 ## Handle Unix/Windows differences

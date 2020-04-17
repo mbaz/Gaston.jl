@@ -225,11 +225,30 @@ function gnuplot_send_fig_config(config)
 end
 
 # parse arguments
-#parse(a, v) = string(v)  # placeholder
+# Calculating palettes is expensive, so store them in a cache. The cache is
+# pre-populated with gnuplot's gray palette
+Palette_cache = Dict{Symbol, String}(:gray => "gray")
+
 function parse(a, v)
-    v isa AbstractString && return
-    # parse palette
+    v isa AbstractString && return v
+    # parse palette; code inspired by @gcalderone's Gnuplot.jl
     if a == :palette
+        if v isa Symbol
+            if haskey(Palette_cache, v)
+                return Palette_cache[v]
+            end
+            cm = colorschemes[v]
+            colors = Vector{String}()
+            for i in range(0, 1, length = length(cm))
+                c = get(cm, i)
+                push!(colors, "$i $(c.r) $(c.g) $(c.b)")
+            end
+            s = "defined (" * join(colors, ", ") * ")\nset palette maxcolors $(length(cm))"
+            push!(Palette_cache, (v => s))
+            return s
+        else
+            return string(v)
+        end
     # parse tics
     elseif a == :xtics || a == :ytics || a == :ztics
         if v isa AbstractRange
