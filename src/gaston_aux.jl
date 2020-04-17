@@ -225,7 +225,40 @@ function gnuplot_send_fig_config(config)
 end
 
 # parse arguments
-parse(a, v) = string(v)  # placeholder
+#parse(a, v) = string(v)  # placeholder
+function parse(a, v)
+    v isa AbstractString && return
+    # parse palette
+    if a == :palette
+    # parse tics
+    elseif a == :xtics || a == :ytics || a == :ztics
+        if v isa AbstractRange
+            return "$(v.start),$(v.step),$(v.end)"
+        elseif v isa Tuple
+            tics = v[1]
+            labs = v[2]
+            tics isa AbstractRange && (tics = collect(v[1]))
+            s = """("$(labs[1])" $(tics[1])"""
+            for i in 2:length(tics)
+                s *= """, "$(labs[i])" $(tics[i])"""
+            end
+            s *= ")"
+        end
+    #parse grid
+    elseif a == :grid
+        v in (true, :on, :true) && return "on"
+        return ""
+    # parse range
+    elseif a == :xrange || a == :yrange || a == :zrange
+        return "[$(ifelse(isinf(a[1]),*,a[1]))|$(ifelse(isinf(a[2]),*,a[2]))]"
+    # parse zeroaxis
+    elseif a == :xzeroaxis || a == :yzeroaxis || a == :zzeroaxis
+        v in (true, :on, :true) && return "on"
+        return ""
+    else
+        return string(v)
+    end
+end
 
 # validate arguments
 valid(tc::TermConf) = true
