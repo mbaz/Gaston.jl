@@ -189,10 +189,7 @@ function gnuplot_send_fig_config(config)
     config.keyoptions != "" && gnuplot_send("set key "*config.keyoptions)
     config.boxwidth != "" && gnuplot_send("set boxwidth "*config.boxwidth)
     if config.axis != ""
-        config.axis == "semilogx" && gnuplot_send("set logscale x")
-        config.axis == "semilogy" && gnuplot_send("set logscale y")
-        config.axis == "semilogz" && gnuplot_send("set logscale z")
-        config.axis == "loglog" && gnuplot_send("set logscale xyz")
+        gnuplot_send("set "*config.axis)
     end
     config.xlabel != "" && gnuplot_send("set xlabel '"*config.xlabel*"' ")
     config.ylabel != "" && gnuplot_send("set ylabel '"*config.ylabel*"' ")
@@ -200,6 +197,9 @@ function gnuplot_send_fig_config(config)
     config.xrange != "" && gnuplot_send("set xrange "*config.xrange)
     config.yrange != "" && gnuplot_send("set yrange "*config.yrange)
     config.zrange != "" && gnuplot_send("set zrange "*config.zrange)
+    config.xtics != "" && gnuplot_send("set xtics "*config.xtics)
+    config.ytics != "" && gnuplot_send("set ytics "*config.ytics)
+    config.ztics != "" && gnuplot_send("set ztics "*config.ztics)
     if config.xzeroaxis != ""
         if config.xzeroaxis == "on"
             gnuplot_send("set xzeroaxis")
@@ -224,11 +224,11 @@ function gnuplot_send_fig_config(config)
     config.palette != "" && gnuplot_send("set palette "*config.palette)
 end
 
-# parse arguments
 # Calculating palettes is expensive, so store them in a cache. The cache is
 # pre-populated with gnuplot's gray palette
 Palette_cache = Dict{Symbol, String}(:gray => "gray")
 
+# parse arguments
 function parse(a, v)
     v isa AbstractString && return v
     # parse palette; code inspired by @gcalderone's Gnuplot.jl
@@ -252,7 +252,7 @@ function parse(a, v)
     # parse tics
     elseif a == :xtics || a == :ytics || a == :ztics
         if v isa AbstractRange
-            return "$(v.start),$(v.step),$(v.end)"
+            return "$(first(v)),$(step(v)),$(last(v))"
         elseif v isa Tuple
             tics = v[1]
             labs = v[2]
@@ -263,6 +263,14 @@ function parse(a, v)
             end
             s *= ")"
         end
+    # parse axis type
+    elseif a == :axis
+        s = string(v)
+        s == "semilogx" && return "logscale x"
+        s == "semilogy" && return "logscale y"
+        s == "semilogz" && return "logscale z"
+        s == "loglog" && return "logscale xyz"
+        return s
     #parse grid
     elseif a == :grid
         v in (true, :on, :true) && return "on"
