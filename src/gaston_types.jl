@@ -89,6 +89,7 @@ Base.@kwdef mutable struct AxesConf
     xzeroaxis::String  = config[:axes][:xzeroaxis]
     yzeroaxis::String  = config[:axes][:yzeroaxis]
     zzeroaxis::String  = config[:axes][:zzeroaxis]
+    view::String       = config[:axes][:view]
     palette::String    = config[:axes][:palette]
     output::String     = config[:axes][:output]
 end

@@ -221,6 +221,7 @@ function gnuplot_send_fig_config(config)
             gnuplot_send("set zzeroaxis "*config.zzeroaxis)
         end
     end
+    config.view != "" && gnuplot_send("set view "*config.view)
     config.palette != "" && gnuplot_send("set palette "*config.palette)
 end
 
@@ -282,6 +283,9 @@ function parse(a, v)
     elseif a == :xzeroaxis || a == :yzeroaxis || a == :zzeroaxis
         v in (true, :on, :true) && return "on"
         return ""
+    # parse view
+    elseif a == :view
+        return join(v, ", ")
     else
         return string(v)
     end
