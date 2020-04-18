@@ -7,7 +7,7 @@ module Gaston
 
 export closefigure, closeall, figure,
        plot, plot!, scatter, scatter!, stem, bar, histogram, imagesc,
-       surf, surf!, contour, scatter3, scatter3!,
+       surf, surf!, contour, scatter3, scatter3!, heatmap,
        printfigure, set
 
 import Base.show, Base.isempty

@@ -200,6 +200,9 @@ contour(z::Matrix;args...) = contour(1:size(z)[2],1:size(z)[1],z;args...)
 scatter3(x::Coord,y::Coord,z::Coord;args...) = surf(x,y,z,ps="points";args...)
 scatter3!(x::Coord,y::Coord,z::Coord;args...) = surf!(x,y,z,ps="points";args...)
 
+# 3-D heatmaps
+heatmap(x,y,z;gpcom="",args...) = surf(x,y,z,gpcom=gpcom*"set view map",ps=:pm3d;args...)
+
 # plot a matrix
 function plot(x::Coord,M::Matrix;
               legend     = "",
