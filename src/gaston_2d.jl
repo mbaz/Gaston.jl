@@ -59,7 +59,11 @@ function plot(x::Coord, y::Coord, z::Coord = Coord();
     # push curve we just created to current figure
     push_figure!(handle,tc,ac,c,gpcom)
 
-    return gnuplot_state.figs[findfigure(handle)]
+    # write gnuplot data to a file
+    fig = gnuplot_state.figs[findfigure(handle)]
+    write_data(c, fig.datafile)
+
+    return fig
 end
 
 # Add a curve to an existing figure
@@ -113,7 +117,12 @@ function plot!(x::Coord,y::Coord, z::Coord = Coord();
 
     # push new curve to current figure
     push_figure!(handle,c)
-    return gnuplot_state.figs[findfigure(handle)]
+
+    # write gnuplot data to a file
+    fig = gnuplot_state.figs[findfigure(handle)]
+    write_data(c, fig.datafile, append=true)
+
+    return fig
 end
 
 # Alternative `plot` methods

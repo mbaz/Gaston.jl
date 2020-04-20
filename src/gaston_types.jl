@@ -98,17 +98,18 @@ end
 # set of curves.
 const Handle = Union{Int,Nothing}  # handle type
 
-mutable struct Figure
-    handle::Handle               # each figure has a unique handle
-    term::TermConf               # term options
-    print::PrintConf             # print optinos
-    axes::AxesConf               # figure configuration
-    curves::Union{Nothing,Vector{Curve}} # a vector of curves
-    svg::String          # SVG data returned by gnuplot (used in IJulia)
-    gpcom::String        # a gnuplot command to run before plotting
+Base.@kwdef mutable struct Figure
+    handle::Handle                  # each figure has a unique handle
+    datafile = tempname()           # file to store plot data
+    term::TermConf   = TermConf()   # term options
+    print::PrintConf = PrintConf()  # print optinos
+    axes::AxesConf   = AxesConf()   # figure configuration
+    curves::Union{Nothing,Vector{Curve}} = nothing # a vector of curves
+    svg::String    = ""      # SVG data returned by gnuplot (used in IJulia)
+    gpcom::String  = ""      # a gnuplot command to run before plotting
 end
 # Construct an empty figure with given handle
-Figure(handle) = Figure(handle,TermConf(),PrintConf(),AxesConf(),nothing,"","")
+Figure(handle) = Figure(handle=handle)
 
 # We need a global variable to keep track of gnuplot's state
 mutable struct GnuplotState

@@ -33,6 +33,76 @@ function async_reader(io::IO, timeout_sec)::Channel
     return ch
 end
 
+# Write plotting data to file.
+# `curve` is a Curve.
+# `file` is the file to write to.
+# If `append` is true, data is appended at the end of the file (for `plot!`)
+function write_data(curve, file; append = false)
+    mode = "w"
+    append && (mode = "a")
+    open(file, mode) do io
+        ps = curve.conf.plotstyle
+        # 2-d plot: z is empty
+        if isempty(curve.z)
+            # error bars
+            if ps == "errorbars" || ps == "errorlines"
+                if isempty(curve.E.yhigh)
+                    # ydelta (single error coordinate)
+                    writedlm(io,[curve.x curve.y curve.E.ylow])
+                else
+                    # ylow, yhigh (double error coordinate)
+                    writedlm(io,[curve.x curve.y curve.E.ylow curve.E.yhigh])
+                end
+            # financial bars
+            elseif ps == "financebars"
+                writedlm(io,[curve.x curve.F.open curve.F.low curve.F.high curve.F.close])
+            # regular plot; format is "x y"
+            else
+                writedlm(io,[curve.x curve.y])
+            end
+        # image; format is "x y z" with reversed "y"
+        elseif length(ps)>4 && ps[1:5] == "image"
+            x = repeat(curve.x,inner=length(curve.y))
+            y = repeat(reverse(curve.y),length(curve.x))
+            z = vec(curve.z)
+            writedlm(io,[x y z])
+        # rgbimage; format is "x y r g b" with reversed "y"
+        elseif ps == "rgbimage"
+            x = repeat(curve.x,inner=length(curve.y))
+            y = repeat(reverse(curve.y),length(curve.x))
+            r = vec(curve.z[1,:,:])
+            g = vec(curve.z[2,:,:])
+            b = vec(curve.z[3,:,:])
+            writedlm(io,[x y r g b])
+        # 3-D image
+        else
+            # surface plot; format is in "triplets" (gnuplot manual, p. 197)
+            if isa(curve.z, Matrix)
+                ly = length(curve.y)
+                tmparr = zeros(ly, 3)
+                for (xi,x) in enumerate(curve.x)
+                    tmparr[:,1] .= x
+                    tmparr[:,2] = curve.y
+                    tmparr[:,3] = curve.z[:,xi]
+                    writedlm(io, tmparr)
+                    write(io,'\n')
+                end
+            # scatter plot: format is in "triplets"
+            else
+                tmparr = zeros(3)
+                for k in 1:length(curve.x)
+                    tmparr[1] = curve.x[k]
+                    tmparr[2] = curve.y[k]
+                    tmparr[3] = curve.z[k]
+                    writedlm(io,tmparr')
+                end
+                write(io,"\n")
+            end
+        end
+        write(io,"\n\n")
+    end
+end
+
 # llplot() is our workhorse plotting function
 function llplot(fig::Figure;print=false)
     global gnuplot_state
@@ -52,82 +122,10 @@ function llplot(fig::Figure;print=false)
     gnuplot_send("print \"GastonBegin\"")
     gnuplot_send("printerr \"GastonBegin\"")
 
-    # Build terminal setup string and send it to gnuplot
+    # Send all commands to gnuplot
+    # Build terminal setup string
     gnuplot_send(termstring(fig,print))
-
-    # Datafile filename. This is where we store the coordinates to plot.
-    # This file is then read by gnuplot to do the actual plotting. One file
-    # per figure handle is used; this avoids polutting /tmp with too many files.
-    filename = joinpath(tempdir(),"gaston-$(tmpprefix)-$(fig.handle)")
-    f = open(filename,"w")
-
-    # Send appropriate coordinates and data to gnuplot, depending on
-    # whether we are doing 2-d, 3-d or image plots.
-    for curve in fig.curves
-        ps = curve.conf.plotstyle
-        # 2-d plot: z is empty
-        if isempty(curve.z)
-            # error bars
-            if ps == "errorbars" || ps == "errorlines"
-                if isempty(curve.E.yhigh)
-                    # ydelta (single error coordinate)
-                    writedlm(f,[curve.x curve.y curve.E.ylow])
-                else
-                    # ylow, yhigh (double error coordinate)
-                    writedlm(f,[curve.x curve.y curve.E.ylow curve.E.yhigh])
-                end
-            # financial bars
-            elseif ps == "financebars"
-                writedlm(f,[curve.x curve.F.open curve.F.low curve.F.high curve.F.close])
-            # regular plot; format is "x y"
-            else
-                writedlm(f,[curve.x curve.y])
-            end
-        # image; format is "x y z" with reversed "y"
-        elseif length(ps)>4 && ps[1:5] == "image"
-            x = repeat(curve.x,inner=length(curve.y))
-            y = repeat(reverse(curve.y),length(curve.x))
-            z = vec(curve.z)
-            writedlm(f,[x y z])
-        # rgbimage; format is "x y r g b" with reversed "y"
-        elseif ps == "rgbimage"
-            x = repeat(curve.x,inner=length(curve.y))
-            y = repeat(reverse(curve.y),length(curve.x))
-            r = vec(curve.z[1,:,:])
-            g = vec(curve.z[2,:,:])
-            b = vec(curve.z[3,:,:])
-            writedlm(f,[x y r g b])
-        # 3-D image
-        else
-            # surface plot; format is in "triplets" (gnuplot manual, p. 197)
-            if isa(curve.z, Matrix)
-                ly = length(curve.y)
-                tmparr = zeros(ly, 3)
-                for (xi,x) in enumerate(curve.x)
-                    tmparr[:,1] .= x
-                    tmparr[:,2] = curve.y
-                    tmparr[:,3] = curve.z[:,xi]
-                    writedlm(f, tmparr)
-                    write(f,'\n')
-                end
-            # scatter plot: format is in "triplets"
-            else
-                tmparr = zeros(3)
-                for k in 1:length(curve.x)
-                    tmparr[1] = curve.x[k]
-                    tmparr[2] = curve.y[k]
-                    tmparr[3] = curve.z[k]
-                    writedlm(f,tmparr')
-                end
-                write(f,"\n")
-            end
-        end
-        write(f,"\n\n")
-    end
-    close(f)
-
-    # Send gnuplot commands.
-    # Build figure configuration to send to gnuplot
+    # Build figure configuration
     gnuplot_send_fig_config(fig.axes)
     # Send user command to gnuplot
     !isempty(fig.gpcom) && gnuplot_send(fig.gpcom)
@@ -137,8 +135,7 @@ function llplot(fig::Figure;print=false)
     else
         pcom = "splot"
     end
-    gnuplot_send(linestr(fig.curves, pcom, filename))
-
+    gnuplot_send(linestr(fig, pcom))
     # Close output files, if any
     gnuplot_send("set output")
 
