@@ -127,6 +127,8 @@ function llplot(fig::Figure;print=false)
     gnuplot_send(termstring(fig,print))
     # Build figure configuration string
     gnuplot_send(figurestring(fig))
+    # Set output file if necessary
+    print && gnuplot_send("set output '$(fig.print.output)'")
     # Send user command to gnuplot
     gnuplot_send(fig.gpcom)
     # send plot command to gnuplot

@@ -78,8 +78,7 @@ default_config() = Dict(:mode => IsJupyterOrJuno ? "ijulia" : "normal",
                                       :keyoptions => "",
                                       :palette => "",
                                       :view => "",
-                                      :onlyimpulses => false,
-                                      :output => ""),
+                                      :onlyimpulses => false),
                         :curve => Dict(:plotstyle => "",
                                        :linecolor => "",
                                        :linewidth => "",
@@ -88,13 +87,13 @@ default_config() = Dict(:mode => IsJupyterOrJuno ? "ijulia" : "normal",
                                        :pointsize => "",
                                        :fillcolor => "",
                                        :fillstyle => ""),
-                        :print => Dict(:print_term => "pdfcairo",
-                                       :print_termopts => "",
-                                       :print_font => "",
-                                       :print_size => "",
-                                       :print_linewidth => "",
-                                       :print_background => ""))
-*
+                        :print => Dict(:term => "pdfcairo",
+                                       :termopts => "",
+                                       :font => "",
+                                       :size => "",
+                                       :linewidth => "",
+                                       :background => "",
+                                       :output => ""))
 # Set any of Gaston's configuration variables
 function set(;reset = false, terminal=config[:term][:terminal],
              mode = config[:mode], kw...)
@@ -151,7 +150,7 @@ const term_window = ["qt", "wxt", "x11", "aqua"]
 const term_text = ["dumb", "sixelgd"]
 # outputs to a file
 const term_file = ["svg", "gif", "pngcairo", "pdfcairo", "epscairo",
-                   "epslatex", "cairolatex"]
+                   "epslatex", "cairolatex", "dumb"]
 # supports size
 const term_sup_size = ["qt", "wxt", "x11", "sixelgd", "svg", "gif",
                        "dumb", "pngcairo", "pdfcairo", "epscairo",
@@ -310,7 +309,6 @@ const synonyms = Dict(:title => [:title],
                       :yzeroaxis => [:yzeroaxis, :yza],
                       :zzeroaxis => [:zzeroaxis, :zza],
                       :palette => [:palette],
-                      :output => [:output, :of, :filename],
                       :legend => [:legend, :leg],
                       :plotstyle => [:plotstyle, :ps],
                       :linecolor => [:linecolor, :lc],

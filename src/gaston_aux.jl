@@ -138,21 +138,24 @@ end
 function termstring(f::Figure,print=false)
     global gnuplot_state
 
-    ac = f.axes
     tc = f.term
     pc = f.print
 
-    term = print ? pc.print_term : config[:term][:terminal]
+    term = print ? pc.term : config[:term][:terminal]
 
     if term != ""
         # determine font, size, and background
-        font = print ? pc.print_font : tc.font
-        size = print ? pc.print_size : tc.size
-        background = print ? pc.print_background : tc.background
+        font = print ? pc.font : tc.font
+        size = print ? pc.size : tc.size
+        background = print ? pc.background : tc.background
 
         # build term string
         ts = "set term $term "
         term ∈ term_window && (ts = ts*string(gnuplot_state.current)*" ")
+
+        if print
+            !isempty(pc.linewidth) && (ts *= " linewidth $(pc.linewidth) ")
+        end
 
         isempty(font) ? s = "" : s = " font \""*font*"\" "
         term ∈ term_sup_font && (ts *= s)
@@ -165,14 +168,7 @@ function termstring(f::Figure,print=false)
 
         # terminal options
         print || (ts *= config[:term][:termopts]*" ")
-        print && (ts *= config[:print][:print_termopts]*" ")
-
-        # set output file
-        if term ∈ term_file
-            s = ""
-            isempty(ac.output) || (s = "\nset output \"$(ac.output)\" ")
-            ts = ts*s
-        end
+        print && (ts *= config[:print][:termopts]*" ")
     end
     return ts
 end

@@ -14,11 +14,12 @@ Base.@kwdef mutable struct TermConf
 end
 
 Base.@kwdef mutable struct PrintConf
-    print_term::String       = config[:print][:print_term]
-    print_font::String       = config[:print][:print_font]
-    print_size::String       = config[:print][:print_size]
-    print_linewidth::String  = config[:print][:print_linewidth]
-    print_background::String = config[:print][:print_background]
+    term::String       = config[:print][:term]
+    font::String       = config[:print][:font]
+    size::String       = config[:print][:size]
+    linewidth::String  = config[:print][:linewidth]
+    background::String = config[:print][:background]
+    output::String     = config[:print][:output]
 end
 
 ## Coordinates
@@ -91,7 +92,6 @@ Base.@kwdef mutable struct AxesConf
     zzeroaxis::String  = config[:axes][:zzeroaxis]
     view::String       = config[:axes][:view]
     palette::String    = config[:axes][:palette]
-    output::String     = config[:axes][:output]
 end
 
 # At the top level, a figure is a handle, an axes configuration, and a
