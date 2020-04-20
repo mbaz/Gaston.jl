@@ -92,8 +92,8 @@ function Base.show(io::IO, ::MIME"image/svg+xml", x::Figure)
     return nothing
 end
 
-# return configuration string for a single plot
-function linestr_single(conf::CurveConf)
+# return command string for a single curve
+function plotstring_single(conf::CurveConf)
     s = ""
     conf.legend != "" && (s *= " title '"*conf.legend*"' ")
     conf.plotstyle != "" && (s *= " with "*conf.plotstyle*" ")
@@ -117,21 +117,21 @@ function linestr_single(conf::CurveConf)
 end
 
 # build a string with plot commands according to configuration
-function linestr(fig::Figure, cmd)
+function plotstring(fig::Figure)
     curves = fig.curves
     file = fig.datafile
     # We have to insert "," between plot commands. One easy way to do this
     # is create the first plot command, then the rest
     # We also need to keep track of the current index (starts at zero)
-    index = 0
-    s = cmd*" '"*file*"' "*" i 0 "*linestr_single(curves[1].conf)
-    if length(curves) > 1
-        for i in curves[2:end]
-            index += 1
-            s = s*", '"*file*"' "*" i "*string(index)*" "*linestr_single(i.conf)
-        end
+    p = Vector{String}()
+    for (i, curve) in enumerate(curves)
+        push!(p, "'$file' i $(i-1) $(plotstring_single(curve.conf))")
     end
-    return s
+    cmd = "plot "
+    if !(isempty(curves[1].z) || occursin("image",curves[1].conf.plotstyle))
+        cmd = "splot "
+    end
+    return cmd*join(p, ", ")
 end
 
 # Build a "set term" string appropriate for the terminal type
@@ -177,54 +177,55 @@ function termstring(f::Figure,print=false)
     return ts
 end
 
-# send gnuplot the current figure's configuration
-function gnuplot_send_fig_config(config)
-    config.title != "" && gnuplot_send("set title '"*config.title*"' ")
-    config.fillstyle != "" && gnuplot_send("set style fill "*config.fillstyle)
+# return a string with the `set` commands for the current figure
+function figurestring(f::Figure)
+    config = f.axes
+    s = ""
+    config.title != "" && (s *= "set title '"*config.title*"' ")
+    config.fillstyle != "" && (s *= "set style fill "*config.fillstyle)
     if config.grid != ""
         if config.grid == "on"
-            gnuplot_send("set grid")
+            s *= "set grid"
         else
-            gnuplot_send("set grid "*config.grid)
+            s *= "set grid "*config.grid
         end
     end
-    config.keyoptions != "" && gnuplot_send("set key "*config.keyoptions)
-    config.boxwidth != "" && gnuplot_send("set boxwidth "*config.boxwidth)
-    if config.axis != ""
-        gnuplot_send("set "*config.axis)
-    end
-    config.xlabel != "" && gnuplot_send("set xlabel '"*config.xlabel*"' ")
-    config.ylabel != "" && gnuplot_send("set ylabel '"*config.ylabel*"' ")
-    config.zlabel != "" && gnuplot_send("set zlabel '"*config.zlabel*"' ")
-    config.xrange != "" && gnuplot_send("set xrange "*config.xrange)
-    config.yrange != "" && gnuplot_send("set yrange "*config.yrange)
-    config.zrange != "" && gnuplot_send("set zrange "*config.zrange)
-    config.xtics != "" && gnuplot_send("set xtics "*config.xtics)
-    config.ytics != "" && gnuplot_send("set ytics "*config.ytics)
-    config.ztics != "" && gnuplot_send("set ztics "*config.ztics)
+    config.keyoptions != "" && (s *= "set key "*config.keyoptions)
+    config.boxwidth != "" && (s *= "set boxwidth "*config.boxwidth)
+    config.axis != "" && (s *= "set "*config.axis)
+    config.xlabel != "" && (s *= "set xlabel '"*config.xlabel*"' ")
+    config.ylabel != "" && (s *= "set ylabel '"*config.ylabel*"' ")
+    config.zlabel != "" && (s *= "set zlabel '"*config.zlabel*"' ")
+    config.xrange != "" && (s *= "set xrange "*config.xrange)
+    config.yrange != "" && (s *= "set yrange "*config.yrange)
+    config.zrange != "" && (s *= "set zrange "*config.zrange)
+    config.xtics != "" && (s *= "set xtics "*config.xtics)
+    config.ytics != "" && (s *= "set ytics "*config.ytics)
+    config.ztics != "" && (s *= "set ztics "*config.ztics)
     if config.xzeroaxis != ""
         if config.xzeroaxis == "on"
-            gnuplot_send("set xzeroaxis")
+            s *= "set xzeroaxis"
         else
-            gnuplot_send("set xzeroaxis "*config.xzeroaxis)
+            s *= "set xzeroaxis "*config.xzeroaxis
         end
     end
     if config.yzeroaxis != ""
         if config.yzeroaxis == "on"
-            gnuplot_send("set yzeroaxis")
+            s *= "set yzeroaxis"
         else
-            gnuplot_send("set yzeroaxis "*config.yzeroaxis)
+            s *= "set yzeroaxis "*config.yzeroaxis
         end
     end
     if config.zzeroaxis != ""
-        if config.zzeroaxis == "on"
-            gnuplot_send("set zzeroaxis")
+        if config.xzeroaxis == "on"
+            s *= "set zzeroaxis"
         else
-            gnuplot_send("set zzeroaxis "*config.zzeroaxis)
+            s *= "set zzeroaxis "*config.zzeroaxis
         end
     end
-    config.view != "" && gnuplot_send("set view "*config.view)
-    config.palette != "" && gnuplot_send("set palette "*config.palette)
+    config.view != "" && (s *= "set view "*config.view)
+    config.palette != "" && (s *= "set palette "*config.palette)
+    return s
 end
 
 # Calculating palettes is expensive, so store them in a cache. The cache is

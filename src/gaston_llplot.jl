@@ -125,17 +125,12 @@ function llplot(fig::Figure;print=false)
     # Send all commands to gnuplot
     # Build terminal setup string
     gnuplot_send(termstring(fig,print))
-    # Build figure configuration
-    gnuplot_send_fig_config(fig.axes)
+    # Build figure configuration string
+    gnuplot_send(figurestring(fig))
     # Send user command to gnuplot
-    !isempty(fig.gpcom) && gnuplot_send(fig.gpcom)
+    gnuplot_send(fig.gpcom)
     # send plot command to gnuplot
-    if isempty(fig.curves[1].z) || occursin("image",fig.curves[1].conf.plotstyle)
-        pcom = "plot"
-    else
-        pcom = "splot"
-    end
-    gnuplot_send(linestr(fig, pcom))
+    gnuplot_send(plotstring(fig))
     # Close output files, if any
     gnuplot_send("set output")
 
