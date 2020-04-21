@@ -176,52 +176,52 @@ end
 # return a string with the `set` commands for the current figure
 function figurestring(f::Figure)
     config = f.axes
-    s = ""
-    config.title != "" && (s *= "set title '"*config.title*"' ")
-    config.fillstyle != "" && (s *= "set style fill "*config.fillstyle)
+    s = Vector{String}()
+    config.title != "" && push!(s, "set title '"*config.title*"'")
+    config.fillstyle != "" && push!(s, "set style fill "*config.fillstyle)
     if config.grid != ""
         if config.grid == "on"
-            s *= "set grid"
+            push!(s,"set grid")
         else
-            s *= "set grid "*config.grid
+            push!(s,"set grid "*config.grid)
         end
     end
-    config.keyoptions != "" && (s *= "set key "*config.keyoptions)
-    config.boxwidth != "" && (s *= "set boxwidth "*config.boxwidth)
-    config.axis != "" && (s *= "set "*config.axis)
-    config.xlabel != "" && (s *= "set xlabel '"*config.xlabel*"' ")
-    config.ylabel != "" && (s *= "set ylabel '"*config.ylabel*"' ")
-    config.zlabel != "" && (s *= "set zlabel '"*config.zlabel*"' ")
-    config.xrange != "" && (s *= "set xrange "*config.xrange)
-    config.yrange != "" && (s *= "set yrange "*config.yrange)
-    config.zrange != "" && (s *= "set zrange "*config.zrange)
-    config.xtics != "" && (s *= "set xtics "*config.xtics)
-    config.ytics != "" && (s *= "set ytics "*config.ytics)
-    config.ztics != "" && (s *= "set ztics "*config.ztics)
+    config.keyoptions != "" && push!(s, "set key "*config.keyoptions)
+    config.boxwidth != "" && push!(s, "set boxwidth "*config.boxwidth)
+    config.axis != "" && push!(s, "set "*config.axis)
+    config.xlabel != "" && push!(s, "set xlabel '"*config.xlabel*"'")
+    config.ylabel != "" && push!(s, "set ylabel '"*config.ylabel*"'")
+    config.zlabel != "" && push!(s, "set zlabel '"*config.zlabel*"'")
+    config.xrange != "" && push!(s, "set xrange "*config.xrange)
+    config.yrange != "" && push!(s, "set yrange "*config.yrange)
+    config.zrange != "" && push!(s, "set zrange "*config.zrange)
+    config.xtics != "" && push!(s, "set xtics "*config.xtics)
+    config.ytics != "" && push!(s, "set ytics "*config.ytics)
+    config.ztics != "" && push!(s, "set ztics "*config.ztics)
     if config.xzeroaxis != ""
         if config.xzeroaxis == "on"
-            s *= "set xzeroaxis"
+            push!(s, "set xzeroaxis")
         else
-            s *= "set xzeroaxis "*config.xzeroaxis
+            push!(s, "set xzeroaxis "*config.xzeroaxis)
         end
     end
     if config.yzeroaxis != ""
         if config.yzeroaxis == "on"
-            s *= "set yzeroaxis"
+            push!(s, "set yzeroaxis")
         else
-            s *= "set yzeroaxis "*config.yzeroaxis
+            push!(s, "set yzeroaxis "*config.yzeroaxis)
         end
     end
     if config.zzeroaxis != ""
         if config.xzeroaxis == "on"
-            s *= "set zzeroaxis"
+            push!(s, "set zzeroaxis")
         else
-            s *= "set zzeroaxis "*config.zzeroaxis
+            push!(s, "set zzeroaxis "*config.zzeroaxis)
         end
     end
-    config.view != "" && (s *= "set view "*config.view)
-    config.palette != "" && (s *= "set palette "*config.palette)
-    return s
+    config.view != "" && push!(s, "set view "*config.view)
+    config.palette != "" && push!(s, "set palette "*config.palette)
+    return join(s, "\n")*"\n"
 end
 
 # Calculating palettes is expensive, so store them in a cache. The cache is
@@ -239,7 +239,7 @@ function parse(a, v)
             end
             cm = colorschemes[v]
             colors = Vector{String}()
-            for i in range(0, 1, length = length(cm))
+            for i in range(0, 1, length(cm))
                 c = get(cm, i)
                 push!(colors, "$i $(c.r) $(c.g) $(c.b)")
             end
