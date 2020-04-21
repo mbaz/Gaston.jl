@@ -36,8 +36,8 @@ include("gaston_aux.jl")
 include("gaston_config.jl")
 include("gaston_figures.jl")
 include("gaston_llplot.jl")
-include("gaston_2d.jl")
-include("gaston_print.jl")
+include("gaston_plot.jl")
+include("gaston_save.jl")
 
 # define function to determine if function is empty
 Base.isempty(f::Figure) = (f.curves == nothing)

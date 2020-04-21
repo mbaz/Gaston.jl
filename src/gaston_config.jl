@@ -86,14 +86,7 @@ default_config() = Dict(:mode => IsJupyterOrJuno ? "ijulia" : "normal",
                                        :pointtype => "",
                                        :pointsize => "",
                                        :fillcolor => "",
-                                       :fillstyle => ""),
-                        :print => Dict(:term => "pdfcairo",
-                                       :termopts => "",
-                                       :font => "",
-                                       :size => "",
-                                       :linewidth => "",
-                                       :background => "",
-                                       :output => ""))
+                                       :fillstyle => ""))
 # Set any of Gaston's configuration variables
 function set(;reset = false, terminal=config[:term][:terminal],
              mode = config[:mode], kw...)
@@ -133,7 +126,7 @@ function set(;reset = false, terminal=config[:term][:terminal],
         k == :yrange && valid_range(kw[k])
         k == :zrange && valid_range(kw[k])
         flag = true
-        for i in [:term, :axes, :curve, :print]
+        for i in [:term, :axes, :curve]
             c = config[i]
             haskey(c, k) && (flag=false; c[k] = string(kw[k]))
         end
@@ -162,6 +155,9 @@ const term_sup_font = ["qt", "wxt", "x11", "aqua", "sixelgd", "svg",
 # supports background color
 const term_sup_bkgnd = ["sixelgd", "svg", "wxt", "gif", "pdfcairo",
                         "pngcairo", "epscairo", "epslatex", "cairolatex"]
+# supports linewidth
+const term_sup_lw = ["qt", "wxt", "x11", "gif", "pdfcairo", "pngcairo",
+                     "epscairo", "epslatex", "aqua", "sixelgd", "svg"]
 
 # List of valid configuration values
 const supported_terminals = ["", "qt", "wxt", "x11", "aqua", "dumb", "sixelgd",

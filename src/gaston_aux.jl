@@ -153,7 +153,7 @@ function termstring(f::Figure,print=false)
         ts = "set term $term "
         term ∈ term_window && (ts = ts*string(gnuplot_state.current)*" ")
 
-        if print
+        if print && (term in term_sup_lw)
             !isempty(pc.linewidth) && (ts *= " linewidth $(pc.linewidth) ")
         end
 
@@ -168,7 +168,7 @@ function termstring(f::Figure,print=false)
 
         # terminal options
         print || (ts *= config[:term][:termopts]*" ")
-        print && (ts *= config[:print][:termopts]*" ")
+        print && (ts *= pc.termopts*" ")
     end
     return ts
 end

@@ -4,13 +4,13 @@
 
 # Save a figure to a file.
 function save(;handle::Handle = gnuplot_state.current,
-               term       = config[:print][:term],
-               termopts   = config[:print][:termopts],
-               font       = config[:print][:font],
-               size       = config[:print][:size],
-               linewidth  = config[:print][:linewidth],
-               background = config[:print][:background],
-               output     = config[:print][:output],
+               term       = "",
+               termopts   = "",
+               font       = "",
+               size       = "",
+               linewidth  = 1,
+               background = "",
+               output     = "",
                args...)
 
     # process arguments
@@ -31,6 +31,7 @@ function save(;handle::Handle = gnuplot_state.current,
 
     # create print configuration
     pc = PrintConf(term       = string(term),
+                   termopts   = string(termopts),
                    font       = string(font),
                    size       = string(size),
                    linewidth  = string(linewidth),

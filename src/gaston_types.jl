@@ -14,12 +14,13 @@ Base.@kwdef mutable struct TermConf
 end
 
 Base.@kwdef mutable struct PrintConf
-    term::String       = config[:print][:term]
-    font::String       = config[:print][:font]
-    size::String       = config[:print][:size]
-    linewidth::String  = config[:print][:linewidth]
-    background::String = config[:print][:background]
-    output::String     = config[:print][:output]
+    term::String       = ""
+    termopts::String   = ""
+    font::String       = ""
+    size::String       = ""
+    linewidth::String  = ""
+    background::String = ""
+    output::String     = ""
 end
 
 ## Coordinates
