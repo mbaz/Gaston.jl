@@ -55,6 +55,7 @@ Base.@kwdef mutable struct CurveConf
     linecolor::String = config[:curve][:linecolor]
     linewidth::String = config[:curve][:linewidth]
     linestyle::String = config[:curve][:linestyle]
+    linetype::String  = config[:curve][:linetype]
     pointtype::String = config[:curve][:pointtype]
     pointsize::String = config[:curve][:pointsize]
     fillstyle::String = config[:curve][:fillstyle]
@@ -93,6 +94,7 @@ Base.@kwdef mutable struct AxesConf
     zzeroaxis::String  = config[:axes][:zzeroaxis]
     view::String       = config[:axes][:view]
     palette::String    = config[:axes][:palette]
+    linetypes::String  = config[:axes][:linetypes]
 end
 
 # At the top level, a figure is a handle, an axes configuration, and a

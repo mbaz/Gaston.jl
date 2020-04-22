@@ -198,6 +198,7 @@ function figurestring(f::Figure)
     config.xtics != "" && push!(s, "set xtics "*config.xtics)
     config.ytics != "" && push!(s, "set ytics "*config.ytics)
     config.ztics != "" && push!(s, "set ztics "*config.ztics)
+    config.linetypes != "" && push!(s,config.linetypes)
     if config.xzeroaxis != ""
         if config.xzeroaxis == "on"
             push!(s, "set xzeroaxis")
@@ -228,6 +229,9 @@ end
 # pre-populated with gnuplot's gray palette
 Palette_cache = Dict{Symbol, String}(:gray => "gray")
 
+# Calculating linetypes from a colorscheme is expensive, so we use a cache.
+Linetypes_cache = Dict{Symbol, String}()
+
 # parse arguments
 function parse(a, v)
     v isa AbstractString && return v
@@ -239,7 +243,7 @@ function parse(a, v)
             end
             cm = colorschemes[v]
             colors = Vector{String}()
-            for i in range(0, 1, length(cm))
+            for i in range(0, 1, length=length(cm))
                 c = get(cm, i)
                 push!(colors, "$i $(c.r) $(c.g) $(c.b)")
             end
@@ -248,6 +252,23 @@ function parse(a, v)
             return s
         else
             return string(v)
+        end
+    # parse linetypes
+    elseif a == :linetypes
+        if v isa Symbol
+            if haskey(Linetypes_cache, v)
+                return Linetypes_cache[v]
+            end
+            cm = colorschemes[v]
+            linetypes = Vector{String}()
+            for i in 1:length(cm)
+                c = cm[i]
+                s = join(string.( round.(Int, 255 .*(c.r, c.g, c.b)), base=16, pad=2))
+                push!(linetypes, "set lt $i lc rgb '#$s'")
+            end
+            s = join(linetypes,"\n")*"\nset linetype cycle $(length(cm))"
+            push!(Linetypes_cache, (v => s))
+            return s
         end
     # parse tics
     elseif a == :xtics || a == :ytics || a == :ztics
