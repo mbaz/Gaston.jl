@@ -100,6 +100,7 @@ function plotstring_single(conf::CurveConf)
     conf.linecolor != "" && (s *= "lc rgb '"*conf.linecolor*"' ")
     conf.linewidth != "" && (s *= "lw "*conf.linewidth*" ")
     conf.linestyle != "" && (s *= "dt '"*conf.linestyle*"' ")
+    conf.linetype != "" && (s *= "lt '"*conf.linetype*"' ")
     conf.fillstyle != "" && (s *= "fs "*conf.fillstyle*" ")
     conf.fillcolor != "" && (s *= "fc \""*conf.fillcolor*"\" ")
     # some plotstyles don't allow point specifiers
