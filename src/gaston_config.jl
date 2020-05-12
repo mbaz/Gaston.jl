@@ -49,11 +49,11 @@ const TerminalDefaults = Dict("wxt" => Dict(:font       => "Sans,10",
                                                  :background   => "white"))
 
 # Dicts to store user-specified configuration
-default_config() = Dict(:mode => IsJupyterOrJuno ? "ijulia" : "normal",
+default_config() = Dict(:mode => "normal",
                         :timeouts => Dict(:stdout_timeout => Sys.isunix() ? 6 : 20,
                                           :stderr_timeout => Sys.isunix() ? 6 : 20),
                         :debug => false,
-                        :term => Dict(:terminal => IsJupyterOrJuno ? "svg" : "qt",
+                        :term => Dict(:terminal => "qt",
                                       :font => "",
                                       :size => "",
                                       :background => "",
@@ -100,8 +100,6 @@ function set(;reset = false, terminal=config[:term][:terminal],
     end
 
     t = terminal
-    mode == "ijulia" && (t = "svg")
-    mode == "null" && (t = "dumb")
     if mode == "normal"
         terminal == "pdf" && (t = "pdfcairo")
         terminal == "pnf" && (t = "pnfcairo")

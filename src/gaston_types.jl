@@ -4,6 +4,8 @@
 
 # All types and constructors are defined here.
 
+struct GastonDisplay <: AbstractDisplay end
+
 # Structs to define a figure
 
 ## Term configuration

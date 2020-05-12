@@ -14,7 +14,6 @@ import Base.show, Base.isempty
 
 using Random
 using DelimitedFiles
-
 using ColorSchemes
 
 const VERSION = v"0.11"
@@ -40,7 +39,7 @@ include("gaston_plot.jl")
 include("gaston_save.jl")
 
 # define function to determine if function is empty
-Base.isempty(f::Figure) = (f.curves == nothing)
+Base.isempty(f::Figure) = (f.curves === nothing)
 
 # initialize internal state
 gnuplot_state = GnuplotState()
@@ -75,13 +74,6 @@ function __init__()
     P.gstdin = gstdin
     P.gstdout = gstdout
     P.gstderr = gstderr
-
-    global IsJupyterOrJuno = false
-    if isdefined(Main, :IJulia) && Main.IJulia.inited
-        global IsJupyterOrJuno = true
-    elseif isdefined(Main, :Juno) && Main.Juno.isactive()
-        global IsJupyterOrJuno = true
-    end
 
     global config = default_config()
 

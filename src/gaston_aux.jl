@@ -74,22 +74,52 @@ function hist(s,bins)
     return x,y
 end
 
+function Base.display(x::Figure)
+    isempty(x) && return nothing
+    if config[:mode] == "null"
+        return nothing
+    end
+    if config[:term][:terminal] == "dumb"
+        show(stdout, "text/plain", x)
+        return
+    end
+    llplot(x)
+end
+
 function Base.show(io::IO, ::MIME"text/plain", x::Figure)
     isempty(x) && return nothing
-    IsJupyterOrJuno && return nothing
-    llplot(x)
-    if config[:mode] != "null"
-        if (config[:term][:terminal] ∈ term_text) || (config[:mode] == "ijulia")
-            write(io, x.svg)
-        end
+    if config[:mode] == "null"
+        return nothing
     end
-    return nothing
+    tmpfile = tempname()
+    save(term="dumb", output=tmpfile)
+    write(io, read(tmpfile))
+    rm(tmpfile, force=true)
+    return
 end
 
 function Base.show(io::IO, ::MIME"image/svg+xml", x::Figure)
-    llplot(x)
-    write(io,x.svg)
-    return nothing
+    isempty(x) && return nothing
+    if config[:mode] == "null"
+        return nothing
+    end
+    tmpfile = tempname()
+    save(term="svg", output=tmpfile)
+    write(io, read(tmpfile))
+    rm(tmpfile, force=true)
+    return
+end
+
+function Base.show(io::IO, ::MIME"image/png", x::Figure)
+    isempty(x) && return nothing
+    if config[:mode] == "null"
+        return nothing
+    end
+    tmpfile = tempname()
+    save(term="png", output=tmpfile)
+    write(io, read(tmpfile))
+    rm(tmpfile, force=true)
+    return
 end
 
 # return command string for a single curve
