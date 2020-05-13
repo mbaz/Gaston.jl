@@ -71,6 +71,7 @@ function __init__()
     close(gstdout.in)
     close(gstderr.in)
     close(gstdin.out)
+    Base.start_reading(gstderr.out)
     P.gstdin = gstdin
     P.gstdout = gstdout
     P.gstderr = gstderr

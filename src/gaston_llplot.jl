@@ -2,12 +2,8 @@
 ##
 ## This file is distributed under the 2-clause BSD License.
 
-# Asynchronously reads the IO and buffers the read content. When end marker
-# (GastonDone, which is stored in `gmarker` to account for Unix/Windows
-# variability in line endings) is found in the content, sends everything
-# between start (GastonBegin) and end markers to the returned channel.
+# Asynchronously reads the specified IO.
 # In case of timeout sends :timeout; in case of end of file, sends :eof.
-
 function async_reader(io::IO, timeout_sec)::Channel
     ch = Channel(1)
     task = @async begin
@@ -16,18 +12,11 @@ function async_reader(io::IO, timeout_sec)::Channel
             put!(ch, :timeout)
             Base.throwto(reader_task, InterruptException())
         end
-
-        buf = ""
-        while (match_done = findfirst(gmarker_done, buf)) == nothing
-            timeout = Timer(timeout_cb, timeout_sec)
-            data = String(readavailable(io))
-            if data == ""; put!(ch, :eof); return; end
-            timeout_sec > 0 && close(timeout) # Cancel the timeout
-            buf *= data
-        end
-        match_begin = findfirst(gmarker_start, buf)
-        start = (match_begin != nothing) ? last(match_begin)+1 : 1
-        put!(ch, buf[start:first(match_done)-1])
+        timeout = Timer(timeout_cb, timeout_sec)
+        data = String(readavailable(io))
+        if data == ""; put!(ch, :eof); return; end
+        timeout_sec > 0 && close(timeout) # Cancel the timeout
+        put!(ch, data)
     end
     bind(ch, task)
     return ch
@@ -112,15 +101,7 @@ function llplot(fig::Figure;print=false)
         return
     end
 
-    # In order to capture all output produced by our plotting commands
-    # (error messages and figure text in case of text terminals), we
-    # send "marks" to the stdout and stderr streams before the first
-    # and after the last command. Everything between these marks will
-    # be returned by our async_readers.
     gnuplot_send("\nreset session\n")
-    gnuplot_send("set print \"-\"") # Redirect print to stdout
-    gnuplot_send("print \"GastonBegin\"")
-    gnuplot_send("printerr \"GastonBegin\"")
 
     # Send all commands to gnuplot
     # Build terminal setup string
@@ -136,41 +117,26 @@ function llplot(fig::Figure;print=false)
     # Close output files, if any
     gnuplot_send("set output")
 
-    # Make sure gnuplot is done; if terminal is text, read data
-    # reset error handling
+    # Make sure gnuplot is done.
     err = ""
     gnuplot_state.gp_lasterror = err
     gnuplot_state.gp_error = false
 
-    gnuplot_send("print \"GastonDone\"")
-    gnuplot_send("printerr \"GastonDone\"")
+    gnuplot_send("""set print '-'
+                    print 'GastonDone""")
 
     # Start reading gnuplot's streams in "background"
     ch_out = async_reader(P.gstdout, config[:timeouts][:stdout_timeout])
-    ch_err = async_reader(P.gstderr, config[:timeouts][:stderr_timeout])
-
     out = take!(ch_out)
-    err = take!(ch_err)
-
-    out === :timeout && error("Gnuplot is taking too long to respond.")
+    out === :timeout && @warn("Gnuplot is taking too long to respond.")
     out === :eof     && error("Gnuplot crashed")
 
-    # We don't care about stderr timeouts.
-    err === :timeout && (err = "")
-    err === :eof     && (err = "")
-
     # check for errors while plotting
-    if err != ""
+    if bytesavailable(P.gstderr) > 0
+        err = String(readavailable(P.gstderr))
         gnuplot_state.gp_lasterror = err
         gnuplot_state.gp_error = true
-        @warn("Gnuplot returned an error message:\n  $err)")
-    end
-
-    # if there was no error and text terminal, read all data from stdout
-    if err == ""
-        if (config[:term][:terminal] ∈ term_text) || (config[:mode] == "ijulia")
-            fig.svg = out
-        end
+        @warn("Gnuplot returned an error message:\n  $err")
     end
 
     return nothing

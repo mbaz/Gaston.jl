@@ -50,8 +50,7 @@ const TerminalDefaults = Dict("wxt" => Dict(:font       => "Sans,10",
 
 # Dicts to store user-specified configuration
 default_config() = Dict(:mode => "normal",
-                        :timeouts => Dict(:stdout_timeout => Sys.isunix() ? 6 : 20,
-                                          :stderr_timeout => Sys.isunix() ? 6 : 20),
+                        :timeouts => Dict(:stdout_timeout => Sys.isunix() ? 6 : 20),
                         :debug => false,
                         :term => Dict(:terminal => "qt",
                                       :font => "",
@@ -114,7 +113,7 @@ function set(;reset = false, terminal=config[:term][:terminal],
             kw[k] isa Bool && (config[:debug] = kw[k]; continue)
             throw(DomainError("argument to debug must be Bool"))
         end
-        if k == :stdout_timeout || k == :stderr_timeout
+        if k == :stdout_timeout
             kw[k] isa Real && kw[k] > 0 && (config[:timeouts][k] = kw[k]; continue)
             throw(DomainError("timeout argument must be a positive number"))
         end

@@ -110,7 +110,6 @@ Base.@kwdef mutable struct Figure
     print::PrintConf = PrintConf()  # print optinos
     axes::AxesConf   = AxesConf()   # figure configuration
     curves::Union{Nothing,Vector{Curve}} = nothing # a vector of curves
-    svg::String    = ""      # SVG data returned by gnuplot (used in IJulia)
     gpcom::String  = ""      # a gnuplot command to run before plotting
 end
 # Construct an empty figure with given handle
