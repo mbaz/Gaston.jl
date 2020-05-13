@@ -26,6 +26,7 @@ end
 # `curve` is a Curve.
 # `file` is the file to write to.
 # If `append` is true, data is appended at the end of the file (for `plot!`)
+# TODO: generalize to more formats
 function write_data(curve, file; append = false)
     mode = "w"
     append && (mode = "a")
@@ -123,7 +124,7 @@ function llplot(fig::Figure;print=false)
     gnuplot_state.gp_error = false
 
     gnuplot_send("""set print '-'
-                    print 'GastonDone""")
+                    print 'GastonDone'""")
 
     # Start reading gnuplot's streams in "background"
     ch_out = async_reader(P.gstdout, config[:timeouts][:stdout_timeout])

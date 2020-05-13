@@ -104,7 +104,6 @@ function set(;reset = false, terminal=config[:term][:terminal],
         terminal == "pnf" && (t = "pnfcairo")
         terminal == "eps" && (t = "epscairo")
     end
-    valid_terminal(t)
     config[:term][:terminal] = t
     config[:mode] = mode
 
@@ -117,13 +116,6 @@ function set(;reset = false, terminal=config[:term][:terminal],
             kw[k] isa Real && kw[k] > 0 && (config[:timeouts][k] = kw[k]; continue)
             throw(DomainError("timeout argument must be a positive number"))
         end
-        k == :plotstyle && valid_plotstyle(kw[k])
-        k == :linestyle && valid_linestyle(kw[k])
-        k == :pointtype && valid_pointtype(kw[k])
-        k == :axis && valid_axis(kw[k])
-        k == :xrange && valid_range(kw[k])
-        k == :yrange && valid_range(kw[k])
-        k == :zrange && valid_range(kw[k])
         flag = true
         for i in [:term, :axes, :curve]
             c = config[i]
@@ -158,124 +150,12 @@ const term_sup_bkgnd = ["sixelgd", "svg", "wxt", "gif", "pdfcairo",
 const term_sup_lw = ["qt", "wxt", "x11", "gif", "pdfcairo", "pngcairo",
                      "epscairo", "epslatex", "aqua", "sixelgd", "svg"]
 
-# List of valid configuration values
-const supported_terminals = ["", "qt", "wxt", "x11", "aqua", "dumb", "sixelgd",
-                             "svg", "gif", "pngcairo", "pdfcairo", "epscairo",
-                             "epslatex", "cairolatex"]
-const supported_2Dplotstyles = ["", "lines", "linespoints", "points",
-                                "impulses", "boxes", "errorlines", "errorbars",
-                                "dots", "steps", "fsteps", "fillsteps",
-                                "financebars"]
-const supported_3Dplotstyles = ["", "lines", "linespoints", "points", "labels",
-                                "impulses", "pm3d", "image", "rgbimage", "dots"]
-const supported_plotstyles = vcat(supported_2Dplotstyles, supported_3Dplotstyles)
-const supported_axis = ["", "normal", "semilogx", "semilogy", "semilogz",
-                        "loglog"]
-const supported_pointtypes = ["", "+", "x", "*", "esquare", "fsquare",
-                          "ecircle", "fcircle", "etrianup", "ftrianup",
-                          "etriandn", "ftriandn", "edmd", "fdmd"]
-# List of plotstyles that support points
-const ps_sup_points = ["linespoints", "points"]
-
-#
-# Validation functions
-#
-
-function valid_file_term(s)
-    s ∈ term_file && return true
-    throw(DomainError(s,"supported terminals are: $term_file"))
-end
-
-function valid_terminal(s)
-    s ∈ supported_terminals && return true
-    throw(DomainError(s,"supported terminals are: $supported_terminals"))
-end
-function valid_plotstyle(s)
-    s ∈ supported_plotstyles && return true
-    throw(DomainError(s,"supported plotstyles are: $supported_plotstyles"))
-end
-function valid_2Dplotstyle(s)
-    s ∈ supported_2Dplotstyles && return true
-    throw(DomainError(s,"supported 2-D plotstyles are: $supported_2Dplotstyles"))
-end
-function valid_3Dplotstyle(s)
-    s ∈ supported_3Dplotstyles && return true
-    throw(DomainError(s,"supported 3-D plotstyles are: $supported_3Dplotstyles"))
-end
-function valid_pointtype(s)
-    isempty(s) && return true
-    length(s) == 1 && return true
-    s ∈ supported_pointtypes && return true
-    throw(DomainError(s,"supported point types are: $supported_pointtypes or single-character strings"))
-end
-function valid_numeric(s)
-    isempty(s) && return true
-    ss = tryparse(Float64,s)
-    (ss != nothing && ss >= 0) && return true
-    throw(DomainError(s,"not a valid numeric argument"))
-end
-function valid_axis(s)
-    s ∈ supported_axis && return true
-    throw(DomainError(s,"supported axis types are: $supported_axis"))
-end
-
-function valid_linestyle(s)
-    invalid = false
-    s == "" && return true # allow empty string
-    c = collect(s)
-    # make sure only allowed characters are passed
-    issubset(c, Set([' ', '-', '_', '.'])) || (invalid = true)
-    # but do not allow spaces only
-    unique(c) != [' '] || (invalid = true)
-    invalid && throw(DomainError(s,"line style pattern accepts: space, dash, underscore and dot"))
-    return true
-end
-
-# Validate that a given range follows gnuplot's syntax.
-function valid_range(s::String)
-    s == "" && return true # allow empty strings
-    # floating point, starting with a dot
-    f1 = "[-+]?\\.\\d+([eE][-+]?\\d+)?"
-    # floating point, starting with a digit
-    f2 = "[-+]?\\d+(\\.\\d*)?([eE][-+]?\\d+)?"
-    # floating point
-    f = "($f1|$f2)"
-    # autoscale directive (i.e. `*` surrounded by
-    # optional bounds lb < * < ub)
-    as = "(($f\\s*<\\s*)?\\*(\\s*<\\s*$f)?)"
-    # full range item: a floating point, or an
-    # autoscale directive, or nothing
-    it = "(\\s*($as|$f)?\\s*)"
-
-    # empty range
-    er = "\\[\\s*\\]"
-    # full range: two colon-separated items
-    fr = "\\[$it:$it\\]"
-
-    # range regex
-    rx = Regex("^\\s*($er|$fr)\\s*\$")
-
-    if occursin(rx, s)
-        return true
-    end
-
-    throw(DomainError(s,"range must have have the form of [x:y]"))
-end
-
 # Validate coordinates
-function valid_coords(x,y;err=ErrorCoords(),fin=FinancialCoords())
+# TODO: generalize to more plotstyles
+function valid_coords(x,y,z;err=ErrorCoords(),fin=FinancialCoords())
     invalid = false
-    length(x) != length(y) && (invalid = true)
-    if err != nothing
-        length(x) != length(err.ylow) && (invalid = true)
-        (!isempty(err.yhigh) && length(x) != length(err.yhigh)) && (invalid = true)
-    end
-    if fin != nothing
-        lx = length(x)
-        lx != length(fin.open) && (invalid = true)
-        lx != length(fin.low) && (invalid = true)
-        lx != length(fin.high) && (invalid = true)
-        lx != length(fin.close) && (invalid = true)
+    if isempty(z)
+        length(x) != length(y) && (invalid = true)
     end
 
     invalid && throw(DimensionMismatch("input vectors must have the same number of elements."))
@@ -283,6 +163,20 @@ function valid_coords(x,y;err=ErrorCoords(),fin=FinancialCoords())
     return true
 
 end
+
+# Define pointtype synonyms
+const pointtypes = Dict("+" => 1,
+                        "x" => 2,
+                        "*" => 3,
+                        "esquare" => 4,
+                        "fsquare" => 5,
+                        "ecircle" => 6,
+                        "fcircle" => 7,
+                        "etrianup" => 8,
+                        "ftrianup" => 9,
+                        "etriandn" => 10,
+                        "ftriandn" => 11,
+                        "edmd" => 12)
 
 # Define argument synonyms
 const synonyms = Dict(:title => [:title],

@@ -58,7 +58,7 @@ Base.@kwdef mutable struct CurveConf
     linewidth::String = config[:curve][:linewidth]
     linestyle::String = config[:curve][:linestyle]
     linetype::String  = config[:curve][:linetype]
-    pointtype::String = config[:curve][:pointtype]
+    pointtype         = config[:curve][:pointtype]
     pointsize::String = config[:curve][:pointsize]
     fillstyle::String = config[:curve][:fillstyle]
     fillcolor::String = config[:curve][:pointsize]

@@ -4,24 +4,6 @@
 
 # Auxiliary, non-exported functions are declared here.
 
-# convert marker string description to gnuplot's expected number
-function pointtype(x::String)
-    x == "+" && return "1"
-    x == "x" && return "2"
-    x == "*" && return "3"
-    x == "esquare" && return "4"
-    x == "fsquare" && return "5"
-    x == "ecircle" && return "6"
-    x == "fcircle" && return "7"
-    x == "etrianup" && return "8"
-    x == "ftrianup" && return "9"
-    x == "etriandn" && return "10"
-    x == "ftriandn" && return "11"
-    x == "edmd" && return "12"
-    x == "fdmd" && return "13"
-    return "1"
-end
-
 """ mesgrid(x, y, z)
 
     Create a z-coordinate matrix from `x`, `y` coordinates and a function `f`,
@@ -133,17 +115,14 @@ function plotstring_single(conf::CurveConf)
     conf.linetype != "" && (s *= "lt '"*conf.linetype*"' ")
     conf.fillstyle != "" && (s *= "fs "*conf.fillstyle*" ")
     conf.fillcolor != "" && (s *= "fc \""*conf.fillcolor*"\" ")
-    # some plotstyles don't allow point specifiers
-    if conf.plotstyle ∈ ps_sup_points
-        if conf.pointtype != ""
-            if conf.pointtype ∈ supported_pointtypes
-                s = s*"pt "*pointtype(conf.pointtype)*" "
-            else
-                s = s*"pt \""*conf.pointtype*"\" "
-            end
-            conf.pointsize != "" && (s = s*"ps "*conf.pointsize*" ")
+    if conf.pointtype != ""
+        if conf.pointtype isa Real
+            s *= "pt $(conf.pointtype) "
+        else
+            s *= "pt '$(conf.pointtype)' "
         end
     end
+    conf.pointsize != "" && (s *= "ps "*conf.pointsize*" ")
     return s
 end
 
@@ -265,13 +244,10 @@ Linetypes_cache = Dict{Symbol, String}()
 
 # parse arguments
 function parse(a, v)
-    v isa AbstractString && return v
     # parse palette; code inspired by @gcalderone's Gnuplot.jl
     if a == :palette
         if v isa Symbol
-            if haskey(Palette_cache, v)
-                return Palette_cache[v]
-            end
+            haskey(Palette_cache, v) && return Palette_cache[v]
             cm = colorschemes[v]
             colors = Vector{String}()
             for i in range(0, 1, length=length(cm))
@@ -287,9 +263,7 @@ function parse(a, v)
     # parse linetypes
     elseif a == :linetypes
         if v isa Symbol
-            if haskey(Linetypes_cache, v)
-                return Linetypes_cache[v]
-            end
+            haskey(Linetypes_cache, v) && return Linetypes_cache[v]
             cm = colorschemes[v]
             linetypes = Vector{String}()
             for i in 1:length(cm)
@@ -300,6 +274,8 @@ function parse(a, v)
             s = join(linetypes,"\n")*"\nset linetype cycle $(length(cm))"
             push!(Linetypes_cache, (v => s))
             return s
+        else
+            return string(v)
         end
     # parse tics
     elseif a == :xtics || a == :ytics || a == :ztics
@@ -314,6 +290,8 @@ function parse(a, v)
                 s *= """, "$(labs[i])" $(tics[i])"""
             end
             s *= ")"
+        else
+            return string(v)
         end
     # parse axis type
     elseif a == :axis
@@ -329,24 +307,29 @@ function parse(a, v)
         return ""
     # parse range
     elseif a == :xrange || a == :yrange || a == :zrange
-        return "[$(ifelse(isinf(a[1]),*,a[1]))|$(ifelse(isinf(a[2]),*,a[2]))]"
+        if v isa Vector || v isa Tuple
+            return "[$(ifelse(isinf(v[1]),*,v[1]))|$(ifelse(isinf(v[2]),*,v[2]))]"
+        else
+            return string(v)
+        end
     # parse zeroaxis
     elseif a == :xzeroaxis || a == :yzeroaxis || a == :zzeroaxis
         v in (true, :on, :true) && return "on"
         return ""
     # parse view
     elseif a == :view
+        v isa AbstractString && return v
         return join(v, ", ")
+    # parse pointtype
+    elseif a == :pointtype
+        v isa Real && return v
+        x = string(v)
+        haskey(pointtypes, x) && return pointtypes[x]
+        return x
     else
         return string(v)
     end
 end
-
-# validate arguments
-valid(tc::TermConf) = true
-valid(ac::AxesConf) = true
-valid(cc::CurveConf) = true
-valid(x,y,z;err=[],fin=[]) = true
 
 # write commands to gnuplot's pipe
 function gnuplot_send(s)

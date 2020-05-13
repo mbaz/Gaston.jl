@@ -38,11 +38,8 @@ function plot(x::Coord, y::Coord, z::Coord = Coord();
         end
     end
 
-    # validate what we can
-    valid(ac)
-    valid(cc)
-    valid(tc)
-    valid(x, y, z, err=err, fin=financial)
+    # validate coordinates
+    valid_coords(x, y, z, err=err, fin=financial)
 
     # determine handle and clear figure
     handle = figure(handle, redraw = false)
@@ -99,8 +96,8 @@ function plot!(x::Coord,y::Coord, z::Coord = Coord();
         end
     end
 
-    # validate what we can
-    valid(cc)
+    # validate coordinates
+    valid_coords(x, y, z, err=err, fin=financial)
 
     # determine handle
     handles = gethandles()

@@ -27,7 +27,6 @@ function save(;handle::Handle = gnuplot_state.current,
     (term == "pdf" || term == :pdf) && (term = "pdfcairo")
     (term == "png" || term == :png) && (term = "pngcairo")
     (term == "eps" || term == :eps) && (term = "epscairo")
-    valid_file_term(term)
 
     # create print configuration
     pc = PrintConf(term       = string(term),
