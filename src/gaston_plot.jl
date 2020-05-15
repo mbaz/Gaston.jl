@@ -1,9 +1,9 @@
 # 2D plots
 function plot(x::Coord, y::Coord, z::Coord = Coord();
-              gpcom           = "",
-              handle::Handle  = gnuplot_state.current,
-              financial::FCuN = FinancialCoords(),
-              err::ECuN       = ErrorCoords(),
+              supp::Coord = Coord(),
+              dims = 2,
+              gpcom::String  = "",
+              handle::Handle = gnuplot_state.current,
               args...)
 
     # Create new figure configuration with default values.
@@ -38,8 +38,8 @@ function plot(x::Coord, y::Coord, z::Coord = Coord();
         end
     end
 
-    # validate coordinates
-    valid_coords(x, y, z, err=err, fin=financial)
+    # validate data
+    valid_coords(x, y, z, supp)
 
     # determine handle and clear figure
     handle = figure(handle, redraw = false)
@@ -49,25 +49,24 @@ function plot(x::Coord, y::Coord, z::Coord = Coord();
     c = Curve(x    = x,
               y    = y,
               z    = z,
-              F    = financial,
-              E    = err,
+              supp = supp,
               conf = cc)
 
     # push curve we just created to current figure
-    push_figure!(handle,tc,ac,c,gpcom)
+    push_figure!(handle,tc,ac,c,dims,gpcom)
 
-    # write gnuplot data to a file
+    # write gnuplot data to file
     fig = gnuplot_state.figs[findfigure(handle)]
-    write_data(c, fig.datafile)
+    write_data(c, fig.dims, fig.datafile)
 
     return fig
 end
 
 # Add a curve to an existing figure
 function plot!(x::Coord,y::Coord, z::Coord = Coord();
+               supp::Coord = Coord(),
+               dims = 2,
                handle::Handle  = gnuplot_state.current,
-               financial::FCuN = FinancialCoords(),
-               err::ECuN       = ErrorCoords(),
                args...)
 
     # Create a new curve configuration with default values.
@@ -97,7 +96,7 @@ function plot!(x::Coord,y::Coord, z::Coord = Coord();
     end
 
     # validate coordinates
-    valid_coords(x, y, z, err=err, fin=financial)
+    valid_coords(x, y, z, supp)
 
     # determine handle
     handles = gethandles()
@@ -108,8 +107,7 @@ function plot!(x::Coord,y::Coord, z::Coord = Coord();
     c = Curve(x    = x,
               y    = y,
               z    = z,
-              F    = financial,
-              E    = err,
+              supp = supp,
               conf = cc)
 
     # push new curve to current figure
@@ -117,7 +115,7 @@ function plot!(x::Coord,y::Coord, z::Coord = Coord();
 
     # write gnuplot data to a file
     fig = gnuplot_state.figs[findfigure(handle)]
-    write_data(c, fig.datafile, append=true)
+    write_data(c, fig.dims, fig.datafile, append=true)
 
     return fig
 end
@@ -151,6 +149,7 @@ end
 function stem(y::Coord;onlyimpulses=config[:axes][:onlyimpulses],args...)
     stem(1:length(y),y;onlyimpulses=onlyimpulses,args...)
 end
+stem(x,f::Function;args...) = stem(x,f.(x);args...)
 
 # bar plots
 function bar(x::Coord,y::Coord;args...)
@@ -180,12 +179,12 @@ imagesc(z::Matrix;args...) = imagesc(1:size(z)[2],1:size(z)[1],z;args...)
 imagesc(z::AbstractArray{<:Real,3};args...) = imagesc(1:size(z)[3],1:size(z)[2],z;args...)
 
 # 3-D surface plots
-surf(x::Coord,y::Coord,z::Coord;args...) = plot(x,y,z;args...)
-surf!(x::Coord,y::Coord,z::Coord;args...) = plot!(x,y,z;args...)
-surf(x::Coord,y::Coord,f::Function;args...) = plot(x,y,meshgrid(x,y,f);args...) # 3D function
-surf!(x::Coord,y::Coord,f::Function;args...) = plot!(x,y,meshgrid(x,y,f);args...) # 3D function
-surf(z::Matrix;args...) = surf(1:size(z)[2],1:size(z)[1],z;args...) # matrix
-surf!(z::Matrix;args...) = surf!(1:size(z)[2],1:size(z)[1],z;args...) # matrix
+surf(x::Coord,y::Coord,z::Coord;args...) = plot(x,y,z,dims=3;args...)
+surf!(x::Coord,y::Coord,z::Coord;args...) = plot!(x,y,z,dims=3;args...)
+surf(x::Coord,y::Coord,f::Function;args...) = plot(x,y,meshgrid(x,y,f),dims=3;args...) # 3D function
+surf!(x::Coord,y::Coord,f::Function;args...) = plot!(x,y,meshgrid(x,y,f),dims=3;args...) # 3D function
+surf(z::Matrix;args...) = surf(1:size(z)[2],1:size(z)[1],z,dims=3;args...) # matrix
+surf!(z::Matrix;args...) = surf!(1:size(z)[2],1:size(z)[1],z,dims=3;args...) # matrix
 
 # 3-D contour plots
 function contour(x::Coord,y::Coord,z::Coord;labels=true,gpcom="",args...)
@@ -208,89 +207,3 @@ scatter3!(x::Coord,y::Coord,z::Coord;args...) = surf!(x,y,z,ps="points";args...)
 
 # 3-D heatmaps
 heatmap(x,y,z;gpcom="",args...) = surf(x,y,z,gpcom=gpcom*"set view map",ps=:pm3d;args...)
-
-# plot a matrix
-function plot(x::Coord,M::Matrix;
-              legend     = "",
-              linewidth  = "1",
-              plotstyle  = config[:curve][:plotstyle],
-              linecolor  = config[:curve][:linecolor],
-              linestyle  = config[:curve][:linestyle],
-              pointtype  = config[:curve][:pointtype],
-              pointsize  = config[:curve][:pointsize],
-              fillcolor  = config[:curve][:fillcolor],
-              fillstyle  = config[:curve][:fillstyle],
-              financial  = FinancialCoords(),
-              err        = ErrorCoords(),
-              handle     = gnuplot_state.current,
-              args...)
-
-    # the following arguments need to be vectors
-    legend isa Vector{String} && (lg = legend)
-    legend isa String && (lg = [legend])
-    lgn = length(lg)
-    plotstyle isa Vector{String} && (ps = plotstyle)
-    plotstyle isa String && (ps = [plotstyle])
-    psn = length(ps)
-    linecolor isa Vector{String} && (lc = linecolor)
-    linecolor isa String && (lc = [linecolor])
-    lcn = length(lc)
-    linewidth isa Vector{String} && (lw = linewidth)
-    linewidth isa String && (lw = [linewidth])
-    lwn = length(lw)
-    linestyle isa Vector{String} && (ls = linestyle)
-    linestyle isa String && (ls = [linestyle])
-    lsn = length(ls)
-    pointtype isa Vector{String} && (pt = pointtype)
-    pointtype isa String && (pt = [pointtype])
-    ptn = length(pt)
-    pointsize isa Vector{String} && (pz = pointsize)
-    pointsize isa String && (pz = [pointsize])
-    pzn = length(pz)
-    fillcolor isa Vector{String} && (fc = fillcolor)
-    fillcolor isa String && (fc = [fillcolor])
-    fcn = length(fc)
-    fillstyle isa Vector{String} && (fs = fillstyle)
-    fillstyle isa String && (fs = [fillstyle])
-    fsn = length(fs)
-    financial isa Vector{FCuN} && (fn = financial)
-    financial isa FCuN && (fn = [financial])
-    fnn = length(fn)
-    err isa Vector{ECuN} && (er = err)
-    err isa ECuN && (er = [err])
-    ern = length(er)
-
-    # plot first columnt
-    ans = plot(x,M[:,1],
-               legend    = lg[1],
-               plotstyle = ps[1],
-               linecolor = lc[1],
-               linewidth = lw[1],
-               linestyle = ls[1],
-               pointtype = pt[1],
-               pointsize = pz[1],
-               fillcolor = fc[1],
-               fillstyle = fs[1],
-               financial = fn[1],
-               err       = er[1],
-               handle    = handle;
-               args...)
-    # plot subsequent columns
-    for col in 2:Base.size(M)[2]
-        ans = plot!(x,M[:,col];
-                    legend    = lg[(col-1)%lgn+1],
-                    plotstyle = ps[(col-1)%psn+1],
-                    linecolor = lc[(col-1)%lcn+1],
-                    linewidth = lw[(col-1)%lwn+1],
-                    linestyle = ls[(col-1)%lsn+1],
-                    pointtype = pt[(col-1)%ptn+1],
-                    pointsize = pz[(col-1)%pzn+1],
-                    fillcolor = fc[(col-1)%fcn+1],
-                    fillstyle = fs[(col-1)%fsn+1],
-                    financial = fn[(col-1)%fnn+1],
-                    err       = er[(col-1)%ern+1],
-                    handle    = gnuplot_state.current)
-    end
-    return ans
-end
-

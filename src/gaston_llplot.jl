@@ -27,66 +27,67 @@ end
 # `file` is the file to write to.
 # If `append` is true, data is appended at the end of the file (for `plot!`)
 # TODO: generalize to more formats
-function write_data(curve, file; append = false)
+function write_data(curve, dims, file; append = false)
     mode = "w"
     append && (mode = "a")
+    x = curve.x
+    y = curve.y
+    z = curve.z
+    supp = curve.supp
+    ps = curve.conf.plotstyle
     open(file, mode) do io
-        ps = curve.conf.plotstyle
-        # 2-d plot: z is empty
-        if isempty(curve.z)
-            # error bars
-            if ps == "errorbars" || ps == "errorlines"
-                if isempty(curve.E.yhigh)
-                    # ydelta (single error coordinate)
-                    writedlm(io,[curve.x curve.y curve.E.ylow])
+        # 2-d plot
+        if dims == 2
+            # image; format is "x y z" with reversed "y"
+            if ndims(x) == 1 && ndims(y) == 1 && ndims(z) == 2
+                xx = repeat(x,inner=length(y))
+                yy = repeat(reverse(y),length(x))
+                zz = vec(z)
+                writedlm(io,[xx yy zz])
+            # rgbimage; format is "x y r g b" with reversed "y"
+            elseif ndims(z) == 3
+                xx = repeat(x,inner=length(y))
+                yy = repeat(reverse(y),length(x))
+                r = vec(z[1,:,:])
+                g = vec(z[2,:,:])
+                b = vec(z[3,:,:])
+                if isempty(supp)
+                    writedlm(io,[xx yy r g b])
                 else
-                    # ylow, yhigh (double error coordinate)
-                    writedlm(io,[curve.x curve.y curve.E.ylow curve.E.yhigh])
+                    writedlm(io,[xx yy r g b supp])
                 end
-            # financial bars
-            elseif ps == "financebars"
-                writedlm(io,[curve.x curve.F.open curve.F.low curve.F.high curve.F.close])
-            # regular plot; format is "x y"
+            # regular plot
             else
-                writedlm(io,[curve.x curve.y])
+                if isempty(supp)
+                    data = [x y]
+                else
+                    data = [x y supp]
+                end
+                writedlm(io, data)
             end
-        # image; format is "x y z" with reversed "y"
-        elseif length(ps)>4 && ps[1:5] == "image"
-            x = repeat(curve.x,inner=length(curve.y))
-            y = repeat(reverse(curve.y),length(curve.x))
-            z = vec(curve.z)
-            writedlm(io,[x y z])
-        # rgbimage; format is "x y r g b" with reversed "y"
-        elseif ps == "rgbimage"
-            x = repeat(curve.x,inner=length(curve.y))
-            y = repeat(reverse(curve.y),length(curve.x))
-            r = vec(curve.z[1,:,:])
-            g = vec(curve.z[2,:,:])
-            b = vec(curve.z[3,:,:])
-            writedlm(io,[x y r g b])
         # 3-D image
-        else
-            # surface plot; format is in "triplets" (gnuplot manual, p. 197)
-            if isa(curve.z, Matrix)
-                ly = length(curve.y)
-                tmparr = zeros(ly, 3)
-                for (xi,x) in enumerate(curve.x)
-                    tmparr[:,1] .= x
-                    tmparr[:,2] = curve.y
-                    tmparr[:,3] = curve.z[:,xi]
-                    writedlm(io, tmparr)
-                    write(io,'\n')
+        elseif dims == 3
+            # surface plot
+            if ndims(x) == 1 && ndims(y) == 1 && ndims(z) == 2
+                for (yi,yy) in enumerate(y)
+                    for (xi,xx) in enumerate(x)
+                        write(io, "$xx $yy $(z[yi,xi])\n")
+                    end
+                    write(io, "\n")
                 end
-            # scatter plot: format is in "triplets"
-            else
-                tmparr = zeros(3)
-                for k in 1:length(curve.x)
-                    tmparr[1] = curve.x[k]
-                    tmparr[2] = curve.y[k]
-                    tmparr[3] = curve.z[k]
-                    writedlm(io,tmparr')
+            # scatter plot
+            elseif ndims(x) == 1 && ndims(y) == 1 && ndims(z) == 1
+                if isempty(supp)
+                    for k in 1:length(x)
+                        write(io, "$(x[k]) $(y[k]) $(z[k])\n")
+                    end
+                else
+                    for k in 1:length(x)
+                        write(io, "$(x[k]) $(y[k]) $(z[k]) ")
+                        s = string(supp[k,:])[2:end-1]
+                        write(io, s, "\n")
+                    end
                 end
-                write(io,"\n")
             end
         end
         write(io,"\n\n")

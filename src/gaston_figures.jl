@@ -141,5 +141,6 @@ function push_figure!(handle,args...)
         isa(c, String) && (f.gpcom = c)
         isa(c, PrintConf) && (f.print = c)
         isa(c, TermConf) && (f.term = c)
+        isa(c, Int) && (f.dims = c)
     end
 end

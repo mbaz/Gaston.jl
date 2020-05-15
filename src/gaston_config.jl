@@ -151,8 +151,8 @@ const term_sup_lw = ["qt", "wxt", "x11", "gif", "pdfcairo", "pngcairo",
                      "epscairo", "epslatex", "aqua", "sixelgd", "svg"]
 
 # Validate coordinates
-# TODO: generalize to more plotstyles
-function valid_coords(x,y,z;err=ErrorCoords(),fin=FinancialCoords())
+# TODO: validate all possible cases
+function valid_coords(x,y,z,supp)
     invalid = false
     if isempty(z)
         length(x) != length(y) && (invalid = true)

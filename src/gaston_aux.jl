@@ -109,7 +109,13 @@ function plotstring_single(conf::CurveConf)
     s = ""
     conf.legend != "" && (s *= " title '"*conf.legend*"' ")
     conf.plotstyle != "" && (s *= " with "*conf.plotstyle*" ")
-    conf.linecolor != "" && (s *= "lc rgb '"*conf.linecolor*"' ")
+    if conf.linecolor != ""
+        if conf.linecolor[1] == '{'
+            s *= "lc "*conf.linecolor[2:end-1]*" "
+        else
+            s *= "lc '"*conf.linecolor*"' "
+        end
+    end
     conf.linewidth != "" && (s *= "lw "*conf.linewidth*" ")
     conf.linestyle != "" && (s *= "dt '"*conf.linestyle*"' ")
     conf.linetype != "" && (s *= "lt '"*conf.linetype*"' ")
@@ -138,9 +144,7 @@ function plotstring(fig::Figure)
         push!(p, "'$file' i $(i-1) $(plotstring_single(curve.conf))")
     end
     cmd = "plot "
-    if !(isempty(curves[1].z) || occursin("image",curves[1].conf.plotstyle))
-        cmd = "splot "
-    end
+    fig.dims == 3 && (cmd = "splot")
     return cmd*join(p, ", ")
 end
 
