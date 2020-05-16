@@ -187,13 +187,14 @@ surf(z::Matrix;args...) = surf(1:size(z)[2],1:size(z)[1],z,dims=3;args...) # mat
 surf!(z::Matrix;args...) = surf!(1:size(z)[2],1:size(z)[1],z,dims=3;args...) # matrix
 
 # 3-D contour plots
-function contour(x::Coord,y::Coord,z::Coord;labels=true,gpcom="",args...)
-    gp = gpcom*"""unset key
+function contour(x::Coord,y::Coord,z::Coord;labels=true,cntrparam="",gpcom="",args...)
+    gp = """unset key
             set view map
             set contour base
             unset surface
             set cntrlabel font ",7"
-            set cntrparam levels 10"""
+            set cntrparam $(cntrparam == "" ? "levels 10" : cntrparam)
+            $gpcom"""
     p = surf(x,y,z;gpcom=gp,args...)
     labels && (p = surf!(x,y,z;plotstyle="labels"))
     return p

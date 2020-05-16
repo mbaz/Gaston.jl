@@ -338,7 +338,7 @@ end
 # write commands to gnuplot's pipe
 function gnuplot_send(s)
     config[:debug] && println(s)  # print gnuplot commands if debug enabled
-    w = write(P.gstdin, string(s,"\n"))
+    w = write(P.gstdin, s*"\n")
     # check that data was accepted by the pipe
     if !(w > 0)
         println("Something went wrong writing to gnuplot STDIN.")
