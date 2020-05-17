@@ -165,7 +165,8 @@ function valid_coords(x,y,z,supp)
 end
 
 # Define pointtype synonyms
-const pointtypes = Dict("+" => 1,
+const pointtypes = Dict("dot" => 0,
+                        "+" => 1,
                         "x" => 2,
                         "*" => 3,
                         "esquare" => 4,
@@ -177,6 +178,7 @@ const pointtypes = Dict("+" => 1,
                         "etriandn" => 10,
                         "ftriandn" => 11,
                         "edmd" => 12)
+                        "fdmd" => 13)
 
 # Define argument synonyms
 const synonyms = Dict(:title => [:title],

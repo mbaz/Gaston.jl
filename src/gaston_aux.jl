@@ -307,7 +307,7 @@ function parse(a, v)
         return s
     #parse grid
     elseif a == :grid
-        v in (true, :on, :true) && return "on"
+        v in (true, :on, :true, "on") && return "on"
         return ""
     # parse range
     elseif a == :xrange || a == :yrange || a == :zrange
