@@ -15,6 +15,7 @@ function save(;handle::Handle = gnuplot_state.current,
 
     # process arguments
     isempty(output) && throw(DomainError("Please specify an output filename."))
+    isempty(term) && throw(DomainError("Please specify a file format"))
 
     h = findfigure(handle)
     h == 0 && throw(DomainError(h, "requested figure does not exist."))
@@ -29,19 +30,15 @@ function save(;handle::Handle = gnuplot_state.current,
     (term == "eps" || term == :eps) && (term = "epscairo")
 
     # create print configuration
-    pc = PrintConf(term       = string(term),
-                   termopts   = string(termopts),
-                   font       = string(font),
-                   size       = string(size),
-                   linewidth  = string(linewidth),
-                   background = string(background),
-                   output     = string(output))
-
-    # set figure's print parameters
-    fig.print = pc
+    pc = "set term $term "
+    !isempty(font) && (pc *= "font '$font' ")
+    !isempty(size) && (pc *= "size $size ")
+    !isempty(linewidth) && (pc *= "linewidth $linewidth ")
+    !isempty(background) && (pc *= "background '$background' ")
+    !isempty(termopts) && (pc *= termopts)
 
     # send gnuplot commands
-    llplot(fig, print=true)
+    llplot(fig, print=(pc,output))
 
     return nothing
 end

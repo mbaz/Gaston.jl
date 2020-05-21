@@ -18,6 +18,24 @@ function meshgrid(x,y,f)
     return z
 end
 
+### Debug mode
+function debug(msg, f="")
+    if config[:debug]
+        s = split(msg, "\n", keepempty=false)
+        if !isempty(s)
+            if !isempty(f)
+                printstyled("⌈Gaston in function $f\n", color=:yellow)
+            else
+                printstyled("⌈Gaston\n", color=:yellow)
+            end
+            for ss in s
+                println("| $ss")
+            end
+            printstyled("⌊\n", color=:yellow)
+        end
+    end
+end
+
 # create x,y coordinates for a histogram, from a sample vector, using a number
 # of bins
 function hist(s,bins)
@@ -57,79 +75,58 @@ function hist(s,bins)
 end
 
 function Base.display(x::Figure)
+    debug("Entering display()")
     isempty(x) && return nothing
     if config[:mode] == "null"
         return nothing
     end
-    if config[:term][:terminal] == "dumb"
+    if config[:term] in term_text
         show(stdout, "text/plain", x)
-        return
+        return nothing
     end
     llplot(x)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", x::Figure)
+    debug("Entering show() with MIME text/plain")
     isempty(x) && return nothing
     if config[:mode] == "null"
         return nothing
     end
     tmpfile = tempname()
     save(term="dumb", output=tmpfile)
+    while !isfile(tmpfile) end  # avoid race condition with read in next line
     write(io, read(tmpfile))
     rm(tmpfile, force=true)
     return
 end
 
 function Base.show(io::IO, ::MIME"image/svg+xml", x::Figure)
+    debug("Entering show() with MIME image/svg+xml")
     isempty(x) && return nothing
     if config[:mode] == "null"
         return nothing
     end
     tmpfile = tempname()
     save(term="svg", output=tmpfile)
+    while !isfile(tmpfile) end  # avoid race condition with read in next line
     write(io, read(tmpfile))
     rm(tmpfile, force=true)
     return
 end
 
 function Base.show(io::IO, ::MIME"image/png", x::Figure)
+    debug("Entering show() with MIME image/png")
     isempty(x) && return nothing
     if config[:mode] == "null"
         return nothing
     end
     tmpfile = tempname()
     save(term="png", output=tmpfile)
+    while !isfile(tmpfile) end  # avoid race condition with read in next line
     write(io, read(tmpfile))
     rm(tmpfile, force=true)
     return
-end
-
-# return command string for a single curve
-function plotstring_single(conf::CurveConf)
-    s = ""
-    conf.legend != "" && (s *= " title '"*conf.legend*"' ")
-    conf.plotstyle != "" && (s *= " with "*conf.plotstyle*" ")
-    if conf.linecolor != ""
-        if conf.linecolor[1] == '{'
-            s *= "lc "*conf.linecolor[2:end-1]*" "
-        else
-            s *= "lc '"*conf.linecolor*"' "
-        end
-    end
-    conf.linewidth != "" && (s *= "lw "*conf.linewidth*" ")
-    conf.linestyle != "" && (s *= "dt '"*conf.linestyle*"' ")
-    conf.linetype != "" && (s *= "lt '"*conf.linetype*"' ")
-    conf.fillstyle != "" && (s *= "fs "*conf.fillstyle*" ")
-    conf.fillcolor != "" && (s *= "fc \""*conf.fillcolor*"\" ")
-    if conf.pointtype != ""
-        if conf.pointtype isa Real
-            s *= "pt $(conf.pointtype) "
-        else
-            s *= "pt '$(conf.pointtype)' "
-        end
-    end
-    conf.pointsize != "" && (s *= "ps "*conf.pointsize*" ")
-    return s
 end
 
 # build a string with plot commands according to configuration
@@ -141,7 +138,7 @@ function plotstring(fig::Figure)
     # We also need to keep track of the current index (starts at zero)
     p = Vector{String}()
     for (i, curve) in enumerate(curves)
-        push!(p, "'$file' i $(i-1) $(plotstring_single(curve.conf))")
+        push!(p, "'$file' i $(i-1) $(curve.conf)")
     end
     cmd = "plot "
     fig.dims == 3 && (cmd = "splot")
@@ -149,94 +146,14 @@ function plotstring(fig::Figure)
 end
 
 # Build a "set term" string appropriate for the terminal type
-function termstring(f::Figure,print=false)
+function termstring(f::Figure;term=config[:term],termopts=config[:termopts])
     global gnuplot_state
 
-    tc = f.term
-    pc = f.print
-
-    term = print ? pc.term : config[:term][:terminal]
-
-    if term != ""
-        # determine font, size, and background
-        font = print ? pc.font : tc.font
-        size = print ? pc.size : tc.size
-        background = print ? pc.background : tc.background
-
-        # build term string
-        ts = "set term $term "
-        term ∈ term_window && (ts = ts*string(gnuplot_state.current)*" ")
-
-        if print && (term in term_sup_lw)
-            !isempty(pc.linewidth) && (ts *= " linewidth $(pc.linewidth) ")
-        end
-
-        isempty(font) ? s = "" : s = " font \""*font*"\" "
-        term ∈ term_sup_font && (ts *= s)
-
-        isempty(size) ? s = "" : s = " size "*size*" "
-        term ∈ term_sup_size && (ts *= s)
-
-        isempty(background) ? s = "" : s = " background \""*background*"\" "
-        term ∈ term_sup_bkgnd && (ts *= s)
-
-        # terminal options
-        print || (ts *= config[:term][:termopts]*" ")
-        print && (ts *= pc.termopts*" ")
-    end
+    # build termstring
+    ts = "set term $term "
+    term ∈ term_window && (ts = ts*string(gnuplot_state.current)*" ")
+    ts = ts*termopts
     return ts
-end
-
-# return a string with the `set` commands for the current figure
-function figurestring(f::Figure)
-    config = f.axes
-    s = Vector{String}()
-    config.title != "" && push!(s, "set title '"*config.title*"'")
-    config.fillstyle != "" && push!(s, "set style fill "*config.fillstyle)
-    if config.grid != ""
-        if config.grid == "on"
-            push!(s,"set grid")
-        else
-            push!(s,"set grid "*config.grid)
-        end
-    end
-    config.keyoptions != "" && push!(s, "set key "*config.keyoptions)
-    config.boxwidth != "" && push!(s, "set boxwidth "*config.boxwidth)
-    config.axis != "" && push!(s, "set "*config.axis)
-    config.xlabel != "" && push!(s, "set xlabel '"*config.xlabel*"'")
-    config.ylabel != "" && push!(s, "set ylabel '"*config.ylabel*"'")
-    config.zlabel != "" && push!(s, "set zlabel '"*config.zlabel*"'")
-    config.xrange != "" && push!(s, "set xrange "*config.xrange)
-    config.yrange != "" && push!(s, "set yrange "*config.yrange)
-    config.zrange != "" && push!(s, "set zrange "*config.zrange)
-    config.xtics != "" && push!(s, "set xtics "*config.xtics)
-    config.ytics != "" && push!(s, "set ytics "*config.ytics)
-    config.ztics != "" && push!(s, "set ztics "*config.ztics)
-    config.linetypes != "" && push!(s,config.linetypes)
-    if config.xzeroaxis != ""
-        if config.xzeroaxis == "on"
-            push!(s, "set xzeroaxis")
-        else
-            push!(s, "set xzeroaxis "*config.xzeroaxis)
-        end
-    end
-    if config.yzeroaxis != ""
-        if config.yzeroaxis == "on"
-            push!(s, "set yzeroaxis")
-        else
-            push!(s, "set yzeroaxis "*config.yzeroaxis)
-        end
-    end
-    if config.zzeroaxis != ""
-        if config.xzeroaxis == "on"
-            push!(s, "set zzeroaxis")
-        else
-            push!(s, "set zzeroaxis "*config.zzeroaxis)
-        end
-    end
-    config.view != "" && push!(s, "set view "*config.view)
-    config.palette != "" && push!(s, "set palette "*config.palette)
-    return join(s, "\n")*"\n"
 end
 
 # Calculating palettes is expensive, so store them in a cache. The cache is
@@ -247,97 +164,194 @@ Palette_cache = Dict{Symbol, String}(:gray => "gray")
 Linetypes_cache = Dict{Symbol, String}()
 
 # parse arguments
-function parse(a, v)
-    # parse palette; code inspired by @gcalderone's Gnuplot.jl
-    if a == :palette
-        if v isa Symbol
-            haskey(Palette_cache, v) && return Palette_cache[v]
-            cm = colorschemes[v]
-            colors = Vector{String}()
-            for i in range(0, 1, length=length(cm))
-                c = get(cm, i)
-                push!(colors, "$i $(c.r) $(c.g) $(c.b)")
-            end
-            s = "defined (" * join(colors, ", ") * ")\nset palette maxcolors $(length(cm))"
-            push!(Palette_cache, (v => s))
-            return s
-        else
-            return string(v)
-        end
-    # parse linetypes
-    elseif a == :linetypes
-        if v isa Symbol
-            haskey(Linetypes_cache, v) && return Linetypes_cache[v]
-            cm = colorschemes[v]
-            linetypes = Vector{String}()
-            for i in 1:length(cm)
-                c = cm[i]
-                s = join(string.( round.(Int, 255 .*(c.r, c.g, c.b)), base=16, pad=2))
-                push!(linetypes, "set lt $i lc rgb '#$s'")
-            end
-            s = join(linetypes,"\n")*"\nset linetype cycle $(length(cm))"
-            push!(Linetypes_cache, (v => s))
-            return s
-        else
-            return string(v)
-        end
-    # parse tics
-    elseif a == :xtics || a == :ytics || a == :ztics
-        if v isa AbstractRange
-            return "$(first(v)),$(step(v)),$(last(v))"
-        elseif v isa Tuple
-            tics = v[1]
-            labs = v[2]
-            tics isa AbstractRange && (tics = collect(v[1]))
-            s = """("$(labs[1])" $(tics[1])"""
-            for i in 2:length(tics)
-                s *= """, "$(labs[i])" $(tics[i])"""
-            end
-            s *= ")"
-        else
-            return string(v)
-        end
-    # parse axis type
-    elseif a == :axis
-        s = string(v)
-        s == "semilogx" && return "logscale x"
-        s == "semilogy" && return "logscale y"
-        s == "semilogz" && return "logscale z"
-        s == "loglog" && return "logscale xyz"
-        return s
-    #parse grid
-    elseif a == :grid
-        v in (true, :on, :true, "on") && return "on"
-        return ""
-    # parse range
-    elseif a == :xrange || a == :yrange || a == :zrange
-        if v isa Vector || v isa Tuple
-            return "[$(ifelse(isinf(v[1]),*,v[1]))|$(ifelse(isinf(v[2]),*,v[2]))]"
-        else
-            return string(v)
-        end
-    # parse zeroaxis
-    elseif a == :xzeroaxis || a == :yzeroaxis || a == :zzeroaxis
-        v in (true, :on, :true) && return "on"
-        return ""
-    # parse view
-    elseif a == :view
-        v isa AbstractString && return v
-        return join(v, ", ")
-    # parse pointtype
-    elseif a == :pointtype
-        v isa Real && return v
-        x = string(v)
-        haskey(pointtypes, x) && return pointtypes[x]
-        return x
+function parse(kwargs)
+    kwargs = Dict(kwargs)
+    # strings that will be returned
+    figspec = String[]
+    plotspec = String[]
+    ### find plotspec keys.
+    # the 'plotspec' argument overrides all other
+    if :plotspec in keys(kwargs)
+        plotspec = kwargs[:plotspec]
     else
-        return string(v)
+        # These keys are processed first and in order.
+        for kw in (:every, :e, :skip, :using, :u, :smooth, :bins, :volatile, :noautoscale)
+            if kw in keys(kwargs)
+                push!(plotspec, " $kw $(kwargs[kw]) ")
+                pop!(kwargs, kw)
+            end
+        end
+        # with or plotstyle
+        val = pop!(kwargs, :with, pop!(kwargs, :w, pop!(kwargs, :plotstyle, pop!(kwargs, :ps, nothing))))
+        if val != nothing
+            push!(plotspec, " with $val ")
+        end
+        # linecolor
+        val = pop!(kwargs, :linecolor, pop!(kwargs, :lc, nothing))
+        if val != nothing
+            if val isa Symbol
+                push!(plotspec, " linecolor '$val' ")
+            else
+                push!(plotspec, " linecolor $val ")
+            end
+        end
+        # pointtype
+        val = pop!(kwargs, :pointtype, pop!(kwargs, :pt, nothing))
+        if val != nothing
+            if val isa String
+                push!(plotspec, " pointtype $(pointtypes(val)) ")
+            else
+                push!(plotspec, " pointtype $val ")
+            end
+        end
+        # the rest
+        for kw in (:ls, :linestyle, :lt, :linetype, :lw, :linewidth, :pz,
+                   :pointsize, :fill, :fs, :fillcolor, :fc, :legend, :leg,
+                   :dashtype, :dt, :pointinterval, :pi, :pointnumber, :pn)
+            val = get(kwargs, kw, nothing)
+            if val != nothing
+                push!(plotspec, " $kw $val ")
+                pop!(kwargs, kw)
+            end
+        end
+        for kw in (:nohidden3d, :nocontours, :nosurface, :palette)
+            val = get(kwargs, kw, nothing)
+            if val in (true, :on, :true, "on", "true")
+                push!(plotspec, " $kw ")
+                pop!(kwargs, kw)
+            end
+        end
     end
+    ### find special figurespec keys
+    # palette; code inspired by @gcalderone's Gnuplot.jl
+    val = pop!(kwargs, :pal, pop!(kwargs, :palette, nothing))
+    if val != nothing
+        val isa Vector || (val = [val])
+        for v in val
+            if val isa Symbol
+                if haskey(Palette_cache, val)
+                    push!(figspec, Palette_cache[val])
+                    continue
+                end
+                cm = colorschemes[val]
+                colors = String[]
+                for i in range(0, 1, length=length(cm))
+                    c = get(cm, i)
+                    push!(colors, "$i $(c.r) $(c.g) $(c.b)")
+                end
+                s = "set palette defined ("*join(colors, ", ")*")\nset palette maxcolors $(length(cm))"
+                push!(Palette_cache, (val => s))
+                push!(figspec, s)
+            else
+                push!(figspec, "set palette $val")
+            end
+        end
+    end
+    # linetype definitions; code inspired by @gcalderone's Gnuplot.jl
+    val = pop!(kwargs, :linetypes, nothing)
+    if val != nothing
+        val isa Vector || (val = [val])
+        for v in val
+            if v isa Symbol
+                if haskey(Linetypes_cache, v)
+                    push!(figspec, Linetypes_cache[v])
+                    continue
+                end
+                cm = colorschemes[v]
+                linetypes = String[]
+                for i in 1:length(cm)
+                    c = cm[i]
+                    s = join(string.( round.(Int, 255 .*(c.r, c.g, c.b)), base=16, pad=2))
+                    push!(linetypes, "set lt $i lc rgb '#$s'")
+                end
+                s = join(linetypes,"\n")*"\nset linetype cycle $(length(cm))"
+                push!(Linetypes_cache, (v => s))
+                push!(figspec, s)
+            else
+                push!(figspec, "set linetype $v")
+            end
+        end
+    end
+    # tics
+    for arg in (:xtics, :ytics, :ztics)
+        val = get(kwargs, arg, nothing)
+        if val != nothing
+            val isa Vector || (val = [val])
+            for v in val
+                if v isa AbstractRange
+                    push!(figspec,"set $arg $(first(v)),$(step(v)),$(last(v))")
+                elseif v isa Tuple
+                    tics = v[1]
+                    labs = v[2]
+                    tics isa AbstractRange && (tics = collect(v[1]))
+                    s = """("$(labs[1])" $(tics[1])"""
+                    for i in 2:length(tics)
+                        s *= """, "$(labs[i])" $(tics[i])"""
+                    end
+                    s *= ")"
+                    push!(figspec,"set $arg $s")
+                else
+                    push!(figspec,"set $arg $v")
+                end
+            end
+            pop!(kwargs, arg)
+        end
+    end
+    # axis type
+    val = pop!(kwargs, :axis, nothing)
+    if val != nothing
+        s = string(val)
+        s == "semilogx" && push!(figspec, "set logscale x")
+        s == "semilogy" && push!(figspec, "set logscale y")
+        s == "semilogz" && push!(figspec, "set logscale z")
+        s == "loglog" && push!(figspec, "set logscale xyz")
+    end
+    # range
+    for arg in (:xrange, :yrange, :zrange)
+        val = pop!(kwargs, arg, nothing)
+        if val != nothing
+            if val isa Vector || val isa Tuple
+                push!(figspec, "set $arg [$(ifelse(isinf(val[1]),*,val[1]))|$(ifelse(isinf(val[2]),*,val[2]))]")
+            else
+                push!(figspec, "set $arg $val")
+            end
+        end
+    end
+    # view
+    val = pop!(kwargs, :view, nothing)
+    if val != nothing
+        if val isa AbstractString
+            push!(figspec, "set view $val")
+        else
+            push!(figspec, "set view $(join(val, ", "))")
+        end
+    end
+    # dashtypes
+    val = pop!(kwargs, :dashtypes, nothing)
+    if val != nothing
+        if val isa String
+            push!(figspec, "set dashtype '$val'")
+        else
+            push!(figspec, "set dashtype $val")
+        end
+    end
+    ### iterate over remaining keys
+    for a in keys(kwargs)
+        arg = string(a)
+        val = kwargs[a]
+        # on/off arguments
+        if val in (true, :on, :true, "on", "true")
+            push!(figspec, "set $arg")
+        else
+            push!(figspec, "set $arg $val")
+        end
+    end
+    return join(figspec, "\n"), join(plotspec, " ")
 end
 
 # write commands to gnuplot's pipe
 function gnuplot_send(s)
-    config[:debug] && println(s)  # print gnuplot commands if debug enabled
+    debug(s, "gnuplot_send")
     w = write(P.gstdin, s*"\n")
     # check that data was accepted by the pipe
     if !(w > 0)

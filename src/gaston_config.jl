@@ -4,93 +4,21 @@
 
 # This file contains configuration-related functions and types
 
-# default term file string
-const tmpprefix = randstring(8)
-
-# Default font, size and background for each supported terminal
-const TerminalDefaults = Dict("wxt" => Dict(:font       => "Sans,10",
-                                            :size       => "640,384",
-                                            :background => "white"),
-                              "qt" => Dict(:font       => "Sans,9",
-                                           :size       => "640,480",
-                                           :background => ""),
-                              "x11" => Dict(:font       => "",
-                                            :size       => "640,480",
-                                            :background => ""),
-                              "aqua" => Dict(:font       => "Times-Roman,14",
-                                             :size       => "846,594",
-                                             :background => ""),
-                              "dumb" => Dict(:font       => "",
-                                             :size       => "79,24",
-                                             :background => ""),
-                              "sixelgd" => Dict(:font       => "Sans,12",
-                                                :size       => "640,480",
-                                                :background => "white"),
-                              "svg" => Dict(:font       => "Arial,12",
-                                            :size       => "640,384",
-                                            :background => "white"),
-                              "gif" => Dict(:font       => "Sans,12",
-                                            :size       => "640,480",
-                                            :background => "white"),
-                              "pngcairo" => Dict(:font       => "Sans,12",
-                                                 :size       => "640,480",
-                                                 :background => "white"),
-                              "pdfcairo" => Dict(:font       => "Sans,12",
-                                                 :size       => "5,3",
-                                                 :background => "white"),
-                              "epscairo" => Dict(:font       => "Sans,12",
-                                                 :size       => "5,3",
-                                                 :background => "white"),
-                              "epslatex" => Dict(:font       => "Sans,12",
-                                                 :size       => "5,3",
-                                                 :background => "white"),
-                              "cairolatex" => Dict(:font       => "Sans,12",
-                                                 :size         => "5,3",
-                                                 :background   => "white"))
-
 # Dicts to store user-specified configuration
-default_config() = Dict(:mode => "normal",
-                        :timeouts => Dict(:stdout_timeout => Sys.isunix() ? 6 : 20),
-                        :debug => false,
-                        :term => Dict(:terminal => "qt",
-                                      :font => "",
-                                      :size => "",
-                                      :background => "",
-                                      :termopts => ""),
-                        :axes => Dict(:title => "",
-                                      :xlabel => "",
-                                      :ylabel => "",
-                                      :zlabel => "",
-                                      :axis => "",
-                                      :xrange => "",
-                                      :yrange => "",
-                                      :zrange => "",
-                                      :fillstyle => "",
-                                      :grid => "",
-                                      :boxwidth => "",
-                                      :xtics => "",
-                                      :ytics => "",
-                                      :ztics => "",
-                                      :xzeroaxis => "",
-                                      :yzeroaxis => "",
-                                      :zzeroaxis => "",
-                                      :keyoptions => "",
-                                      :linetypes => "",
-                                      :palette => "",
-                                      :view => "",
-                                      :onlyimpulses => false),
-                        :curve => Dict(:plotstyle => "",
-                                       :linecolor => "",
-                                       :linewidth => "",
-                                       :linestyle => "",
-                                       :linetype  => "",
-                                       :pointtype => "",
-                                       :pointsize => "",
-                                       :fillcolor => "",
-                                       :fillstyle => ""))
+default_config() = Dict(:mode     => "normal",
+                        :timeout  => Sys.isunix() ? 10 : 20,
+                        :debug    => false,
+                        :term     => "qt",
+                        :termopts => "")
+
 # Set any of Gaston's configuration variables
-function set(;reset = false, terminal=config[:term][:terminal],
-             mode = config[:mode], kw...)
+function set(;reset::Bool = false,
+              term        = config[:term],
+              termopts    = config[:termopts],
+              mode        = config[:mode],
+              debug::Bool = config[:debug],
+              timeout     = config[:timeout]
+            )
     global config
 
     if reset
@@ -98,31 +26,11 @@ function set(;reset = false, terminal=config[:term][:terminal],
         return nothing
     end
 
-    t = terminal
-    if mode == "normal"
-        terminal == "pdf" && (t = "pdfcairo")
-        terminal == "pnf" && (t = "pnfcairo")
-        terminal == "eps" && (t = "epscairo")
-    end
-    config[:term][:terminal] = t
+    config[:term] = term
+    config[:termopts] = termopts
     config[:mode] = mode
-
-    for k in keys(kw)
-        if k == :debug
-            kw[k] isa Bool && (config[:debug] = kw[k]; continue)
-            throw(DomainError("argument to debug must be Bool"))
-        end
-        if k == :stdout_timeout
-            kw[k] isa Real && kw[k] > 0 && (config[:timeouts][k] = kw[k]; continue)
-            throw(DomainError("timeout argument must be a positive number"))
-        end
-        flag = true
-        for i in [:term, :axes, :curve]
-            c = config[i]
-            haskey(c, k) && (flag=false; c[k] = string(kw[k]))
-        end
-        flag && throw(ArgumentError("$k is an invalid setting"))
-    end
+    config[:timeout] = timeout
+    debug isa Bool && (config[:debug] = debug)
 
     return nothing
 end
@@ -135,20 +43,6 @@ const term_text = ["dumb", "sixelgd"]
 # outputs to a file
 const term_file = ["svg", "gif", "pngcairo", "pdfcairo", "epscairo",
                    "epslatex", "cairolatex", "dumb"]
-# supports size
-const term_sup_size = ["qt", "wxt", "x11", "sixelgd", "svg", "gif",
-                       "dumb", "pngcairo", "pdfcairo", "epscairo",
-                       "epslatex", "cairolatex"]
-# supports font
-const term_sup_font = ["qt", "wxt", "x11", "aqua", "sixelgd", "svg",
-                       "gif","pngcairo", "pdfcairo", "epscairo",
-                       "epslatex", "cairolatex"]
-# supports background color
-const term_sup_bkgnd = ["sixelgd", "svg", "wxt", "gif", "pdfcairo",
-                        "pngcairo", "epscairo", "epslatex", "cairolatex"]
-# supports linewidth
-const term_sup_lw = ["qt", "wxt", "x11", "gif", "pdfcairo", "pngcairo",
-                     "epscairo", "epslatex", "aqua", "sixelgd", "svg"]
 
 # Validate coordinates
 # TODO: validate all possible cases
@@ -165,53 +59,20 @@ function valid_coords(x,y,z,supp)
 end
 
 # Define pointtype synonyms
-const pointtypes = Dict("dot" => 0,
-                        "+" => 1,
-                        "x" => 2,
-                        "*" => 3,
-                        "esquare" => 4,
-                        "fsquare" => 5,
-                        "ecircle" => 6,
-                        "fcircle" => 7,
-                        "etrianup" => 8,
-                        "ftrianup" => 9,
-                        "etriandn" => 10,
-                        "ftriandn" => 11,
-                        "edmd" => 12,
-                        "fdmd" => 13)
-
-# Define argument synonyms
-const synonyms = Dict(:xl => :xlabel,
-                      :xlab => :xlabel,
-                      :yl => :ylabel,
-                      :ylab => :ylabel,
-                      :zl => :zlabel,
-                      :zlab => :zlabel,
-                      :fs => :fillstyle,
-                      :bw => :boxwidth,
-                      :ko => :keyoptions,
-                      :xt => :xtics,
-                      :yt => :ytics,
-                      :zt => :ztics,
-                      :xr => :xrange,
-                      :yr => :yrange,
-                      :zr => :zrange,
-                      :xza => :xzeroaxis,
-                      :yza => :yzeroaxis,
-                      :zza => :zzeroaxis,
-                      :leg => :legend,
-                      :ps => :plotstyle,
-                      :lc => :linecolor,
-                      :lw => :linewidth,
-                      :ls => :linestyle,
-                      :pt => :pointtype,
-                      :marker => :pointtype,
-                      :mk => :pointtype,
-                      :pz => :pointsize,
-                      :markersize => :pointsize,
-                      :ms => :pointsize,
-                      :fc => :fillcolor,
-                      :bg => :background
-                     )
-
-const syn_list = union(values(synonyms)...)
+function pointtypes(pt)
+    pt == "dot" && return 0
+    pt == "+" && return 1
+    pt == "x" && return 2
+    pt == "*" && return 3
+    pt == "esquare" && return 4
+    pt == "fsquare" && return 5
+    pt == "ecircle" && return 6
+    pt == "fcircle" && return 7
+    pt == "etrianup" && return 8
+    pt == "ftrianup" && return 9
+    pt == "etriandn" && return 10
+    pt == "ftriandn" && return 11
+    pt == "edmd" && return 12
+    pt == "fdmd" && return 13
+    return "'$pt'"
+end

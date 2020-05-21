@@ -43,31 +43,18 @@ using Gaston, Test
         figure()
         figure(4);
         closefigure(1,2,3,4,5)
-    end== nothing
+    end == nothing
     @test begin
         closeall()
         figure(3)
         figure(3)
-    end== 3
-    @test set(plotstyle="linespoints") == nothing
-    @test set(linecolor="red") == nothing
-    @test set(pointtype="ecircle") == nothing
-    @test set(linewidth="3") == nothing
-    @test set(pointsize="3") == nothing
-    @test set(palette="gray") == nothing
-    @test set(fillstyle="solid") == nothing
-    @test set(grid="on") == nothing
+    end == 3
     if !Sys.iswindows()
-        @test set(terminal="x11") == nothing # This test does not pass in Windows
+        @test set(term="x11") === nothing # This test does not pass in Windows
     end
-    @test set(terminal="x11") == nothing
-    @test set(termopts="noenhanced") == nothing
-    @test set(output="A") == nothing
-    @test set(print_font="A") == nothing
-    @test set(print_linewidth="3") == nothing
-    @test set(print_size="10,10") == nothing
-    @test set(debug=true) == nothing
-    @test set(debug=false) == nothing
+    @test set(termopts="noenhanced") === nothing
+    @test set(debug=true) === nothing
+    @test set(debug=false) === nothing
 end
 
 @testset "2-D plots" begin
@@ -157,8 +144,7 @@ end
         Gaston.gnuplot_state.gp_error
     end == false
     @test begin
-        plot(3,4,plotstyle="points",pointsize="3",xrange="[2.95:3.05]",
-             yrange="[3.95:4.045]")
+        plot(3,4,plotstyle="points",pointsize="3",xrange="[2.95:3.05]",yrange="[3.95:4.045]")
         Gaston.gnuplot_state.gp_error
     end == false
     @test begin
@@ -166,60 +152,53 @@ end
         Gaston.gnuplot_state.gp_error
     end == false
     @test begin
-        plot(3+4im,plotstyle="points",pointsize="3",xrange="[2.95:3.05]",
-             yrange="[3.95:4.045]")
+        plot(3+4im,plotstyle="points",pointsize="3",xrange="[2.95:3.05]",yrange="[3.95:4.045]")
         Gaston.gnuplot_state.gp_error
     end == false
     @test begin
-        err = Gaston.ErrorCoords(rand(40))
-        plot(1:40,err=err,plotstyle="errorbars")
+        y=rand(10)
+        ylow=y.-rand(10)
+        yhigh=y.+3rand(10)
+        plot(y,supp=[ylow yhigh],ps=:errorlines)
         Gaston.gnuplot_state.gp_error
     end == false
     @test begin
-        err = Gaston.ErrorCoords(rand(40))
-        plot!(1:40,err=err,plotstyle="errorbars")
+        x=6rand(10).-3
+        y=6rand(10).-3
+        xdelta=0.5rand(10)
+        ydelta=rand(10).-1
+        plot(x,y,supp=[xdelta ydelta],ps="vectors head filled",lt=2)
+        Gaston.gnuplot_state.gp_error
+    end == false
+    @test_skip begin
+        x=250randn(10)
+        y=10randn(10)
+        c1=randn(10)
+        c2=50randn(10)
+        plot(x,y,supp=[c1 c2],ps=:parallelaxes)
+        Gaston.gnuplot_state.gp_error
+    end == false
+    @test_skip begin
+        x=1:5
+        y=1:5
+        l=["1" "ss" "3" "yy" "x5"]
+        plot(x,y,supp=l,ps=:labels)
         Gaston.gnuplot_state.gp_error
     end == false
     @test begin
-        err = Gaston.ErrorCoords(rand(40))
-        plot(1:40,err=err,plotstyle="errorlines")
+        stem(0:0.1:3pi,sin)
         Gaston.gnuplot_state.gp_error
     end == false
     @test begin
-        err = Gaston.ErrorCoords(rand(40))
-        plot!(1:40,err=err,plotstyle="errorlines")
+        stem(0:0.1:3pi,sin,onlyimpulses=true)
         Gaston.gnuplot_state.gp_error
     end == false
     @test begin
-        err = Gaston.ErrorCoords(rand(40),rand(40))
-        plot(1:40,err=err,plotstyle="errorbars")
-        Gaston.gnuplot_state.gp_error
-    end == false
-    @test begin
-        err = Gaston.ErrorCoords(rand(40),rand(40))
-        plot!(1:40,err=err,plotstyle="errorbars")
-        Gaston.gnuplot_state.gp_error
-    end == false
-    @test begin
-        err = Gaston.ErrorCoords(rand(40),rand(40))
-        plot(1:40,err=err,plotstyle="errorlines")
-        Gaston.gnuplot_state.gp_error
-    end == false
-    @test begin
-        err = Gaston.ErrorCoords(rand(40),rand(40))
-        plot!(1:40,err=err,plotstyle="errorlines")
-        Gaston.gnuplot_state.gp_error
-    end == false
-    @test begin
-        fin = Gaston.FinancialCoords(0.1*rand(10),0.1*rand(10),
-                                     0.1*rand(10),0.1*rand(10))
-        plot(1:10,financial=fin,plotstyle="financebars")
-        Gaston.gnuplot_state.gp_error
-    end == false
-    @test begin
-        fin = Gaston.FinancialCoords(0.1*rand(10),0.1*rand(10),
-                                     0.1*rand(10),0.1*rand(10))
-        plot!(1:10,financial=fin,plotstyle="financebars")
+        t=0:0.05:3
+        y1=exp.(-t)+0.1rand(length(t))
+        y2=exp.(-t)-0.1rand(length(t))
+        plot(t,y1,supp=y2,ps=:filledcurves,lc="brown")
+        plot!(t,exp.(-t),lc="black")
         Gaston.gnuplot_state.gp_error
     end == false
     # This test is cool, but it fails way too often due to slight
@@ -272,50 +251,18 @@ end
     end == false
     @test begin
         set(reset=true)
-        set(mode="ijulia")
-        a = repr("text/plain", plot(1:10))
+        s = MIME"image/svg+xml"()
+        p = plot(1:10)
+        a = repr(s, p)
         a[1:29] == "<?xml version=\"1.0\" encoding="
     end == true
     @test begin
         set(reset=true)
-        set(mode="ijulia")
-        a = repr("text/plain", plot(1:10))
-        findlast("</svg>",a)
-    end != nothing
-    # matrix plotting
-    @test begin
-        ps=["points","linespoints"];lc=["blue","red","green"]
-        pt=["ecircle","fcircle"];l=["1","2","3","4"]
-        M = rand(10,5)
-        plot(M,plotstyle=ps,linecolor=lc,pointtype=pt,legend=l)
-        Gaston.gnuplot_state.gp_error
-    end == false
-    @test begin
-        ps=["points","linespoints"];lc=["blue","red","green"]
-        pt=["ecircle","fcircle"];l=["1","2","3","4"]
-        M = rand(10,5)
-        plot(22:31,M,plotstyle=ps,linecolor=lc,pointtype=pt,legend=l)
-        Gaston.gnuplot_state.gp_error
-    end == false
-    # build a multiple-plot figure manually
-    closeall()
-    set(mode="null")
-    @test begin
-        ac = Gaston.AxesConf(title="T")
-        x1, exp_pdf = Gaston.hist(randn(10000),25)
-        exp_pdf .= exp_pdf./(step(x1)*sum(exp_pdf))
-        exp_cconf = Gaston.CurveConf(plotstyle="boxes",
-                                     linecolor="blue",
-                                     legend="E")
-        exp_curve = Gaston.Curve(x=x1,y=exp_pdf,conf=exp_cconf)
-        x2 = -5:0.05:5
-        theo_pdf = @. 1/sqrt(2π)*exp((-x2^2)/2)
-        theo_cconf = Gaston.CurveConf(linecolor="black",legend="T")
-        theo_curve = Gaston.Curve(x=x2,y=theo_pdf,conf=theo_cconf)
-        figure(1)
-        Gaston.push_figure!(1,ac,exp_curve,theo_curve)
-        figure(1,redraw=false)
-    end == 1
+        s = MIME"image/svg+xml"()
+        p = plot(1:10)
+        a = repr(s, p)
+        a[end-7:end-2] == "</svg>"
+    end == true
 end
 
 @testset "Histograms" begin
@@ -370,10 +317,10 @@ end
         R = [x+y for x=0:5:120, y=0:5:120]
         G = [x+y for x=0:5:120, y=120:-5:0]
         B = [x+y for x=120:-5:0, y=0:5:120]
-        Z = zeros(25,25,3)
-        Z[:,:,1] = R
-        Z[:,:,2] = G
-        Z[:,:,3] = B
+        Z = zeros(3,25,25)
+        Z[1,:,:] = R
+        Z[2,:,:] = G
+        Z[3,:,:] = B
         imagesc(Z,title="RGB Image",clim=[10,200])
         Gaston.gnuplot_state.gp_error
     end == false
@@ -388,12 +335,11 @@ end
         Gaston.gnuplot_state.gp_error
     end == false
     @test begin
-        x=[0,1,2,3]; y=[0,1,2]; Z=[10 10 10; 10 5 10;10 1 10; 10 0 10]
+        x=[0,1,2]; y=[0,1,2,3]; Z=[10 10 10; 10 5 10; 10 1 10; 10 0 10]
         surf(x, y, Z,
              legend = :test,
              ps = :lines,
              lc = :black,
-             pt = :ecircle,
              title = :test,
              xlabel = :x,
              ylabel = :y,
@@ -407,17 +353,16 @@ end
              zzeroaxis = :on,
              font = "Arial, 12",
              size = "79,24",
-             gpcom = "set view 90,60"
+             view = (90,60)
             )
         Gaston.gnuplot_state.gp_error
     end == false
     @test begin
-        x=[0,1,2,3]; y=[0,1,2]; Z=[10 10 10; 10 5 10;10 1 10; 10 0 10]
+        x=[0,1,2]; y=[0,1,2,3]; Z=[10 10 10; 10 5 10; 10 1 10; 10 0 10]
         surf(x, y, Z,
              legend = "test",
              plotstyle = "lines",
              linecolor = "black",
-             pointtype = "ecircle",
              title = "test",
              xlabel = "x",
              ylabel = "y",
@@ -461,42 +406,55 @@ end
         scatter3(rand(8),rand(8),rand(8),lc=:black)
         Gaston.gnuplot_state.gp_error
     end == false
+    @test begin
+        x = 0:0.1:10pi
+        scatter3(x,sin.(x).*x,cos.(x).*x,supp=x./20,pt=7,pz=:variable,lc=:{palette})
+        Gaston.gnuplot_state.gp_error
+    end == false
+    @test begin
+        x = -1:0.05:1
+        y = -1.5:0.05:2
+        egg(x,y) = x^2 + y^2/(1.4 + y/5)^2
+        segg = [egg(x,y) for x in x, y in y]
+        gp="""set auto fix
+              set size ratio -1"""
+        contour(x,y,segg',ps=:lines,lc="palette",palette=:cool,gpcom=gp,
+                cntrparam="levels incremental 0,0.02,1",labels=false)
+        Gaston.gnuplot_state.gp_error
+    end == false
 end
 
 @testset "Saving plots" begin
     closeall()
     set(reset=true)
     set(mode="null")
-    set(output=tempname())
     plot(1:10)
     @test begin
-        printfigure()
+        save(output="test",term="pdf")
         Gaston.gnuplot_state.gp_error
     end == false
     @test begin
-        printfigure(handle=1,term="png")
+        save(handle=1,term="png",output="test")
         Gaston.gnuplot_state.gp_error
     end == false
     @test begin
-        printfigure(term="eps")
+        save(term="eps",output="test")
         Gaston.gnuplot_state.gp_error
     end == false
     @test begin
-        printfigure(term="pdf",
-                    font = "Arial, 12",
-                    size = "5,3",
-                    linewidth = "3"
-                   )
+        save(term="pdf",
+             output="test",
+             font = "Arial, 12",
+             size = "5,3",
+             linewidth = "3")
         Gaston.gnuplot_state.gp_error
     end == false
     @test begin
-        set(print_size="640,480")
-        printfigure(term="svg")
+        save(term="svg",output="test",linewidth="3")
         Gaston.gnuplot_state.gp_error
     end == false
     @test begin
-        set(print_size="640,480")
-        printfigure(term="gif")
+        save(term="gif",output="test",size="640,480")
         Gaston.gnuplot_state.gp_error
     end == false
 end
@@ -529,54 +487,7 @@ end
         plot(1:10, linestyle="- ._. ") # complex pattern
         Gaston.gnuplot_state.gp_error
     end == false
-    @test_throws DomainError plot(1:10, linestyle=" ") # only spaces not allowed
-    @test_throws DomainError plot(1:10, linestyle="-=") # = is not allowed in pattern
     closeall()
-end
-
-@testset "async_reader" begin
-    # Simplest way to test async_reader would be to use plain pipes,
-    # but there seems to be no way to create them in Julia, so we pipe
-    # data through an external process. The advantage of this approach
-    # is that it corresponds to how Gaston communicates with gnuplot.
-    # This testset is only enabled on Unix-like systems.
-    if Sys.isunix()
-        pin = Pipe()
-        pout = Pipe()
-        proc = try
-            run(pipeline(`cat`, stdin = pin, stdout = pout),
-                wait = false)
-        catch err
-            @warn "Skipping async_reader tests"
-            return
-        end
-        close(pout.in)
-        close(pin.out)
-
-        @test begin
-            ch = Gaston.async_reader(pout, 1)
-            write(pin, "GastonBegin\ncontent\nGastonDone\n")
-            take!(ch)
-        end == "content\n"
-
-        @test begin
-            ch = Gaston.async_reader(pout, 0.001)
-            write(pin, "GastonBegin\nmissing end pointtype\n")
-            take!(ch)
-        end === :timeout
-
-        @test begin
-            ch = Gaston.async_reader(pout, 1)
-            write(pin, "no begin pointtype\nGastonDone\n")
-            take!(ch)
-        end == "no begin pointtype\n"
-
-        @test begin
-            ch = Gaston.async_reader(pout, 1)
-            kill(proc)
-            take!(ch)
-        end === :eof
-    end
 end
 
 @testset "Tests that should fail" begin
@@ -593,63 +504,24 @@ end
     @test_throws MethodError closefigure(1:2)
     # plot
     @test_throws DimensionMismatch plot(0:10,0:11)
-    @test_throws DimensionMismatch surf([1,2],[3,4],[5,6,7])
-    @test_throws DimensionMismatch surf([1,2,3],[3,4],[5,6,7])
-    @test_throws DomainError plot(0:10,plotstyle="invalid")
-    @test_throws DomainError plot(0:10,pointtype="invalid")
-    @test_throws DomainError plot(0:10,pointtype="ab")
-    @test_throws DomainError plot(0:10,linewidth=im)
-    @test_throws DomainError plot(0:10,linewidth=-3)
-    @test_throws DomainError plot(0:10,pointsize=im)
-    @test_throws DomainError plot(0:10,pointsize=-3)
-    @test_throws DomainError plot(0:10,axis="invalid")
-    @test_throws DomainError plot(1:10,xrange = "2:3")
-    @test_throws DomainError plot(1:10,yrange = "ab")
-    @test_throws MethodError surf([1,2,3],[3,4],"a")
-    @test_throws DomainError surf(0:10,0:10,0:10,plotstyle="invalid")
-    @test_throws DomainError surf(0:10,0:10,0:10,pointtype="invalid")
-    @test_throws DomainError surf(0:10,0:10,0:10,pointtype="ab")
-    @test_throws DomainError surf(0:10,0:10,0:10,linewidth=im)
-    @test_throws DomainError surf(0:10,0:10,0:10,linewidth=-3)
-    @test_throws DomainError surf(0:10,0:10,0:10,pointsize=im)
-    @test_throws DomainError surf(0:10,0:10,0:10,pointsize=-3)
-    @test_throws DomainError surf(0:10,0:10,0:10,axis="invalid")
-    @test_throws DomainError surf(1:10,0:10,0:10,xrange = "2:3")
-    @test_throws DomainError surf(1:10,0:10,0:10,yrange = "ab")
-    @test_throws DomainError surf(1:10,0:10,0:10,zrange = "ab")
-    f = Gaston.FinancialCoords([1,2],[1,2],[1,2],[1,2])
-    @test_throws DimensionMismatch plot(1:10,financial=f)
-    er = Gaston.ErrorCoords([0.1,0.1])
-    @test_throws DimensionMismatch plot(1:10,err=er)
+    #@test_throws DimensionMismatch surf([1,2],[3,4],[5,6,7])
+    #@test_throws DimensionMismatch surf([1,2,3],[3,4],[5,6,7])
     # plot!
     closeall()
     @test_throws ErrorException plot!(0:10)
     # imagesc
     z = rand(5,6)
-    @test_throws DimensionMismatch imagesc(1:5,1:7,z)
+    @test_throws ArgumentError imagesc(1:5,1:7,z)
     # histogram
-    @test_throws MethodError histogram(0:10+im*0:10)
-    # printfigure
+    #@test_throws MethodError histogram(0:10+im*0:10)
+    # save
     @test_throws DomainError begin
-        printfigure(handle=2,term="png")
-        Gaston.gnuplot_state.gp_error
-    end
-    @test_throws DomainError begin
-        printfigure(term="xyz")
+        save(handle=2,term="png",output="test")
         Gaston.gnuplot_state.gp_error
     end
     @test_throws ErrorException plot!(rand(10),handle=10)
     # set
-    set(mode="normal")
-    @test_throws DomainError set(plotstyle="A")
-    @test_throws DomainError set(pointtype="xyz")
-    @test_throws DomainError set(terminal="x12")
-    @test_throws ArgumentError set(color=3)
-    @test_throws ArgumentError set(title=3)
-    @test_throws ArgumentError set(xlabel=3)
-    @test_throws ArgumentError set(ylabel=3)
-    @test_throws ArgumentError set(zlabel=3)
-    @test_throws ArgumentError set(print_color=3)
-    @test_throws DomainError set(debug="oo")
+    @test_throws MethodError set(color=3)
+    @test_throws TypeError set(debug="oo")
     closeall()
 end

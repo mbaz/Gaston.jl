@@ -75,7 +75,7 @@ end
 function closesinglefigure(handle::Int)
     global gnuplot_state
 
-    term = config[:term][:terminal]
+    term = config[:term]
     term ∈ term_window && gnuplot_send("set term $term $handle close")
 
     # remove figure from global state
@@ -130,17 +130,15 @@ function nexthandle()
 end
 
 # Push configuration, axes or curves to a figure. The handle is assumed valid.
-function push_figure!(handle,args...)
+function push_figure!(handle, curve; dims=2, conf="", gpcom = "")
     index = findfigure(handle)
     f = gnuplot_state.figs[index]
-    for c in args
-        if isa(c, Curve)
-            isempty(f) ? f.curves = [c] : push!(f.curves,c)
-        end
-        isa(c,AxesConf) && (f.axes = c)
-        isa(c, String) && (f.gpcom = c)
-        isa(c, PrintConf) && (f.print = c)
-        isa(c, TermConf) && (f.term = c)
-        isa(c, Int) && (f.dims = c)
+    if isempty(f)
+        f.curves = [curve]
+    else
+        push!(f.curves, curve)
     end
+    f.dims = dims
+    f.conf = conf
+    f.gpcom = gpcom
 end

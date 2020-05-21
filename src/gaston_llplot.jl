@@ -34,7 +34,6 @@ function write_data(curve, dims, file; append = false)
     y = curve.y
     z = curve.z
     supp = curve.supp
-    ps = curve.conf.plotstyle
     open(file, mode) do io
         # 2-d plot
         if dims == 2
@@ -101,8 +100,10 @@ function write_data(curve, dims, file; append = false)
 end
 
 # llplot() is our workhorse plotting function
-function llplot(fig::Figure;print=false)
+function llplot(fig::Figure;printstring=nothing)
     global gnuplot_state
+
+    debug("Entering llplot", "llplot")
 
     # if figure has no data, stop here
     if isempty(fig)
@@ -113,11 +114,14 @@ function llplot(fig::Figure;print=false)
 
     # Send all commands to gnuplot
     # Build terminal setup string
-    gnuplot_send(termstring(fig,print))
+    if printstring === nothing
+        gnuplot_send(termstring(fig))
+    else
+        gnuplot_send(printstring[1])
+        gnuplot_send("set output '$(printstring[2])'")
+    end
     # Build figure configuration string
-    gnuplot_send(figurestring(fig))
-    # Set output file if necessary
-    print && gnuplot_send("set output '$(fig.print.output)'")
+    gnuplot_send(fig.conf)
     # Send user command to gnuplot
     gnuplot_send(fig.gpcom)
     # send plot command to gnuplot
@@ -134,12 +138,13 @@ function llplot(fig::Figure;print=false)
                     print 'GastonDone'""")
 
     # Start reading gnuplot's streams in "background"
-    ch_out = async_reader(P.gstdout, config[:timeouts][:stdout_timeout])
+    ch_out = async_reader(P.gstdout, config[:timeout])
     out = take!(ch_out)
     out === :timeout && @warn("Gnuplot is taking too long to respond.")
     out === :eof     && error("Gnuplot crashed")
 
     # check for errors while plotting
+    yield()
     if bytesavailable(P.gstderr) > 0
         err = String(readavailable(P.gstderr))
         gnuplot_state.gp_lasterror = err

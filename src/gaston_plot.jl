@@ -6,37 +6,10 @@ function plot(x::Coord, y::Coord, z::Coord = Coord();
               handle::Handle = gnuplot_state.current,
               args...)
 
-    # Create new figure configuration with default values.
-    tc = TermConf()
-    ac = AxesConf()
-    cc = CurveConf()
-
     ## Process optional keyword arguments.
-    # in `title = "graph"`, we call `title` the argument and `"graph"` the value
-    for k in keys(args)
-        # verify argument is valid
-        k in syn_list || throw(ArgumentError("unknown argument $k"))
-        # find official name if a synonym was used, store it in `argument`,
-        #   and store its value in `value`.
-        # the keys of dict `synonyms` are the official argument names
-        argument, value = nothing, nothing
-        for a in keys(synonyms)
-            if k ∈ synonyms[a]
-                argument = a
-                value = args[k]
-                break
-            end
-        end
-        # translate argument to a valid gnuplot command
-        value = parse(argument, value)
-        # store arguments in figure configuration structs
-        for c in (tc, ac, cc)
-            if argument in fieldnames(typeof(c))
-                setfield!(c, argument, value)
-                break
-            end
-        end
-    end
+    figconf, curveconf = parse(args)
+    println(figconf)
+    println(curveconf)
 
     # validate data
     valid_coords(x, y, z, supp)
@@ -50,10 +23,10 @@ function plot(x::Coord, y::Coord, z::Coord = Coord();
               y    = y,
               z    = z,
               supp = supp,
-              conf = cc)
+              conf = curveconf)
 
     # push curve we just created to current figure
-    push_figure!(handle,tc,ac,c,dims,gpcom)
+    push_figure!(handle,c,dims=dims,conf=figconf,gpcom=gpcom)
 
     # write gnuplot data to file
     fig = gnuplot_state.figs[findfigure(handle)]
@@ -69,31 +42,8 @@ function plot!(x::Coord,y::Coord, z::Coord = Coord();
                handle::Handle  = gnuplot_state.current,
                args...)
 
-    # Create a new curve configuration with default values.
-    cc = CurveConf()
-
     # Process optional keyword arguments.
-    for k in keys(args)
-        # verify argument is valid
-        k in syn_list || throw(ArgumentError("unknown argument $k"))
-        # find official name if a synonym was used, store it in `argument`,
-        #   and store its value in `value`.
-        # the keys of dict `synonyms` are the official argument names
-        argument, value = nothing, nothing
-        for a in keys(synonyms)
-            if k ∈ synonyms[a]
-                argument = a
-                value = args[k]
-                break
-            end
-        end
-        # translate argument to a valid gnuplot command
-        value = parse(argument, value)
-        # store arguments in curve configuration struct
-        if argument in fieldnames(CurveConf)
-            setfield!(cc, argument, value)
-        end
-    end
+    _, curveconf = parse(args)
 
     # validate coordinates
     valid_coords(x, y, z, supp)
@@ -108,7 +58,7 @@ function plot!(x::Coord,y::Coord, z::Coord = Coord();
               y    = y,
               z    = z,
               supp = supp,
-              conf = cc)
+              conf = curveconf)
 
     # push new curve to current figure
     push_figure!(handle,c)
@@ -141,13 +91,13 @@ scatter!(x::Coord,y::Coord;args...) = plot!(x,y,ps=:points;args...)
 scatter!(y::ComplexCoord;args...) = scatter!(real(y),imag(y);args...) # complex
 
 # stem plots
-function stem(x::Coord,y::Coord;onlyimpulses=config[:axes][:onlyimpulses],args...)
-    p = plot(x,y;ps=:impulses, lc=:blue,lw=1.25,args...)
-    onlyimpulses || (p = plot!(x,y;ps=:points,lc=:blue,mk="ecircle",ms=1.5,args...))
+function stem(x::Coord,y::Coord;onlyimpulses=false,args...)
+    p = plot(x,y;w=:impulses,lc=:blue,lw=1.25,args...)
+    onlyimpulses || (p = plot!(x,y;w=:points,lc=:blue,pt="ecircle",pz=1.5,args...))
     return p
 end
-function stem(y::Coord;onlyimpulses=config[:axes][:onlyimpulses],args...)
-    stem(1:length(y),y;onlyimpulses=onlyimpulses,args...)
+function stem(y::Coord;args...)
+    stem(1:length(y),y;args...)
 end
 stem(x,f::Function;args...) = stem(x,f.(x);args...)
 
