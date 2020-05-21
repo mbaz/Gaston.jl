@@ -10,7 +10,7 @@ export closefigure, closeall, figure,
        surf, surf!, contour, scatter3, scatter3!, heatmap,
        save, set
 
-import Base.show, Base.isempty
+import Base.show, Base.isempty, Base.push!
 
 using Random
 using DelimitedFiles

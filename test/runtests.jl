@@ -20,9 +20,10 @@ using Gaston, Test
     @test figure() == 1
     @test figure() == 2
     @test figure(4) == 4
-    @test closefigure(4) == 2
-    @test closefigure() == 1
-    @test closeall() == 1
+    @test figure() == 3
+    @test closefigure(4) == 3
+    @test closefigure() == 2
+    @test closeall() == 2
     @test begin
         closeall()
         figure()
@@ -500,8 +501,8 @@ end
     @test_throws MethodError figure(1:2)
     @test_throws DomainError closefigure(-1)
     @test_throws MethodError closefigure("invalid")
-    @test_throws MethodError closefigure(1.0)
-    @test_throws MethodError closefigure(1:2)
+    @test_throws TypeError closefigure(1.0)
+    @test_throws TypeError closefigure(1:2)
     # plot
     @test_throws DimensionMismatch plot(0:10,0:11)
     #@test_throws DimensionMismatch surf([1,2],[3,4],[5,6,7])

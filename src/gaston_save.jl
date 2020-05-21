@@ -3,7 +3,7 @@
 ## This file is distributed under the 2-clause BSD License.
 
 # Save a figure to a file.
-function save(;handle::Handle = gnuplot_state.current,
+function save(;handle::Int = gnuplot_state.current,
                term       = "",
                termopts   = "",
                font       = "",
@@ -38,7 +38,7 @@ function save(;handle::Handle = gnuplot_state.current,
     !isempty(termopts) && (pc *= termopts)
 
     # send gnuplot commands
-    llplot(fig, print=(pc,output))
+    llplot(fig, printstring=(pc,output))
 
     return nothing
 end

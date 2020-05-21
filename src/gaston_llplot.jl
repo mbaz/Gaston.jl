@@ -121,9 +121,7 @@ function llplot(fig::Figure;printstring=nothing)
         gnuplot_send("set output '$(printstring[2])'")
     end
     # Build figure configuration string
-    gnuplot_send(fig.conf)
-    # Send user command to gnuplot
-    gnuplot_send(fig.gpcom)
+    gnuplot_send(fig.axesconf)
     # send plot command to gnuplot
     gnuplot_send(plotstring(fig))
     # Close output files, if any

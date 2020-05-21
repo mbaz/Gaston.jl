@@ -141,7 +141,7 @@ function plotstring(fig::Figure)
         push!(p, "'$file' i $(i-1) $(curve.conf)")
     end
     cmd = "plot "
-    fig.dims == 3 && (cmd = "splot")
+    fig.dims == 3 && (cmd = "splot ")
     return cmd*join(p, ", ")
 end
 
@@ -151,7 +151,7 @@ function termstring(f::Figure;term=config[:term],termopts=config[:termopts])
 
     # build termstring
     ts = "set term $term "
-    term ∈ term_window && (ts = ts*string(gnuplot_state.current)*" ")
+    term ∈ term_window && (ts = ts*string(f.handle)*" ")
     ts = ts*termopts
     return ts
 end

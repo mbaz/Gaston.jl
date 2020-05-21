@@ -2,21 +2,16 @@
 function plot(x::Coord, y::Coord, z::Coord = Coord();
               supp::Coord = Coord(),
               dims = 2,
-              gpcom::String  = "",
-              handle::Handle = gnuplot_state.current,
+              handle = gnuplot_state.current,
               args...)
 
+    debug("handle = $handle; dims = $dims", "plot")
+
     ## Process optional keyword arguments.
-    figconf, curveconf = parse(args)
-    println(figconf)
-    println(curveconf)
+    axesconf, curveconf = parse(args)
 
     # validate data
     valid_coords(x, y, z, supp)
-
-    # determine handle and clear figure
-    handle = figure(handle, redraw = false)
-    clearfigure(handle)
 
     # create curve
     c = Curve(x    = x,
@@ -26,10 +21,10 @@ function plot(x::Coord, y::Coord, z::Coord = Coord();
               conf = curveconf)
 
     # push curve we just created to current figure
-    push_figure!(handle,c,dims=dims,conf=figconf,gpcom=gpcom)
+    # create new figure
+    fig = newfigure(handle, dims=dims, axesconf = axesconf, curve = c)
 
     # write gnuplot data to file
-    fig = gnuplot_state.figs[findfigure(handle)]
     write_data(c, fig.dims, fig.datafile)
 
     return fig
@@ -39,7 +34,7 @@ end
 function plot!(x::Coord,y::Coord, z::Coord = Coord();
                supp::Coord = Coord(),
                dims = 2,
-               handle::Handle  = gnuplot_state.current,
+               handle  = gnuplot_state.current,
                args...)
 
     # Process optional keyword arguments.
@@ -51,7 +46,6 @@ function plot!(x::Coord,y::Coord, z::Coord = Coord();
     # determine handle
     handles = gethandles()
     handle ∈ handles || error("Cannot append curve to non-existing handle")
-    handle = figure(handle, redraw = false)
 
     # create curve
     c = Curve(x    = x,
@@ -61,10 +55,10 @@ function plot!(x::Coord,y::Coord, z::Coord = Coord();
               conf = curveconf)
 
     # push new curve to current figure
-    push_figure!(handle,c)
+    fig = gnuplot_state.figs[findfigure(handle)]
+    push!(fig,c)
 
     # write gnuplot data to a file
-    fig = gnuplot_state.figs[findfigure(handle)]
     write_data(c, fig.dims, fig.datafile, append=true)
 
     return fig

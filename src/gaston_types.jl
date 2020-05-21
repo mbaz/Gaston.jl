@@ -21,16 +21,13 @@ Base.@kwdef mutable struct Curve
 end
 
 # At the top level, a figure is a handle, an axes configuration, and a
-# set of curves.
-const Handle = Union{Int,Nothing}  # handle type
-
+# vector of curves.
 Base.@kwdef mutable struct Figure
-    handle::Handle                  # each figure has a unique handle
+    handle::Int                     # each figure has a unique handle
     datafile         = tempname()   # file to store plot data
     dims::Int        = 2            # 2-D or 3-D plot
-    conf::String     = ""           # axes configuration
-    curves::Union{Nothing,Vector{Curve}} = nothing # a vector of curves
-    gpcom::String    = ""           # gnuplot commands to run before plotting
+    axesconf::String = ""           # axes configuration
+    curves::Vector{Curve} = Curve[] # a vector of curves
 end
 # Construct an empty figure with given handle
 Figure(handle) = Figure(handle=handle)
