@@ -158,7 +158,7 @@ end
 
 # Calculating palettes is expensive, so store them in a cache. The cache is
 # pre-populated with gnuplot's gray palette
-Palette_cache = Dict{Symbol, String}(:gray => "gray")
+Palette_cache = Dict{Symbol, String}(:gray => "set palette gray")
 
 # Calculating linetypes from a colorscheme is expensive, so we use a cache.
 Linetypes_cache = Dict{Symbol, String}()
@@ -214,7 +214,7 @@ function parse(kwargs)
                 pop!(kwargs, kw)
             end
         end
-        for kw in (:nohidden3d, :nocontours, :nosurface, :palette)
+        for kw in (:nohidden3d, :nocontours, :nosurface)
             val = get(kwargs, kw, nothing)
             if val in (true, :on, :true, "on", "true")
                 push!(plotspec, " $kw ")
@@ -245,24 +245,26 @@ function parse(kwargs)
     # palette; code inspired by @gcalderone's Gnuplot.jl
     val = pop!(kwargs, :pal, pop!(kwargs, :palette, nothing))
     if val != nothing
+        debug("found palette")
         val isa Vector || (val = [val])
         for v in val
-            if val isa Symbol
-                if haskey(Palette_cache, val)
-                    push!(figspec, Palette_cache[val])
+            if v isa Symbol
+                debug("palette is a symbol")
+                if haskey(Palette_cache, v)
+                    push!(figspec, Palette_cache[v])
                     continue
                 end
-                cm = colorschemes[val]
+                cm = colorschemes[v]
                 colors = String[]
                 for i in range(0, 1, length=length(cm))
                     c = get(cm, i)
                     push!(colors, "$i $(c.r) $(c.g) $(c.b)")
                 end
                 s = "set palette defined ("*join(colors, ", ")*")\nset palette maxcolors $(length(cm))"
-                push!(Palette_cache, (val => s))
+                push!(Palette_cache, (v => s))
                 push!(figspec, s)
             else
-                push!(figspec, "set palette $val")
+                push!(figspec, "set palette $v")
             end
         end
     end

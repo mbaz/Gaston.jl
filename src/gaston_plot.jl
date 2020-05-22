@@ -117,7 +117,7 @@ end
 function imagesc(x::Coord,y::Coord,z::Coord; args...)
     ps = "image"
     ndims(z) == 3 && (ps = "rgbimage")
-    plot(x,y,z,ps=ps)
+    plot(x,y,z,ps=ps;args...)
 end
 imagesc(z::Matrix;args...) = imagesc(1:size(z)[2],1:size(z)[1],z;args...)
 imagesc(z::AbstractArray{<:Real,3};args...) = imagesc(1:size(z)[3],1:size(z)[2],z;args...)
