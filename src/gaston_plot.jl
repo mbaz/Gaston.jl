@@ -115,7 +115,7 @@ end
 
 # Image plots
 function imagesc(x::Coord,y::Coord,z::Coord; args...)
-    ps = "image pixels"
+    ps = "image"
     ndims(z) == 3 && (ps = "rgbimage")
     plot(x,y,z,ps=ps)
 end

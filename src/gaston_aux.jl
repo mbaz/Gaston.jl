@@ -204,10 +204,10 @@ function parse(kwargs)
                 push!(plotspec, " pointtype $val ")
             end
         end
-        # the rest
+        # other line settings
         for kw in (:ls, :linestyle, :lt, :linetype, :lw, :linewidth, :pz,
-                   :pointsize, :fill, :fs, :fillcolor, :fc, :legend, :leg,
-                   :dashtype, :dt, :pointinterval, :pi, :pointnumber, :pn)
+                   :pointsize, :fill, :fs, :fillcolor, :fc, :dashtype, :dt,
+                   :pointinterval, :pi, :pointnumber, :pn)
             val = get(kwargs, kw, nothing)
             if val != nothing
                 push!(plotspec, " $kw $val ")
@@ -218,6 +218,25 @@ function parse(kwargs)
             val = get(kwargs, kw, nothing)
             if val in (true, :on, :true, "on", "true")
                 push!(plotspec, " $kw ")
+                pop!(kwargs, kw)
+            end
+        end
+        # legend
+        val = pop!(kwargs, :legend, pop!(kwargs, :leg, nothing))
+        if val != nothing
+            if val isa String
+                push!(plotspec, " title $val ")
+            else
+                push!(plotspec, " title '$val'")
+            end
+        end
+        # the rest
+        for kw in (:ls, :linestyle, :lt, :linetype, :lw, :linewidth, :pz,
+                   :pointsize, :fill, :fs, :fillcolor, :fc, :dashtype, :dt,
+                   :pointinterval, :pi, :pointnumber, :pn)
+            val = get(kwargs, kw, nothing)
+            if val != nothing
+                push!(plotspec, " $kw $val ")
                 pop!(kwargs, kw)
             end
         end
