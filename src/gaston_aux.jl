@@ -210,8 +210,9 @@ function parse(kwargs)
                    :pointinterval, :pi, :pointnumber, :pn)
             val = get(kwargs, kw, nothing)
             if val != nothing
-                push!(plotspec, " $kw $val ")
                 pop!(kwargs, kw)
+                kw === :pz && (kw = :ps)
+                push!(plotspec, " $kw $val ")
             end
         end
         for kw in (:nohidden3d, :nocontours, :nosurface)
@@ -328,11 +329,11 @@ function parse(kwargs)
         s == "loglog" && push!(figspec, "set logscale xyz")
     end
     # range
-    for arg in (:xrange, :yrange, :zrange)
+    for arg in (:xrange, :yrange, :zrange, :cbrange)
         val = pop!(kwargs, arg, nothing)
         if val != nothing
             if val isa Vector || val isa Tuple
-                push!(figspec, "set $arg [$(ifelse(isinf(val[1]),*,val[1]))|$(ifelse(isinf(val[2]),*,val[2]))]")
+                push!(figspec, "set $arg [$(ifelse(isinf(val[1]),*,val[1])):$(ifelse(isinf(val[2]),*,val[2]))]")
             else
                 push!(figspec, "set $arg $val")
             end
