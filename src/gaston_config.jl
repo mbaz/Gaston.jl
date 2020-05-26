@@ -43,9 +43,6 @@ end
 const term_window = ["qt", "wxt", "x11", "aqua"]
 # outputs text
 const term_text = ["dumb", "sixelgd"]
-# outputs to a file
-const term_file = ["svg", "gif", "pngcairo", "pdfcairo", "epscairo",
-                   "epslatex", "cairolatex", "dumb"]
 
 # Validate coordinates
 # TODO: validate all possible cases
