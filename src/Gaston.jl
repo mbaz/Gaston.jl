@@ -6,11 +6,12 @@ __precompile__(true)
 module Gaston
 
 export closefigure, closeall, figure,
+       Axis, Plot,
        plot, plot!, scatter, scatter!, stem, bar, histogram, imagesc,
        surf, surf!, contour, scatter3, scatter3!, heatmap,
        save, set
 
-import Base.show, Base.isempty, Base.push!
+import Base: show, isempty, push!, getindex, keys, merge
 
 using Random
 using DelimitedFiles
@@ -31,11 +32,12 @@ end
 
 # load files
 include("gaston_types.jl")
-include("gaston_aux.jl")
 include("gaston_config.jl")
 include("gaston_figures.jl")
-include("gaston_llplot.jl")
+include("gaston_aux.jl")
 include("gaston_plot.jl")
+include("gaston_recipes.jl")
+include("gaston_llplot.jl")
 include("gaston_save.jl")
 
 # define function to determine if function is empty

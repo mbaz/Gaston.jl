@@ -120,8 +120,13 @@ function llplot(fig::Figure;printstring=nothing)
         gnuplot_send(printstring[1])
         gnuplot_send("set output '$(printstring[2])'")
     end
+    # Send preamble
+    prm = config[:preamble]
+    if !isempty(prm)
+        gnuplot_send(prm)
+    end
     # Build figure configuration string
-    gnuplot_send(fig.axesconf)
+    gnuplot_send(fig.axisconf)
     # send plot command to gnuplot
     gnuplot_send(plotstring(fig))
     # Close output files, if any

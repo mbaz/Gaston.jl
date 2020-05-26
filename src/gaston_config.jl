@@ -9,7 +9,8 @@ default_config() = Dict(:mode     => "normal",
                         :timeout  => Sys.isunix() ? 10 : 20,
                         :debug    => false,
                         :term     => "qt",
-                        :termopts => "")
+                        :termopts => "",
+                        :preamble => "")
 
 # Set any of Gaston's configuration variables
 function set(;reset::Bool = false,
@@ -17,7 +18,8 @@ function set(;reset::Bool = false,
               termopts    = config[:termopts],
               mode        = config[:mode],
               debug::Bool = config[:debug],
-              timeout     = config[:timeout]
+              timeout     = config[:timeout],
+              preamble    = config[:preamble]
             )
     global config
 
@@ -30,6 +32,7 @@ function set(;reset::Bool = false,
     config[:termopts] = termopts
     config[:mode] = mode
     config[:timeout] = timeout
+    config[:preamble] = preamble
     debug isa Bool && (config[:debug] = debug)
 
     return nothing

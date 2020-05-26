@@ -163,145 +163,152 @@ Palette_cache = Dict{Symbol, String}(:gray => "set palette gray")
 # Calculating linetypes from a colorscheme is expensive, so we use a cache.
 Linetypes_cache = Dict{Symbol, String}()
 
-# parse arguments
+# Convert a symbol to string, converting all '_' to spaces and surrounding it with ' '
+function symtostr(s)
+    s isa Symbol || return s
+    s = string(s)
+    return "'$(join(split(s,"_")," "))'"
+end
+
+# parse plot configuration
 function parse(kwargs)
-    kwargs = Dict(kwargs)
-    # strings that will be returned
-    figspec = String[]
-    plotspec = String[]
-    ### find plotspec keys.
-    # the 'plotspec' argument overrides all other
-    if :plotspec in keys(kwargs)
-        plotspec = kwargs[:plotspec]
+    # string that will be returned
+    curveconf = String[]
+    # the `curveconf` argument overrides all others
+    if :curveconf in keys(kwargs)
+        curveconf = [kwargs[:curveconf]]
     else
-        # These keys are processed first and in order.
-        for kw in (:every, :e, :skip, :using, :u, :smooth, :bins, :volatile, :noautoscale)
-            if kw in keys(kwargs)
-                push!(plotspec, " $kw $(kwargs[kw]) ")
-                pop!(kwargs, kw)
+        K = keys(kwargs)
+        ## These keys are processed first and in order.
+        # Keys that take arguments.
+        for kw in (:every, :e, :skip, :using, :u, :smooth, :bins)
+            if kw in K
+                push!(curveconf, " $kw $(kwargs[kw]) ")
+                break
             end
         end
+        # Keys that don't take arguments.
+        if :noautoscale in keys(kwargs) && kwargs[:noautoscale] in (:on, :true, "on", "true")
+            push!(curveconf, " noautoscale ")
+        end
         # with or plotstyle
-        val = pop!(kwargs, :with, pop!(kwargs, :w, pop!(kwargs, :plotstyle, pop!(kwargs, :ps, nothing))))
-        if val != nothing
-            push!(plotspec, " with $val ")
+        for kw in (:with, :w, :plotstyle)
+            if kw in K
+                push!(curveconf, " with $(kwargs[kw]) ")
+                break
+            end
         end
         # linecolor
-        val = pop!(kwargs, :linecolor, pop!(kwargs, :lc, nothing))
-        if val != nothing
-            if val isa Symbol
-                push!(plotspec, " linecolor '$val' ")
-            else
-                push!(plotspec, " linecolor $val ")
+        for kw in (:linecolor, :lc)
+            if kw in K
+                push!(curveconf, " $kw $(symtostr(kwargs[kw]))")
+                break
             end
         end
         # pointtype
-        val = pop!(kwargs, :pointtype, pop!(kwargs, :pt, nothing))
-        if val != nothing
-            if val isa String
-                push!(plotspec, " pointtype $(pointtypes(val)) ")
-            else
-                push!(plotspec, " pointtype $val ")
+        for kw in (:pointtype, :pt)
+            if kw in K
+                val = kwargs[kw]
+                if val isa String
+                    push!(curveconf, " pointtype $(pointtypes(val)) ")
+                elseif val isa Char
+                    push!(curveconf, " pointtype '$val' ")
+                else
+                    push!(curveconf, " pointtype $val ")
+                end
+                break
             end
         end
-        # other line settings
-        for kw in (:ls, :linestyle, :lt, :linetype, :lw, :linewidth, :pz,
+        # other curveconf elements with arguments
+        for kw in (:ls, :linestyle, :lt, :linetype, :lw, :linewidth, :ps,
                    :pointsize, :fill, :fs, :fillcolor, :fc, :dashtype, :dt,
                    :pointinterval, :pi, :pointnumber, :pn)
-            val = get(kwargs, kw, nothing)
-            if val != nothing
-                pop!(kwargs, kw)
-                kw === :pz && (kw = :ps)
-                push!(plotspec, " $kw $val ")
-            end
-        end
-        for kw in (:nohidden3d, :nocontours, :nosurface)
-            val = get(kwargs, kw, nothing)
-            if val in (true, :on, :true, "on", "true")
-                push!(plotspec, " $kw ")
-                pop!(kwargs, kw)
+            if kw in K
+                val = symtostr(kwargs[kw])
+                push!(curveconf, " $kw $val ")
             end
         end
         # legend
-        val = pop!(kwargs, :legend, pop!(kwargs, :leg, nothing))
-        if val != nothing
-            if val isa String
-                push!(plotspec, " title $val ")
-            else
-                push!(plotspec, " title '$val'")
+        for kw in (:legend, :leg, :title, :t)
+            if kw in K
+                val = symtostr(kwargs[kw])
+                push!(curveconf, " title $val ")
+                break
             end
         end
-        # the rest
-        for kw in (:ls, :linestyle, :lt, :linetype, :lw, :linewidth, :pz,
-                   :pointsize, :fill, :fs, :fillcolor, :fc, :dashtype, :dt,
-                   :pointinterval, :pi, :pointnumber, :pn)
-            val = get(kwargs, kw, nothing)
-            if val != nothing
-                push!(plotspec, " $kw $val ")
-                pop!(kwargs, kw)
+        # elements with no arguments
+        for kw in (:nohidden3d, :nocontours, :nosurface, :noautoscale)
+            if kw in K
+                if kwargs[kw] in (true, :on, :true, "on", "true")
+                    push!(curveconf, " $kw ")
+                end
             end
         end
     end
-    ### find special figurespec keys
-    # palette; code inspired by @gcalderone's Gnuplot.jl
-    val = pop!(kwargs, :pal, pop!(kwargs, :palette, nothing))
-    if val != nothing
-        debug("found palette")
-        val isa Vector || (val = [val])
-        for v in val
-            if v isa Symbol
-                debug("palette is a symbol")
-                if haskey(Palette_cache, v)
-                    push!(figspec, Palette_cache[v])
-                    continue
+    return join(curveconf, " ")
+end
+
+function parse(axis::Axis)
+    axisconf = String[]
+    K = keys(axis)
+    for k in K
+        # palette; code inspired by @gcalderone's Gnuplot.jl
+        if k in (:pal, :palette)
+            val = axis[k]
+            val isa Vector || (val = [val])
+            for v in val
+                if v isa Symbol
+                    if haskey(Palette_cache, v)
+                        push!(axisconf, Palette_cache[v])
+                        continue
+                    end
+                    cm = colorschemes[v]
+                    colors = String[]
+                    for i in range(0, 1, length=length(cm))
+                        c = get(cm, i)
+                        push!(colors, "$i $(c.r) $(c.g) $(c.b)")
+                    end
+                    s = "set palette defined ("*join(colors, ", ")*")\nset palette maxcolors $(length(cm))"
+                    push!(Palette_cache, (v => s))
+                    push!(axisconf, s)
+                else
+                    push!(axisconf, "set palette $v")
                 end
-                cm = colorschemes[v]
-                colors = String[]
-                for i in range(0, 1, length=length(cm))
-                    c = get(cm, i)
-                    push!(colors, "$i $(c.r) $(c.g) $(c.b)")
-                end
-                s = "set palette defined ("*join(colors, ", ")*")\nset palette maxcolors $(length(cm))"
-                push!(Palette_cache, (v => s))
-                push!(figspec, s)
-            else
-                push!(figspec, "set palette $v")
             end
+            continue
         end
-    end
-    # linetype definitions; code inspired by @gcalderone's Gnuplot.jl
-    val = pop!(kwargs, :linetypes, nothing)
-    if val != nothing
-        val isa Vector || (val = [val])
-        for v in val
-            if v isa Symbol
-                if haskey(Linetypes_cache, v)
-                    push!(figspec, Linetypes_cache[v])
-                    continue
+        # linetype definitions; code inspired by @gcalderone's Gnuplot.jl
+        if k in (:lt, :linetype)
+            val = axis[k]
+            val isa Vector || (val = [val])
+            for v in val
+                if v isa Symbol
+                    if haskey(Linetypes_cache, v)
+                        push!(axisconf, Linetypes_cache[v])
+                    end
+                    cm = colorschemes[v]
+                    linetypes = String[]
+                    for i in 1:length(cm)
+                        c = cm[i]
+                        s = join(string.( round.(Int, 255 .*(c.r, c.g, c.b)), base=16, pad=2))
+                        push!(linetypes, "set lt $i lc rgb '#$s'")
+                    end
+                    s = join(linetypes,"\n")*"\nset linetype cycle $(length(cm))"
+                    push!(Linetypes_cache, (v => s))
+                    push!(axisconf, s)
+                else
+                    push!(axisconf, "set linetype $v")
                 end
-                cm = colorschemes[v]
-                linetypes = String[]
-                for i in 1:length(cm)
-                    c = cm[i]
-                    s = join(string.( round.(Int, 255 .*(c.r, c.g, c.b)), base=16, pad=2))
-                    push!(linetypes, "set lt $i lc rgb '#$s'")
-                end
-                s = join(linetypes,"\n")*"\nset linetype cycle $(length(cm))"
-                push!(Linetypes_cache, (v => s))
-                push!(figspec, s)
-            else
-                push!(figspec, "set linetype $v")
             end
+            continue
         end
-    end
-    # tics
-    for arg in (:xtics, :ytics, :ztics)
-        val = get(kwargs, arg, nothing)
-        if val != nothing
+        # tics
+        if k in (:xtics, :ytics, :ztics, :tics)
+            val = axis[k]
             val isa Vector || (val = [val])
             for v in val
                 if v isa AbstractRange
-                    push!(figspec,"set $arg $(first(v)),$(step(v)),$(last(v))")
+                    push!(axisconf,"set $k $(first(v)),$(step(v)),$(last(v))")
                 elseif v isa Tuple
                     tics = v[1]
                     labs = v[2]
@@ -311,64 +318,81 @@ function parse(kwargs)
                         s *= """, "$(labs[i])" $(tics[i])"""
                     end
                     s *= ")"
-                    push!(figspec,"set $arg $s")
+                    push!(axisconf,"set $k $s")
+                elseif v in (:off, :false, false, "false")
+                    push!(axisconf,"unset $k")
                 else
-                    push!(figspec,"set $arg $v")
+                    push!(axisconf,"set $k $v")
                 end
             end
-            pop!(kwargs, arg)
+            continue
         end
-    end
-    # axis type
-    val = pop!(kwargs, :axis, nothing)
-    if val != nothing
-        s = string(val)
-        s == "semilogx" && push!(figspec, "set logscale x")
-        s == "semilogy" && push!(figspec, "set logscale y")
-        s == "semilogz" && push!(figspec, "set logscale z")
-        s == "loglog" && push!(figspec, "set logscale xyz")
-    end
-    # range
-    for arg in (:xrange, :yrange, :zrange, :cbrange)
-        val = pop!(kwargs, arg, nothing)
-        if val != nothing
-            if val isa Vector || val isa Tuple
-                push!(figspec, "set $arg [$(ifelse(isinf(val[1]),*,val[1])):$(ifelse(isinf(val[2]),*,val[2]))]")
+        # axis type
+        if k == :axis
+            val = symtostr(axis[k])
+            if val == "semilogx"
+                push!(axisconf, "set logscale x")
+            elseif val == "semilogy"
+                push!(axisconf, "set logscale y")
+            elseif val == "semilogz"
+                push!(axisconf, "set logscale z")
+            elseif val == "loglog"
+                push!(axisconf, "set logscale xyz")
             else
-                push!(figspec, "set $arg $val")
+                push!(axisconf, "set $val")
+            end
+            continue
+        end
+        # range
+        if k in (:xrange, :yrange, :zrange, :cbrange)
+            val = axis[k]
+            val isa Vector || (val = [val])
+            for v in val
+                if v isa Vector || v isa Tuple
+                    push!(axisconf, "set $k [$(ifelse(isinf(v[1]),*,v[1])):$(ifelse(isinf(v[2]),*,v[2]))]")
+                else
+                    push!(axisconf, "set $k $v")
+                end
+            end
+            continue
+        end
+        # view
+        if k == :view
+            val = axis[k]
+            val isa Vector || (val = [val])
+            for v in val
+                if v isa Tuple
+                    push!(axisconf, "set view $(join(v, ", "))")
+                else
+                    push!(axisconf, "set view $v")
+                end
+            end
+            continue
+        end
+        # dashtypes
+        if k in (:dt, :dashtype)
+            val = axis[k]
+            val isa Vector || (val = [val])
+            for v in val
+                push!(axisconf, "set dashtype $val")
+            end
+            continue
+        end
+        ### handle remaining keys
+        val = axis[k]
+        val isa Vector || (val = [val])
+        for v in val
+            # on/off arguments
+            if v in (true, :on, :true, "on", "true")
+                push!(axisconf, "set $k")
+            elseif v in (false, :off, :false, "false")
+                push!(axisconf, "unset $k")
+            else
+                push!(axisconf, "set $k $(symtostr(v))")
             end
         end
     end
-    # view
-    val = pop!(kwargs, :view, nothing)
-    if val != nothing
-        if val isa AbstractString
-            push!(figspec, "set view $val")
-        else
-            push!(figspec, "set view $(join(val, ", "))")
-        end
-    end
-    # dashtypes
-    val = pop!(kwargs, :dashtypes, nothing)
-    if val != nothing
-        if val isa String
-            push!(figspec, "set dashtype '$val'")
-        else
-            push!(figspec, "set dashtype $val")
-        end
-    end
-    ### iterate over remaining keys
-    for a in keys(kwargs)
-        arg = string(a)
-        val = kwargs[a]
-        # on/off arguments
-        if val in (true, :on, :true, "on", "true")
-            push!(figspec, "set $arg")
-        else
-            push!(figspec, "set $arg $val")
-        end
-    end
-    return join(figspec, "\n"), join(plotspec, " ")
+    return join(axisconf, "\n")
 end
 
 # write commands to gnuplot's pipe

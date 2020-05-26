@@ -4,6 +4,17 @@
 
 # All types and constructors are defined here.
 
+## Axis configuration
+mutable struct Axis
+    axisconf::Dict{Symbol, Any}
+end
+
+Axis(pairs::Pair...) = Axis(Dict(pairs))
+Axis(;args...) = Axis(args)
+keys(a::Axis) = keys(a.axisconf)
+getindex(a::Axis, args... ; kwargs...) = getindex(a.axisconf, args... ; kwargs...)
+merge(a::Axis, b::Axis) = Axis(merge(a.axisconf, b.axisconf))
+
 ## Coordinates
 const Coord = Union{AbstractRange{T},AbstractArray{T}} where T <: Real
 const ComplexCoord = AbstractArray{T} where T <: Complex
@@ -26,7 +37,7 @@ Base.@kwdef mutable struct Figure
     handle::Int                     # each figure has a unique handle
     datafile         = tempname()   # file to store plot data
     dims::Int        = 2            # 2-D or 3-D plot
-    axesconf::String = ""           # axes configuration
+    axisconf::String = ""           # axes configuration
     curves::Vector{Curve} = Curve[] # a vector of curves
 end
 # Construct an empty figure with given handle

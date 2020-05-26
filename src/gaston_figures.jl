@@ -71,11 +71,11 @@ function closeall()
 end
 
 # Create a new figure and return it, with the specified handle (or the next
-# available one if # handle == 0, and with the specified dimensions, axesconf
+# available one if # handle == 0, and with the specified dimensions, axisconf
 # and curve. Update Gaston state as necessary.
 function newfigure(handle = 0;
                    dims = 2,
-                   axesconf = "",
+                   axisconf = "",
                    curve = Curve())
 
     # make sure handle is valid
@@ -88,13 +88,13 @@ function newfigure(handle = 0;
     # create and push or update, as necessary
     if handle in gethandles()
         # pre-existing; update
-        fig = gnuplot_state.figs[handle]
+        fig = gnuplot_state.figs[findfigure(handle)]
         fig.dims = dims
-        fig.axesconf = axesconf
+        fig.axisconf = axisconf
         fig.curves = [curve]
     else
         # new; create and push
-        fig = Figure(handle = handle, dims = dims, axesconf = axesconf, curves = [curve])
+        fig = Figure(handle = handle, dims = dims, axisconf = axisconf, curves = [curve])
         push!(gnuplot_state.figs, fig)
     end
 
