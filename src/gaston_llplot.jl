@@ -99,36 +99,72 @@ function write_data(curve, dims, file; append = false)
     end
 end
 
-# llplot() is our workhorse plotting function
-function llplot(fig::Figure;printstring=nothing)
+# llplot() is the workhorse plotting function. It handles all communication
+# with gnuplot required to actually plot. It can also handle multiplot.
+function llplot(figs ; printstring=nothing)
     global gnuplot_state
 
     debug("Entering llplot", "llplot")
 
-    # if figure has no data, stop here
-    if isempty(fig)
-        return
+    if !(figs isa Matrix{Figure} || figs isa Matrix{Union{Figure,Nothing}} || figs isa Figure)
+        throw(ArgumentError(figs, "wrong argument to llplot"))
     end
 
     gnuplot_send("\nreset session\n")
 
-    # Send all commands to gnuplot
     # Build terminal setup string
     if printstring === nothing
-        gnuplot_send(termstring(fig))
+        handle = 0
+        if figs isa Matrix
+            for f in figs
+                f isa Figure && (handle = f.handle ; break)
+            end
+        else
+            handle = figs.handle
+        end
+        gnuplot_send(termstring(handle))
     else
         gnuplot_send(printstring[1])
         gnuplot_send("set output '$(printstring[2])'")
     end
-    # Send preamble
-    prm = config[:preamble]
-    if !isempty(prm)
-        gnuplot_send(prm)
+
+    if config[:multiplot]
+        # handle multiplot mode
+        rows = size(figs)[1]
+        cols = size(figs)[2]
+        layout = "$rows, $cols"
+        gnuplot_send("set multiplot layout $layout columnsfirst")
+        for f in figs
+            if (f === nothing) || (isempty(f))
+                gnuplot_send("set multiplot next")
+                continue
+            end
+            gnuplot_send("reset session")
+            # Send preamble
+            prm = config[:preamble]
+            if !isempty(prm)
+                gnuplot_send(prm)
+            end
+            # Build figure configuration string
+            gnuplot_send(f.axisconf)
+            # send plot command to gnuplot
+            gnuplot_send(plotstring(f))
+        end
+        gnuplot_send("unset multiplot")
+    else
+        # single-plot mode
+        gnuplot_send("reset session")
+        # Send preamble
+        prm = config[:preamble]
+        if !isempty(prm)
+            gnuplot_send(prm)
+        end
+        # Build figure configuration string
+        gnuplot_send(figs.axisconf)
+        # send plot command to gnuplot
+        gnuplot_send(plotstring(figs))
     end
-    # Build figure configuration string
-    gnuplot_send(fig.axisconf)
-    # send plot command to gnuplot
-    gnuplot_send(plotstring(fig))
+
     # Close output files, if any
     gnuplot_send("set output")
 

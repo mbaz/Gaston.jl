@@ -5,21 +5,23 @@
 # This file contains configuration-related functions and types
 
 # Dicts to store user-specified configuration
-default_config() = Dict(:mode     => "normal",
-                        :timeout  => Sys.isunix() ? 10 : 20,
-                        :debug    => false,
-                        :term     => "qt",
-                        :termopts => "",
-                        :preamble => "")
+default_config() = Dict(:mode      => "normal",
+                        :timeout   => Sys.isunix() ? 10 : 20,
+                        :debug     => false,
+                        :term      => "qt",
+                        :termopts  => "",
+                        :preamble  => "",
+                        :multiplot => false)
 
 # Set any of Gaston's configuration variables
-function set(;reset::Bool = false,
-              term        = config[:term],
-              termopts    = config[:termopts],
-              mode        = config[:mode],
-              debug::Bool = config[:debug],
-              timeout     = config[:timeout],
-              preamble    = config[:preamble]
+function set(;reset::Bool     = false,
+              term            = config[:term],
+              termopts        = config[:termopts],
+              mode            = config[:mode],
+              debug::Bool     = config[:debug],
+              timeout         = config[:timeout],
+              preamble        = config[:preamble],
+              multiplot::Bool = config[:multiplot]
             )
     global config
 
@@ -34,6 +36,7 @@ function set(;reset::Bool = false,
     config[:timeout] = timeout
     config[:preamble] = preamble
     debug isa Bool && (config[:debug] = debug)
+    multiplot isa Bool && (config[:multiplot] = multiplot)
 
     return nothing
 end

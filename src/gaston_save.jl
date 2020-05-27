@@ -8,7 +8,7 @@ function save(;handle::Int = gnuplot_state.current,
                termopts   = "",
                font       = "",
                size       = "",
-               linewidth  = 1,
+               linewidth  = 0,
                background = "",
                output     = "",
                args...)
@@ -33,7 +33,7 @@ function save(;handle::Int = gnuplot_state.current,
     pc = "set term $term "
     !isempty(font) && (pc *= "font '$font' ")
     !isempty(size) && (pc *= "size $size ")
-    !isempty(linewidth) && (pc *= "linewidth $linewidth ")
+    linewidth > 0 && (pc *= "linewidth $linewidth ")
     !isempty(background) && (pc *= "background '$background' ")
     !isempty(termopts) && (pc *= termopts)
 

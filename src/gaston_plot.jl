@@ -81,3 +81,12 @@ plot!(y ; args...) = plot!(1:length(y), y ; args...)
 plot!(c::ComplexCoord ; args...) = plot!(real(c), imag(c) ; args...)
 # Function
 plot!(x, f::Function ; args...) = plot!(x, f.(x) ; args...)
+
+### Multiplot
+plot(P::Matrix{Figure}, args... ; kwargs...) = mplot(P, args... ; kwargs...)
+plot(P::Matrix{Union{Figure,Nothing}}, args... ; kwargs...) = mplot(P, args... ; kwargs...)
+function mplot(P)
+    set(multiplot = true)
+    llplot(P)
+    set(multiplot = false)
+end

@@ -114,7 +114,10 @@ function Base.show(io::IO, ::MIME"image/svg+xml", x::Figure)
     rm(tmpfile, force=true)
     return
 end
-
+p1 = scatter(rand(10), rand(10), Axis(title=:p1));
+p2 = imagesc(z,Axis(title = :p2), handle=2);
+p3 = surf(x, y, (x,y)->sin.(sqrt.(x.*x+y.*y))./sqrt.(x.*x+y.*y),
+                  Axis(title=:p3), plotstyle="pm3d",handle=3);
 function Base.show(io::IO, ::MIME"image/png", x::Figure)
     debug("Entering show() with MIME image/png")
     isempty(x) && return nothing
@@ -146,12 +149,12 @@ function plotstring(fig::Figure)
 end
 
 # Build a "set term" string appropriate for the terminal type
-function termstring(f::Figure;term=config[:term],termopts=config[:termopts])
+function termstring(handle ; term=config[:term], termopts=config[:termopts])
     global gnuplot_state
 
     # build termstring
     ts = "set term $term "
-    term ∈ term_window && (ts = ts*string(f.handle)*" ")
+    term ∈ term_window && (ts = ts*string(handle)*" ")
     ts = ts*termopts
     return ts
 end
