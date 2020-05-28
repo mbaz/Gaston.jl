@@ -1,4 +1,25 @@
 # 2D plots
+"""
+    plot([x,] y, [z,] [axis,] [supp,] [dims,] [h,] [curve]) -> Gaston.Figure
+
+Plots data `x`, `y`, and optionally `z` and `supp`, in two or three dimensions
+as specified by `dims`, with axis configuration `axis`, and curve configuration
+`curve`, on the figure with handle `h`.
+
+If `x` is omitted, then `x=1:length(t)` is assumed.
+
+    plot(x, f::Function, args...) -> Gaston.Figure
+
+Assume `y = f.(x)`.
+
+    plot(c, args...) -> Gaston.Figure
+
+If `c` is a complex vector, plot its real part vs its imaginary part.
+
+    plot(P::Matrix{Union{Gaston.Figure}, Nothing}) -> Gaston.Figure
+
+Create a 'muliplot' with the layout in `P`. Returns a new figure.
+"""
 function plot(x::Coord, y::Coord, z::Coord = nothing, axis::Axis = Axis() ;
               supp::Coord = nothing,
               dims::Int   = 2,
@@ -33,6 +54,13 @@ plot(c::ComplexCoord, a::Axis = Axis() ; args...) = plot(real(c), imag(c), nothi
 plot(x, f::Function, a::Axis = Axis() ; args...) = plot(x, f.(x), nothing, a ; args...)
 
 # Add a curve to an existing figure
+"""
+plot!(x, y [, z] [,supp] [, dims] [, h] [, curve...]) -> Gaston.Figure
+
+Adds the curve specified by data `x`, `y`, and optionally `z` and `supp`, in
+two or three dimensions as specified by `dims`, and curve configuration
+`curve`, to the figure with handle `h`.
+"""
 function plot!(x::Coord, y::Coord, z::Coord = nothing;
                supp::Coord = nothing,
                dims::Int   = 2,

@@ -37,7 +37,7 @@ function write_data(curve, dims, file; append = false)
     open(file, mode) do io
         # 2-d plot
         if dims == 2
-            if z != nothing
+            if z !== nothing
                 # image; format is "x y z" with reversed "y"
                 if ndims(x) == 1 && ndims(y) == 1 && ndims(z) == 2
                     xx = repeat(x,inner=length(y))

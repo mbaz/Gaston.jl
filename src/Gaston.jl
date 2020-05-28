@@ -6,12 +6,11 @@ __precompile__(true)
 module Gaston
 
 export closefigure, closeall, figure,
-       Axis, Plot,
        plot, plot!, scatter, scatter!, stem, bar, histogram, imagesc,
        surf, surf!, contour, scatter3, scatter3!, heatmap,
-       save, set
+       Axis, save, set
 
-import Base: show, isempty, push!, getindex, keys, merge, length
+import Base: display, show, isempty, push!, getindex, keys, merge, length
 
 using Random
 using DelimitedFiles

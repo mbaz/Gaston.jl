@@ -1,5 +1,5 @@
 """
-    figure(handle::Int = 0) -> handle
+    figure(handle::Int = 0) -> Int
 
 Select a figure with the specified handle, or with the next available handle
 if none is specified. Make the specified figure current. If the figure exists,
@@ -30,13 +30,13 @@ function figure(handle::Int = 0)
 end
 
 """
-    closefigure(x...) -> Vector{Int}
+    closefigure(handle::Int...) -> Int
 
-Close one or more figures.
+Close one or more figures, specified by their handles.
 
 If no arguments are given, the current figure is closed.
 
-Returns a handle to the current figure, or `nothing` if all figures are closed.
+Returns a handle to the current figure.
 """
 function closefigure(x...)
 

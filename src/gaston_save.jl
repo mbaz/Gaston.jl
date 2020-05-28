@@ -2,16 +2,19 @@
 ##
 ## This file is distributed under the 2-clause BSD License.
 
-# Save a figure to a file.
-function save(;handle::Int = gnuplot_state.current,
-               term       = "",
-               termopts   = "",
-               font       = "",
-               size       = "",
-               linewidth  = 0,
-               background = "",
-               output     = "",
-               args...)
+"""
+    save(term, output, [termopts,] [font,] [size,] [linewidth,] [background,] [handle]) -> nothing
+
+Save current figure (or figure specified by `handle`) using the specified `term`. Optionally,
+the font, size, linewidth, and background may be specified as arguments.
+"""
+function save(; term::String,
+                output::String,
+                handle::Int = gnuplot_state.current,
+                font        = "",
+                size        = "",
+                linewidth   = 0,
+                background  = "")
 
     # process arguments
     isempty(output) && throw(DomainError("Please specify an output filename."))
@@ -21,10 +24,6 @@ function save(;handle::Int = gnuplot_state.current,
     h == 0 && throw(DomainError(h, "requested figure does not exist."))
     fig = gnuplot_state.figs[h]
 
-    for k in keys(args)
-        k == :bg && (background = args[k])
-        k == :lw && (linewidth = args[k])
-    end
     (term == "pdf" || term == :pdf) && (term = "pdfcairo")
     (term == "png" || term == :png) && (term = "pngcairo")
     (term == "eps" || term == :eps) && (term = "epscairo")
@@ -35,7 +34,6 @@ function save(;handle::Int = gnuplot_state.current,
     !isempty(size) && (pc *= "size $size ")
     linewidth > 0 && (pc *= "linewidth $linewidth ")
     !isempty(background) && (pc *= "background '$background' ")
-    !isempty(termopts) && (pc *= termopts)
 
     # send gnuplot commands
     llplot(fig, printstring=(pc,output))

@@ -395,6 +395,25 @@ function parse(axis::Axis)
     return join(axisconf, "\n")
 end
 
+# Define pointtype synonyms
+function pointtypes(pt)
+    pt == "dot" && return 0
+    pt == "+" && return 1
+    pt == "x" && return 2
+    pt == "*" && return 3
+    pt == "esquare" && return 4
+    pt == "fsquare" && return 5
+    pt == "ecircle" && return 6
+    pt == "fcircle" && return 7
+    pt == "etrianup" && return 8
+    pt == "ftrianup" && return 9
+    pt == "etriandn" && return 10
+    pt == "ftriandn" && return 11
+    pt == "edmd" && return 12
+    pt == "fdmd" && return 13
+    return "'$pt'"
+end
+
 # write commands to gnuplot's pipe
 function gnuplot_send(s)
     debug(s, "gnuplot_send")
