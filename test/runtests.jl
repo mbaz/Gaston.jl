@@ -129,12 +129,11 @@ end
               ps = 1
              )
     end isa Gaston.Figure
-    @test begin
-        plot(1:10, Axis(xrange = "[:3.4]"))
-    end isa Gaston.Figure
-    @test begin
-        plot(1:10, Axis(xrange = "[3.4:*]"))
-    end isa Gaston.Figure
+    @test plot(1:10,cos) isa Gaston.Figure
+    @test plot!(1:10,cos) isa Gaston.Figure
+    @test stem(1:10,cos) isa Gaston.Figure
+    @test plot(1:10, Axis(xrange = "[:3.4]")) isa Gaston.Figure
+    @test plot(1:10, Axis(xrange = "[3.4:*]")) isa Gaston.Figure
     @test begin
         plot(1:3, 4:6, plotstyle="points", pointsize=3,
              Axis(xrange="[2.95:3.05]", yrange="[3.95:4.045]"))
@@ -397,7 +396,7 @@ end
                  size="ratio -1",
                  cntrparam="levels incremental 0,0.02,1",
                  palette=:cool)
-        contour(x,y,segg',w=:lines,lc="palette",a,labels=false)
+        contour(x,y,segg',a,w=:lines,lc="palette",labels=false)
     end isa Gaston.Figure
     @test begin
         x = y = -5:0.1:5
@@ -407,6 +406,17 @@ end
         x = y = -5:0.1:5
         heatmap(x,y,(x,y)->cos.(x/2).*sin.(y/2), Axis(title=:heatmap))
     end isa Gaston.Figure
+end
+
+@testset "Multiplot" begin
+    closeall()
+    x = y = -15:0.33:15
+    z = rand(5,6)
+    p1 = scatter(rand(10), rand(10), Axis(title=:p1), handle=1);
+    p2 = imagesc(z,Axis(title = :p2), handle=2);
+    p3 = surf(x, y, (x,y)->sin.(sqrt.(x.*x+y.*y))./sqrt.(x.*x+y.*y),
+           Axis(title=:p3), plotstyle="pm3d",handle=3);
+    plot([p1 p2 ; nothing p3])
 end
 
 @testset "Saving plots" begin
@@ -452,7 +462,7 @@ end
     @test_throws TypeError closefigure(1.0)
     @test_throws TypeError closefigure(1:2)
     # plot
-    @test_throws DimensionMismatch p = plot(0:10,0:11)
+    @test_throws ArgumentError p = plot(0:10,0:11)
     #@test_throws DimensionMismatch surf([1,2],[3,4],[5,6,7])
     #@test_throws DimensionMismatch surf([1,2,3],[3,4],[5,6,7])
     #plot!
