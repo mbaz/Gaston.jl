@@ -17,7 +17,7 @@ using Random
 using DelimitedFiles
 using ColorSchemes
 
-const VERSION = v"0.11"
+const VERSION = v"1.0.0"
 
 ## Handle Unix/Windows differences
 #
