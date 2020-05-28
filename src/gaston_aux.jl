@@ -114,10 +114,7 @@ function Base.show(io::IO, ::MIME"image/svg+xml", x::Figure)
     rm(tmpfile, force=true)
     return
 end
-p1 = scatter(rand(10), rand(10), Axis(title=:p1));
-p2 = imagesc(z,Axis(title = :p2), handle=2);
-p3 = surf(x, y, (x,y)->sin.(sqrt.(x.*x+y.*y))./sqrt.(x.*x+y.*y),
-                  Axis(title=:p3), plotstyle="pm3d",handle=3);
+
 function Base.show(io::IO, ::MIME"image/png", x::Figure)
     debug("Entering show() with MIME image/png")
     isempty(x) && return nothing
@@ -133,9 +130,9 @@ function Base.show(io::IO, ::MIME"image/png", x::Figure)
 end
 
 # build a string with plot commands according to configuration
-function plotstring(fig::Figure)
-    curves = fig.curves
-    file = fig.datafile
+function plotstring(sp::SubPlot)
+    curves = sp.curves
+    file = sp.datafile
     # We have to insert "," between plot commands. One easy way to do this
     # is create the first plot command, then the rest
     # We also need to keep track of the current index (starts at zero)
@@ -144,7 +141,7 @@ function plotstring(fig::Figure)
         push!(p, "'$file' i $(i-1) $(curve.conf)")
     end
     cmd = "plot "
-    fig.dims == 3 && (cmd = "splot ")
+    sp.dims == 3 && (cmd = "splot ")
     return cmd*join(p, ", ")
 end
 

@@ -11,7 +11,7 @@ export closefigure, closeall, figure,
        surf, surf!, contour, scatter3, scatter3!, heatmap,
        save, set
 
-import Base: show, isempty, push!, getindex, keys, merge
+import Base: show, isempty, push!, getindex, keys, merge, length
 
 using Random
 using DelimitedFiles
@@ -39,9 +39,6 @@ include("gaston_plot.jl")
 include("gaston_recipes.jl")
 include("gaston_llplot.jl")
 include("gaston_save.jl")
-
-# define function to determine if function is empty
-Base.isempty(f::Figure) = (f.curves === nothing)
 
 # initialize internal state
 gnuplot_state = GnuplotState()

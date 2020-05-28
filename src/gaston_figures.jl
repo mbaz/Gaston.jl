@@ -73,10 +73,7 @@ end
 # Create a new figure and return it, with the specified handle (or the next
 # available one if # handle == 0, and with the specified dimensions, axisconf
 # and curve. Update Gaston state as necessary.
-function newfigure(handle = 0;
-                   dims = 2,
-                   axisconf = "",
-                   curve = Curve())
+function newfigure(handle = 0)
 
     # make sure handle is valid
     handle === nothing && (handle = 0) # no figures exist yet
@@ -87,14 +84,13 @@ function newfigure(handle = 0;
 
     # create and push or update, as necessary
     if handle in gethandles()
-        # pre-existing; update
+        # pre-existing; reset figure without creating a new one
         fig = gnuplot_state.figs[findfigure(handle)]
-        fig.dims = dims
-        fig.axisconf = axisconf
-        fig.curves = [curve]
+        fig.layout = (0,0)
+        fig.subplots =  [Plot()]
     else
         # new; create and push
-        fig = Figure(handle = handle, dims = dims, axisconf = axisconf, curves = [curve])
+        fig = Figure(handle)
         push!(gnuplot_state.figs, fig)
     end
 
@@ -152,13 +148,4 @@ end
 function mostrecenthandle()
     isempty(gnuplot_state.figs) && return nothing
     return gnuplot_state.figs[end].handle
-end
-
-# Push configuration, axes or curves to a figure. The handle is assumed valid.
-function push!(f::Figure, c::Curve)
-    if isempty(f)
-        f.curves = [c]
-    else
-        push!(f.curves, c)
-    end
 end

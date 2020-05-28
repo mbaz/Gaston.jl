@@ -37,27 +37,29 @@ function write_data(curve, dims, file; append = false)
     open(file, mode) do io
         # 2-d plot
         if dims == 2
-            # image; format is "x y z" with reversed "y"
-            if ndims(x) == 1 && ndims(y) == 1 && ndims(z) == 2
-                xx = repeat(x,inner=length(y))
-                yy = repeat(reverse(y),length(x))
-                zz = vec(z)
-                writedlm(io,[xx yy zz])
-            # rgbimage; format is "x y r g b" with reversed "y"
-            elseif ndims(z) == 3
-                xx = repeat(x,inner=length(y))
-                yy = repeat(reverse(y),length(x))
-                r = vec(z[1,:,:])
-                g = vec(z[2,:,:])
-                b = vec(z[3,:,:])
-                if isempty(supp)
-                    writedlm(io,[xx yy r g b])
-                else
-                    writedlm(io,[xx yy r g b supp])
+            if z != nothing
+                # image; format is "x y z" with reversed "y"
+                if ndims(x) == 1 && ndims(y) == 1 && ndims(z) == 2
+                    xx = repeat(x,inner=length(y))
+                    yy = repeat(reverse(y),length(x))
+                    zz = vec(z)
+                    writedlm(io,[xx yy zz])
+                    # rgbimage; format is "x y r g b" with reversed "y"
+                elseif ndims(z) == 3
+                    xx = repeat(x,inner=length(y))
+                    yy = repeat(reverse(y),length(x))
+                    r = vec(z[1,:,:])
+                    g = vec(z[2,:,:])
+                    b = vec(z[3,:,:])
+                    if supp === nothing
+                        writedlm(io,[xx yy r g b])
+                    else
+                        writedlm(io,[xx yy r g b supp])
+                    end
                 end
             # regular plot
             else
-                if isempty(supp)
+                if supp === nothing
                     data = [x y]
                 else
                     data = [x y supp]
@@ -76,7 +78,7 @@ function write_data(curve, dims, file; append = false)
                 end
             # scatter plot
             elseif ndims(x) == 1 && ndims(y) == 1 && ndims(z) == 1
-                if isempty(supp)
+                if supp === nothing
                     for k in 1:length(x)
                         write(io, "$(x[k]) $(y[k]) $(z[k])\n")
                     end
@@ -101,68 +103,49 @@ end
 
 # llplot() is the workhorse plotting function. It handles all communication
 # with gnuplot required to actually plot. It can also handle multiplot.
-function llplot(figs ; printstring=nothing)
+function llplot(F::Figure ; printstring=nothing)
     global gnuplot_state
 
     debug("Entering llplot", "llplot")
 
-    if !(figs isa Matrix{Figure} || figs isa Matrix{Union{Figure,Nothing}} || figs isa Figure)
-        throw(ArgumentError(figs, "wrong argument to llplot"))
-    end
+    isempty(F) && return nothing
 
-    gnuplot_send("\nreset session\n")
+    gnuplot_send("reset session")
 
     # Build terminal setup string
     if printstring === nothing
-        handle = 0
-        if figs isa Matrix
-            for f in figs
-                f isa Figure && (handle = f.handle ; break)
-            end
-        else
-            handle = figs.handle
-        end
+        handle = F.handle
         gnuplot_send(termstring(handle))
     else
         gnuplot_send(printstring[1])
         gnuplot_send("set output '$(printstring[2])'")
     end
 
-    if config[:multiplot]
-        # handle multiplot mode
-        rows = size(figs)[1]
-        cols = size(figs)[2]
-        layout = "$rows, $cols"
-        gnuplot_send("set multiplot layout $layout columnsfirst")
-        for f in figs
-            if (f === nothing) || (isempty(f))
-                gnuplot_send("set multiplot next")
-                continue
-            end
-            gnuplot_send("reset session")
-            # Send preamble
-            prm = config[:preamble]
-            if !isempty(prm)
-                gnuplot_send(prm)
-            end
-            # Build figure configuration string
-            gnuplot_send(f.axisconf)
-            # send plot command to gnuplot
-            gnuplot_send(plotstring(f))
+    # If more than one subplot, enter multiplot mode
+    if length(F) > 1
+        gnuplot_send("set multiplot layout $(F.layout[1]),$(F.layout[2]) columnsfirst")
+    end
+
+    for sp in F.subplots
+        if (sp === nothing) || (isempty(sp))
+            gnuplot_send("set multiplot next")
+            continue
         end
-        gnuplot_send("unset multiplot")
-    else
-        # single-plot mode
-        gnuplot_send("reset session")
         # Send preamble
         prm = config[:preamble]
         if !isempty(prm)
             gnuplot_send(prm)
         end
         # Build figure configuration string
-        gnuplot_send(figs.axisconf)
+        gnuplot_send(sp.axisconf)
         # send plot command to gnuplot
-        gnuplot_send(plotstring(figs))
+        gnuplot_send(plotstring(sp))
+        # clear session for next plot
+        gnuplot_send("reset session")
+    end
+
+    if length(F) > 1
+        gnuplot_send("unset multiplot")
     end
 
     # Close output files, if any

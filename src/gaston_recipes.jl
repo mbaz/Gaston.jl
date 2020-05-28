@@ -3,7 +3,7 @@
 ## Scatter plots
 # real vectors
 scatter(x, y ; args...) = plot(x, y, w=:points ; args...)
-scatter(x, y, a::Axis ; args...) = plot(x, y, Coord(), a, w=:points ; args...)
+scatter(x, y, a::Axis ; args...) = plot(x, y, nothing, a, w=:points ; args...)
 # complex vectors
 scatter(y::ComplexCoord ; args...) = scatter(real(y), imag(y) ; args...)
 scatter(y::ComplexCoord, a::Axis ; args...) = scatter(real(y), imag(y), a ; args...)
@@ -13,7 +13,7 @@ scatter!(y::ComplexCoord ; args...) = scatter!(real(y), imag(y); args...)
 
 ## Stem plots
 function stem(x, y, a::Axis = Axis() ; onlyimpulses=false, args...)
-    p = plot(x, y, Coord(), a ; w=:impulses, lc=:blue, lw=1.25, args...)
+    p = plot(x, y, nothing, a ; w=:impulses, lc=:blue, lw=1.25, args...)
     onlyimpulses || (p = plot!(x, y ; w=:points, lc=:blue, pt="ecircle", pz=1.5, args...))
     return p
 end
@@ -24,7 +24,7 @@ stem(x, f::Function, a::Axis ; args...) = stem( x, f.(x), a ; args...)
 
 ## Bar plots
 function bar(x, y, a::Axis = Axis() ; args...)
-    plot(x, y, Coord(),
+    plot(x, y, nothing,
          merge(a, Axis(boxwidth="0.8 relative", style="fill solid 0.5")),
          w=:boxes ; args...)
 end
