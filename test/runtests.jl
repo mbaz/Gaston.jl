@@ -264,20 +264,22 @@ end
     @test begin
         bar(11:20,rand(10),Axes(xlabel=:x),lc=:red)
     end isa Gaston.Figure
-    @test begin
-        set(reset=true)
-        s = MIME"image/svg+xml"()
-        p = plot(1:10)
-        a = repr(s, p)
-        a[1:29] == "<?xml version=\"1.0\" encoding="
-    end == true
-    @test begin
-        set(reset=true)
-        s = MIME"image/svg+xml"()
-        p = plot(1:10)
-        a = repr(s, p)
-        a[end-7:end-2] == "</svg>"
-    end == true
+    if Gaston.gnuplot_state.gnuplot_available
+        @test begin
+            set(reset=true)
+            s = MIME"image/svg+xml"()
+            p = plot(1:10)
+            a = repr(s, p)
+            a[1:29] == "<?xml version=\"1.0\" encoding="
+        end == true
+        @test begin
+            set(reset=true)
+            s = MIME"image/svg+xml"()
+            p = plot(1:10)
+            a = repr(s, p)
+            a[end-7:end-2] == "</svg>"
+        end == true
+    end
 end
 
 @testset "Histograms" begin
@@ -421,14 +423,16 @@ end
 end
 
 @testset "Multiplot" begin
-    closeall()
-    x = y = -15:0.33:15
-    z = rand(5,6)
-    p1 = scatter(rand(10), rand(10), Axes(title=:p1), handle=1);
-    p2 = imagesc(z,Axes(title = :p2), handle=2);
-    p3 = surf(x, y, (x,y)->sin.(sqrt.(x.*x+y.*y))./sqrt.(x.*x+y.*y),
-           Axes(title=:p3), plotstyle="pm3d",handle=3);
-    plot([p1 p2 ; nothing p3])
+    @test begin
+        closeall()
+        x = y = -15:0.33:15
+        z = rand(5,6)
+        p1 = scatter(rand(10), rand(10), Axes(title=:p1), handle=1);
+        p2 = imagesc(z,Axes(title = :p2), handle=2);
+        p3 = surf(x, y, (x,y)->sin.(sqrt.(x.*x+y.*y))./sqrt.(x.*x+y.*y),
+                  Axes(title=:p3), plotstyle="pm3d",handle=3);
+        plot([p1 p2 ; nothing p3])
+    end isa Gaston.Figure
 end
 
 @testset "Saving plots" begin

@@ -94,12 +94,11 @@ const FigArray = Union{Array{Figure}, Array{Union{Figure, Nothing}}}
 # We need a global variable to keep track of gnuplot's state
 mutable struct GnuplotState
     current                      # current figure -- "pointer" to figs
-    process                      # the gnuplot process
-    gp_stdout::String            # last data read from gnuplot's stdout
+    gnuplot_available::Bool      # is gnuplot installed on this system?
     gp_stderr::String            # last data read from  gnuplot's stderr
     gp_lasterror::String         # gnuplot's last error output
     gp_error::Bool               # true if last command resulted in gp error
     figs::Vector{Figure}         # storage for all figures
 end
 
-GnuplotState() = GnuplotState(nothing,nothing,"","","",false,Figure[])
+GnuplotState() = GnuplotState(nothing,false,"","",false,Figure[])

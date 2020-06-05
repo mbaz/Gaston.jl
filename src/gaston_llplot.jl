@@ -108,6 +108,10 @@ function llplot(F::Figure ; printstring=nothing)
 
     isempty(F) && return nothing
 
+    config[:mode] == "null" && return nothing
+
+    gnuplot_state.gnuplot_available || return nothing
+
     gnuplot_send("reset session")
 
     # Build terminal setup string

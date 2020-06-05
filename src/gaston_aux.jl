@@ -91,13 +91,12 @@ Base.show(io::IO, ::MIME"text/plain", x::Figure) = show(io, x)
 
 function Base.show(io::IO, x::Figure)
     debug("showable = $(config[:showable])\nmode = $(config[:mode])", "show():text/plain")
+
     isempty(x) && return nothing
-    if config[:mode] == "null"
-        return nothing
-    end
-    if !(config[:term] in term_text)
-        return nothing
-    end
+    config[:mode] == "null" && return nothing
+    gnuplot_state.gnuplot_available || return nothing
+    config[:term] in term_text || return nothing
+
     tmpfile = tempname()
     save(term = config[:term], saveopts = config[:termopts], output=tmpfile)
     while !isfile(tmpfile) end  # avoid race condition with read in next line
@@ -109,10 +108,11 @@ end
 
 function Base.show(io::IO, ::MIME"image/svg+xml", x::Figure)
     debug("showable = $(config[:showable])\nmode = $(config[:mode])", "show():image/svg+xml")
+
     isempty(x) && return nothing
-    if config[:mode] == "null"
-        return nothing
-    end
+    config[:mode] == "null" && return nothing
+    gnuplot_state.gnuplot_available || return nothing
+
     tmpfile = tempname()
     save(term="svg", saveopts = config[:termopts], output=tmpfile)
     while !isfile(tmpfile) end  # avoid race condition with read in next line
@@ -124,10 +124,11 @@ end
 
 function Base.show(io::IO, ::MIME"image/png", x::Figure)
     debug("showable = $(config[:showable])\nmode = $(config[:mode])", "show():image/png")
+
     isempty(x) && return nothing
-    if config[:mode] == "null"
-        return nothing
-    end
+    config[:mode] == "null" && return nothing
+    gnuplot_state.gnuplot_available || return nothing
+
     tmpfile = tempname()
     save(term="png", saveopts = config[:termopts], output=tmpfile)
     while !isfile(tmpfile) end  # avoid race condition with read in next line
@@ -430,11 +431,13 @@ end
 # write commands to gnuplot's pipe
 function gnuplot_send(s)
     debug(s, "gnuplot_send")
-    w = write(P.gstdin, s*"\n")
-    # check that data was accepted by the pipe
-    if !(w > 0)
-        println("Something went wrong writing to gnuplot STDIN.")
-        return
+    if gnuplot_state.gnuplot_available
+        w = write(P.gstdin, s*"\n")
+        # check that data was accepted by the pipe
+        if !(w > 0)
+            println("Something went wrong writing to gnuplot STDIN.")
+            return
+        end
+        flush(P.gstdin)
     end
-    flush(P.gstdin)
 end

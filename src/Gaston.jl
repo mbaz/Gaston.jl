@@ -54,6 +54,13 @@ const P = Pipes()
 
 config = default_config()
 
+function showable(mime::MIME"text/plain", f::Figure)
+    if config[:term] in term_text
+        return true
+    end
+    return false
+end
+
 function showable(mime::MIME"image/png", f::Figure)
     if config[:showable] == "" || occursin("png", config[:showable])
         return true
@@ -70,26 +77,27 @@ end
 
 # initialize gnuplot
 function __init__()
-    global P
+    global P, gnuplot_state
     try
         success(`gnuplot --version`)
+        gnuplot_state.gnuplot_available = true
+        gstdin = Pipe()
+        gstdout = Pipe()
+        gstderr = Pipe()
+        gproc = run(pipeline(`gnuplot`,
+                             stdin = gstdin, stdout = gstdout, stderr = gstderr),
+                    wait = false)
+        process_running(gproc) || error("There was a problem starting up gnuplot.")
+        close(gstdout.in)
+        close(gstderr.in)
+        close(gstdin.out)
+        Base.start_reading(gstderr.out)
+        P.gstdin = gstdin
+        P.gstdout = gstdout
+        P.gstderr = gstderr
     catch
-        error("Gaston cannot be loaded: gnuplot is not available on this system.")
+        @warn "Gnuplot is not available on this system. Gaston will be unable to produce any plots."
     end
-    gstdin = Pipe()
-    gstdout = Pipe()
-    gstderr = Pipe()
-    gproc = run(pipeline(`gnuplot`,
-                         stdin = gstdin, stdout = gstdout, stderr = gstderr),
-                wait = false)
-    process_running(gproc) || error("There was a problem starting up gnuplot.")
-    close(gstdout.in)
-    close(gstderr.in)
-    close(gstdin.out)
-    Base.start_reading(gstderr.out)
-    P.gstdin = gstdin
-    P.gstdout = gstdout
-    P.gstderr = gstderr
 
     return nothing
 end
