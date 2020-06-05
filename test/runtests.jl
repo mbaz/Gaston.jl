@@ -95,7 +95,7 @@ end
              pointtype = "ecircle",
              pointsize = "1.1",
              fillstyle = "",
-             Axis(
+             Axes(
                   title = :test_plot_1,
                   style = "line 20 dt '-.-'",
                   xlabel = :x,
@@ -116,7 +116,7 @@ end
              w = :lp,
              ls = 15,
              pi = -10,
-             Axis(style = "line 15 dt '-...-' lc 'red' lw 3 pt 6"))
+             Axes(style = "line 15 dt '-...-' lc 'red' lw 3 pt 6"))
     end isa Gaston.Figure
     set(termopts="")
     @test begin
@@ -144,17 +144,17 @@ end
     @test plot(1:10,cos) isa Gaston.Figure
     @test plot!(1:10,cos) isa Gaston.Figure
     @test stem(1:10,cos) isa Gaston.Figure
-    @test plot(1:10, Axis(xrange = "[:3.4]")) isa Gaston.Figure
-    @test plot(1:10, Axis(xrange = "[3.4:*]")) isa Gaston.Figure
+    @test plot(1:10, Axes(xrange = "[:3.4]")) isa Gaston.Figure
+    @test plot(1:10, Axes(xrange = "[3.4:*]")) isa Gaston.Figure
     @test begin
         plot(1:3, 4:6, plotstyle="points", pointsize=3,
-             Axis(xrange="[2.95:3.05]", yrange="[3.95:4.045]"))
+             Axes(xrange="[2.95:3.05]", yrange="[3.95:4.045]"))
     end isa Gaston.Figure
     @test begin
         plot(rand(10) .+ im.*rand(10),
              w = :l,
              leg = :complex_vector,
-             Axis(title = :complex_vector,
+             Axes(title = :complex_vector,
                   xtics = 1:2:10)
             )
     end isa Gaston.Figure
@@ -223,18 +223,18 @@ end
         scatter(rand(10),rand(10), lc=:red)
     end isa Gaston.Figure
     @test begin
-        scatter(rand(10),rand(10), lc=:red, Axis(title=:test))
+        scatter(rand(10),rand(10), lc=:red, Axes(title=:test))
     end isa Gaston.Figure
     @test begin
         scatter(complex.(rand(10), rand(10)), lc=:red)
     end isa Gaston.Figure
     @test begin
-        scatter(complex.(rand(10), rand(10)), lc=:red, Axis(title="'test'"))
+        scatter(complex.(rand(10), rand(10)), lc=:red, Axes(title="'test'"))
     end isa Gaston.Figure
     @test begin
         scatter(complex.(rand(10), rand(10)),
                 linecolor="'green'",
-                Axis(title = :test))
+                Axes(title = :test))
         scatter!(complex.(rand(10), rand(10)),linecolor="'blue'")
     end isa Gaston.Figure
     @test begin
@@ -249,20 +249,20 @@ end
     end isa Gaston.Figure
     @test begin
         t=0:0.01:1
-        stem(t,exp,Axis(xlabel=:x),lc=:red)
+        stem(t,exp,Axes(xlabel=:x),lc=:red)
     end isa Gaston.Figure
     @test begin
         t=0:0.01:1
-        stem(exp.(t),Axis(xlabel=:x))
+        stem(exp.(t),Axes(xlabel=:x))
     end isa Gaston.Figure
     @test begin
         bar(1:10)
     end isa Gaston.Figure
     @test begin
-        bar(rand(10),Axis(xlabel=:x),lc=:red)
+        bar(rand(10),Axes(xlabel=:x),lc=:red)
     end isa Gaston.Figure
     @test begin
-        bar(11:20,rand(10),Axis(xlabel=:x),lc=:red)
+        bar(11:20,rand(10),Axes(xlabel=:x),lc=:red)
     end isa Gaston.Figure
     @test begin
         set(reset=true)
@@ -293,7 +293,7 @@ end
                   norm = 1,
                   linecolor = :blue,
                   linewidth = 2,
-                  Axis(
+                  Axes(
                        title = "'test histogram'",
                        xlabel = "'x'",
                        ylabel = "'y'",
@@ -314,7 +314,7 @@ end
     z = rand(5,6)
     @test begin
         imagesc(z,
-                Axis(title = :test_imagesc_1,
+                Axes(title = :test_imagesc_1,
                      xlabel = "'xx'",
                      ylabel = "'yy'",
                      font = "'Arial, 12'")
@@ -322,7 +322,7 @@ end
     end isa Gaston.Figure
     @test begin
         imagesc(5:10, 21:25, z,
-                Axis(title=:test_imagesc_2,
+                Axes(title=:test_imagesc_2,
                      xlabel=:xx,
                      ylabel=:yy)
                )
@@ -335,7 +335,7 @@ end
         Z[1,:,:] = R
         Z[2,:,:] = G
         Z[3,:,:] = B
-        imagesc(Z, Axis(title="'RGB Image'"))
+        imagesc(Z, Axes(title="'RGB Image'"))
     end isa Gaston.Figure
 end
 
@@ -352,7 +352,7 @@ end
              legend = :test,
              w = :lines,
              lc = :black,
-             Axis(
+             Axes(
                   title = :test,
                   xlabel = :x,
                   ylabel = :y,
@@ -373,7 +373,7 @@ end
         surf(0:9,2:11,(x,y)->x*y,
              legend = "'test'",
              plotstyle="pm3d",
-             Axis(title="'test'")
+             Axes(title="'test'")
             )
     end isa Gaston.Figure
     @test begin
@@ -385,26 +385,26 @@ end
     end isa Gaston.Figure
     @test begin
         scatter3(rand(10),rand(10),rand(10),
-                 Axis(title=:Scatter3, xlabel=:x),
+                 Axes(title=:Scatter3, xlabel=:x),
                  lc=:red)
         scatter3!(rand(8),rand(8),rand(8),lc=:black)
     end isa Gaston.Figure
     @test begin
         scatter3(0:0.1:10pi, cos, sin, pt=7, lc="palette",
-                 Axis(title=:Spiral,xlabel=:x,ylabel=:y,zlabel=:z))
+                 Axes(title=:Spiral,xlabel=:x,ylabel=:y,zlabel=:z))
     end isa Gaston.Figure
     @test begin
         x = 0:0.1:10pi
         scatter3(x, cos, sin, pt=7, lc="palette", ps="variable",
                  supp = x./20,
-                 Axis(title=:Spiral,xlabel=:x,ylabel=:y,zlabel=:z))
+                 Axes(title=:Spiral,xlabel=:x,ylabel=:y,zlabel=:z))
     end isa Gaston.Figure
     @test begin
         x = -1:0.05:1
         y = -1.5:0.05:2
         egg(x,y) = x^2 + y^2/(1.4 + y/5)^2
         segg = [egg(x,y) for x in x, y in y]
-        a = Axis(auto="fix",
+        a = Axes(auto="fix",
                  size="ratio -1",
                  cntrparam="levels incremental 0,0.02,1",
                  palette=:cool)
@@ -416,7 +416,7 @@ end
     end isa Gaston.Figure
     @test begin
         x = y = -5:0.1:5
-        heatmap(x,y,(x,y)->cos.(x/2).*sin.(y/2), Axis(title=:heatmap))
+        heatmap(x,y,(x,y)->cos.(x/2).*sin.(y/2), Axes(title=:heatmap))
     end isa Gaston.Figure
 end
 
@@ -424,10 +424,10 @@ end
     closeall()
     x = y = -15:0.33:15
     z = rand(5,6)
-    p1 = scatter(rand(10), rand(10), Axis(title=:p1), handle=1);
-    p2 = imagesc(z,Axis(title = :p2), handle=2);
+    p1 = scatter(rand(10), rand(10), Axes(title=:p1), handle=1);
+    p2 = imagesc(z,Axes(title = :p2), handle=2);
     p3 = surf(x, y, (x,y)->sin.(sqrt.(x.*x+y.*y))./sqrt.(x.*x+y.*y),
-           Axis(title=:p3), plotstyle="pm3d",handle=3);
+           Axes(title=:p3), plotstyle="pm3d",handle=3);
     plot([p1 p2 ; nothing p3])
 end
 

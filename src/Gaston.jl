@@ -8,9 +8,10 @@ module Gaston
 export closefigure, closeall, figure,
        plot, plot!, scatter, scatter!, stem, bar, histogram, imagesc,
        surf, surf!, contour, scatter3, scatter3!, heatmap,
-       Axis, save, set
+       Axes, save, set
 
-import Base: display, show, isempty, push!, getindex, keys, merge, length
+import Base: display, show, isempty, push!, getindex, keys, merge,
+             length, showable
 
 using Random
 using DelimitedFiles
@@ -51,6 +52,22 @@ end
 
 const P = Pipes()
 
+config = default_config()
+
+function showable(mime::MIME"image/png", f::Figure)
+    if config[:showable] == "" || occursin("png", config[:showable])
+        return true
+    end
+    return false
+end
+
+function showable(mime::MIME"image/svg+xml", f::Figure)
+    if config[:showable] == "" || occursin("svg", config[:showable])
+        return true
+    end
+    return false
+end
+
 # initialize gnuplot
 function __init__()
     global P
@@ -73,8 +90,6 @@ function __init__()
     P.gstdin = gstdin
     P.gstdout = gstdout
     P.gstderr = gstderr
-
-    global config = default_config()
 
     return nothing
 end

@@ -5,12 +5,14 @@
 # This file contains configuration-related functions and types
 
 # Dicts to store user-specified configuration
-default_config() = Dict(:mode      => "normal",
-                        :timeout   => Sys.isunix() ? 10 : 20,
-                        :debug     => false,
-                        :term      => "qt",
-                        :termopts  => "",
-                        :preamble  => "")
+const default_config() = Dict(:mode      => "normal",
+                              :timeout   => Sys.isunix() ? 10 : 20,
+                              :debug     => false,
+                              :term      => "qt",
+                              :termopts  => "",
+                              :preamble  => "",
+                              :saveopts  => "",
+                              :showable  => "png")
 
 # Set any of Gaston's configuration variables
 function set(;reset::Bool = false,
@@ -19,7 +21,9 @@ function set(;reset::Bool = false,
               mode        = config[:mode],
               debug::Bool = config[:debug],
               timeout     = config[:timeout],
-              preamble    = config[:preamble]
+              preamble    = config[:preamble],
+              saveopts    = config[:saveopts],
+              showable    = config[:showable]
             )
     global config
 
@@ -28,12 +32,14 @@ function set(;reset::Bool = false,
         return nothing
     end
 
-    config[:term] = term
-    config[:termopts] = termopts
     config[:mode] = mode
     config[:timeout] = timeout
-    config[:preamble] = preamble
     debug isa Bool && (config[:debug] = debug)
+    config[:term] = term
+    config[:termopts] = termopts
+    config[:preamble] = preamble
+    config[:saveopts] = saveopts
+    config[:showable] = showable
 
     return nothing
 end

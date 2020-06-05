@@ -1,9 +1,9 @@
 # 2D plots
 """
-    plot([x,] y, [z,] [axis,] [supp,] [dims,] [h,] [curve]) -> Gaston.Figure
+    plot([x,] y, [z,] [axes,] [supp,] [dims,] [h,] [curve]) -> Gaston.Figure
 
 Plots data `x`, `y`, and optionally `z` and `supp`, in two or three dimensions
-as specified by `dims`, with axis configuration `axis`, and curve configuration
+as specified by `dims`, with axes configuration `axes`, and curve configuration
 `curve`, on the figure with handle `h`.
 
 If `x` is omitted, then `x=1:length(t)` is assumed.
@@ -20,14 +20,14 @@ If `c` is a complex vector, plot its real part vs its imaginary part.
 
 Create a 'muliplot' with the layout in `P`. Returns a new figure.
 """
-function plot(x::Coord, y::Coord, z::Coord = nothing, axis::Axis = Axis() ;
+function plot(x::Coord, y::Coord, z::Coord = nothing, axes::Axes = Axes() ;
               supp::Coord = nothing,
               dims::Int   = 2,
               handle      = gnuplot_state.current,
               args...)
 
     ## Process optional keyword arguments.
-    axisconf = parse(axis)
+    axesconf = parse(axes)
     curveconf = parse(args)
 
     # create curve
@@ -36,8 +36,8 @@ function plot(x::Coord, y::Coord, z::Coord = nothing, axis::Axis = Axis() ;
     # push curve we just created to current figure
     # create new figure
     fig = newfigure(handle)
-    push!(fig, Plot(dims=dims, axisconf = axisconf, curves = [c]))
-    #fig.subplots[1] = Plot(dims=dims, axisconf = axisconf, curves = [c])
+    push!(fig, Plot(dims=dims, axesconf = axesconf, curves = [c]))
+    #fig.subplots[1] = Plot(dims=dims, axesconf = axesconf, curves = [c])
 
     # write gnuplot data to file
     write_data(c, fig.subplots[1].dims, fig.subplots[1].datafile)
@@ -46,12 +46,12 @@ function plot(x::Coord, y::Coord, z::Coord = nothing, axis::Axis = Axis() ;
 end
 
 ### Alternative `plot` methods
-plot(y, a::Axis = Axis() ; args...) = plot(1:length(y), y, nothing, a ; args...)
-plot(x, y, a::Axis = Axis() ; args...) = plot(x, y, nothing, a ; args...)
+plot(y, a::Axes = Axes() ; args...) = plot(1:length(y), y, nothing, a ; args...)
+plot(x, y, a::Axes = Axes() ; args...) = plot(x, y, nothing, a ; args...)
 ## Complex vector
-plot(c::ComplexCoord, a::Axis = Axis() ; args...) = plot(real(c), imag(c), nothing, a ; args...)
+plot(c::ComplexCoord, a::Axes = Axes() ; args...) = plot(real(c), imag(c), nothing, a ; args...)
 ## Function
-plot(x, f::Function, a::Axis = Axis() ; args...) = plot(x, f.(x), nothing, a ; args...)
+plot(x, f::Function, a::Axes = Axes() ; args...) = plot(x, f.(x), nothing, a ; args...)
 
 # Add a curve to an existing figure
 """
@@ -100,7 +100,11 @@ function plot(P::FigArray)
     # Create new figure
     handle = figure()
     fig = gnuplot_state.figs[findfigure(handle)]
-    fig.layout = size(P)
+    if P isa Vector
+        fig.layout = (size(P)[1], 1)
+    else
+        fig.layout = size(P)
+    end
     for p in P
         if p isa Figure
             push!(fig, p.subplots[1])

@@ -106,8 +106,6 @@ end
 function llplot(F::Figure ; printstring=nothing)
     global gnuplot_state
 
-    debug("Entering llplot", "llplot")
-
     isempty(F) && return nothing
 
     gnuplot_send("reset session")
@@ -121,15 +119,19 @@ function llplot(F::Figure ; printstring=nothing)
         gnuplot_send("set output '$(printstring[2])'")
     end
 
-    # If more than one subplot, enter multiplot mode
-    if length(F) > 1
+    # If a layout has been defined, enter multiplot mode
+    multiplot = false
+    if F.layout != (0,0)
+        multiplot = true
         gnuplot_send("set multiplot layout $(F.layout[1]),$(F.layout[2]) columnsfirst")
     end
 
     for sp in F.subplots
-        if (sp === nothing) || (isempty(sp))
-            gnuplot_send("set multiplot next")
-            continue
+        if multiplot
+            if (sp === nothing) || (isempty(sp))
+                gnuplot_send("set multiplot next")
+                continue
+            end
         end
         # Send preamble
         prm = config[:preamble]
@@ -137,14 +139,14 @@ function llplot(F::Figure ; printstring=nothing)
             gnuplot_send(prm)
         end
         # Build figure configuration string
-        gnuplot_send(sp.axisconf)
+        gnuplot_send(sp.axesconf)
         # send plot command to gnuplot
         gnuplot_send(plotstring(sp))
         # clear session for next plot
         gnuplot_send("reset session")
     end
 
-    if length(F) > 1
+    if multiplot
         gnuplot_send("unset multiplot")
     end
 

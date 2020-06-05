@@ -5,15 +5,15 @@
 # All types and constructors are defined here.
 
 ## Axis configuration
-mutable struct Axis
-    axisconf::Dict{Symbol, Any}
+mutable struct Axes
+    axesconf::Dict{Symbol, Any}
 end
 
-Axis(pairs::Pair...) = Axis(Dict(pairs))
-Axis(;args...) = Axis(args)
-keys(a::Axis) = keys(a.axisconf)
-getindex(a::Axis, args... ; kwargs...) = getindex(a.axisconf, args... ; kwargs...)
-merge(a::Axis, b::Axis) = Axis(merge(a.axisconf, b.axisconf))
+Axes(pairs::Pair...) = Axes(Dict(pairs))
+Axes(;args...) = Axes(args)
+keys(a::Axes) = keys(a.axesconf)
+getindex(a::Axes, args... ; kwargs...) = getindex(a.axesconf, args... ; kwargs...)
+merge(a::Axes, b::Axes) = Axes(merge(a.axesconf, b.axesconf))
 
 ## Real coordinates
 const NCoord = Union{AbstractRange{T}, AbstractArray{T}} where T # actual coordinates
@@ -38,7 +38,7 @@ end
 Base.@kwdef mutable struct Plot
     datafile::String = tempname()   # file to store plot data
     dims::Int        = 2            # 2-D or 3-D plot
-    axisconf::String = ""           # axes configuration
+    axesconf::String = ""           # axes configuration
     curves::Vector{Curve} = Curve[] # a vector of curves
 end
 getindex(p::Plot, args... ; kwargs...) = getindex(p.curves, args... ; kwargs...)
@@ -82,8 +82,14 @@ function push!(f::Figure, sp::SubPlot)
     end
 end
 
+function push!(dest::Figure, src::Figure)
+    for sp in src.subplots
+        push!(dest, sp)
+    end
+end
+
 # Types needed for multiplot
-const FigArray = Union{Matrix{Figure}, Matrix{Union{Figure, Nothing}}}
+const FigArray = Union{Array{Figure}, Array{Union{Figure, Nothing}}}
 
 # We need a global variable to keep track of gnuplot's state
 mutable struct GnuplotState

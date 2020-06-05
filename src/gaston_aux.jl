@@ -77,56 +77,63 @@ end
 function Base.display(x::Figure)
     debug("Entering display()")
     isempty(x) && return nothing
-    if config[:mode] == "null"
-        return nothing
-    end
     if config[:term] in term_text
         show(stdout, "text/plain", x)
+        return nothing
+    end
+    if config[:mode] == "null"
         return nothing
     end
     llplot(x)
 end
 
-function Base.show(io::IO, ::MIME"text/plain", x::Figure)
-    debug("Entering show() with MIME text/plain")
+Base.show(io::IO, ::MIME"text/plain", x::Figure) = show(io, x)
+
+function Base.show(io::IO, x::Figure)
+    debug("showable = $(config[:showable])\nmode = $(config[:mode])", "show():text/plain")
     isempty(x) && return nothing
     if config[:mode] == "null"
         return nothing
     end
+    if !(config[:term] in term_text)
+        return nothing
+    end
     tmpfile = tempname()
-    save(term="dumb", output=tmpfile)
+    save(term = config[:term], saveopts = config[:termopts], output=tmpfile)
     while !isfile(tmpfile) end  # avoid race condition with read in next line
     write(io, read(tmpfile))
     rm(tmpfile, force=true)
-    return
+    nothing
 end
+
 
 function Base.show(io::IO, ::MIME"image/svg+xml", x::Figure)
-    debug("Entering show() with MIME image/svg+xml")
+    debug("showable = $(config[:showable])\nmode = $(config[:mode])", "show():image/svg+xml")
     isempty(x) && return nothing
     if config[:mode] == "null"
         return nothing
     end
     tmpfile = tempname()
-    save(term="svg", output=tmpfile)
+    save(term="svg", saveopts = config[:termopts], output=tmpfile)
     while !isfile(tmpfile) end  # avoid race condition with read in next line
     write(io, read(tmpfile))
     rm(tmpfile, force=true)
-    return
+    nothing
 end
 
+
 function Base.show(io::IO, ::MIME"image/png", x::Figure)
-    debug("Entering show() with MIME image/png")
+    debug("showable = $(config[:showable])\nmode = $(config[:mode])", "show():image/png")
     isempty(x) && return nothing
     if config[:mode] == "null"
         return nothing
     end
     tmpfile = tempname()
-    save(term="png", output=tmpfile)
+    save(term="png", saveopts = config[:termopts], output=tmpfile)
     while !isfile(tmpfile) end  # avoid race condition with read in next line
     write(io, read(tmpfile))
     rm(tmpfile, force=true)
-    return
+    nothing
 end
 
 # build a string with plot commands according to configuration
@@ -198,15 +205,8 @@ function parse(kwargs)
                 break
             end
         end
-        # linecolor
-        for kw in (:linecolor, :lc)
-            if kw in K
-                push!(curveconf, " $kw $(symtostr(kwargs[kw]))")
-                break
-            end
-        end
         # pointtype
-        for kw in (:pointtype, :pt)
+        for kw in (:pointtype, :pt, :marker)
             if kw in K
                 val = kwargs[kw]
                 if val isa String
@@ -219,9 +219,15 @@ function parse(kwargs)
                 break
             end
         end
+        # pointsize
+        for kw in (:pointsize, :ps, :markersize)
+            if kw in K
+                push!(curveconf, " pointsize $(kwargs[kw]) ")
+            end
+        end
         # other curveconf elements with arguments
-        for kw in (:ls, :linestyle, :lt, :linetype, :lw, :linewidth, :ps,
-                   :pointsize, :fill, :fs, :fillcolor, :fc, :dashtype, :dt,
+        for kw in (:linecolor, :lc, :ls, :linestyle, :lt, :linetype, :lw,
+                   :linewidth, :fill, :fs, :fillcolor, :fc, :dashtype, :dt,
                    :pointinterval, :pi, :pointnumber, :pn)
             if kw in K
                 val = symtostr(kwargs[kw])
@@ -248,18 +254,23 @@ function parse(kwargs)
     return join(curveconf, " ")
 end
 
-function parse(axis::Axis)
-    axisconf = String[]
-    K = keys(axis)
+function parse(axes::Axes)
+    axesconf = String[]
+    K = keys(axes)
     for k in K
+        # axesconf is a string with gnuplot commands
+        if k == :axesconf
+            push!(axesconf, axes[:axesconf])
+            continue
+        end
         # palette; code inspired by @gcalderone's Gnuplot.jl
         if k in (:pal, :palette)
-            val = axis[k]
+            val = axes[k]
             val isa Vector || (val = [val])
             for v in val
                 if v isa Symbol
                     if haskey(Palette_cache, v)
-                        push!(axisconf, Palette_cache[v])
+                        push!(axesconf, Palette_cache[v])
                         continue
                     end
                     cm = colorschemes[v]
@@ -270,21 +281,22 @@ function parse(axis::Axis)
                     end
                     s = "set palette defined ("*join(colors, ", ")*")\nset palette maxcolors $(length(cm))"
                     push!(Palette_cache, (v => s))
-                    push!(axisconf, s)
+                    push!(axesconf, s)
                 else
-                    push!(axisconf, "set palette $v")
+                    push!(axesconf, "set palette $v")
                 end
             end
             continue
         end
         # linetype definitions; code inspired by @gcalderone's Gnuplot.jl
         if k in (:lt, :linetype)
-            val = axis[k]
+            val = axes[k]
             val isa Vector || (val = [val])
             for v in val
                 if v isa Symbol
                     if haskey(Linetypes_cache, v)
-                        push!(axisconf, Linetypes_cache[v])
+                        push!(axesconf, Linetypes_cache[v])
+                        continue
                     end
                     cm = colorschemes[v]
                     linetypes = String[]
@@ -295,104 +307,105 @@ function parse(axis::Axis)
                     end
                     s = join(linetypes,"\n")*"\nset linetype cycle $(length(cm))"
                     push!(Linetypes_cache, (v => s))
-                    push!(axisconf, s)
+                    push!(axesconf, s)
                 else
-                    push!(axisconf, "set linetype $v")
+                    push!(axesconf, "set linetype $v")
                 end
             end
             continue
         end
         # tics
         if k in (:xtics, :ytics, :ztics, :tics)
-            val = axis[k]
+            val = axes[k]
             val isa Vector || (val = [val])
             for v in val
                 if v isa AbstractRange
-                    push!(axisconf,"set $k $(first(v)),$(step(v)),$(last(v))")
+                    push!(axesconf,"set $k $(first(v)),$(step(v)),$(last(v))")
                 elseif v isa Tuple
                     tics = v[1]
                     labs = v[2]
-                    tics isa AbstractRange && (tics = collect(v[1]))
+                    tics isa AbstractRange && (tics = collect(tics))
+                    println(tics)
                     s = """("$(labs[1])" $(tics[1])"""
                     for i in 2:length(tics)
                         s *= """, "$(labs[i])" $(tics[i])"""
                     end
                     s *= ")"
-                    push!(axisconf,"set $k $s")
+                    push!(axesconf,"set $k $s")
                 elseif v in (:off, :false, false, "false")
-                    push!(axisconf,"unset $k")
+                    push!(axesconf,"unset $k")
                 else
-                    push!(axisconf,"set $k $v")
+                    push!(axesconf,"set $k $v")
                 end
             end
             continue
         end
         # axis type
         if k == :axis
-            val = symtostr(axis[k])
+            val = symtostr(axes[k])
             if val == "semilogx"
-                push!(axisconf, "set logscale x")
+                push!(axesconf, "set logscale x")
             elseif val == "semilogy"
-                push!(axisconf, "set logscale y")
+                push!(axesconf, "set logscale y")
             elseif val == "semilogz"
-                push!(axisconf, "set logscale z")
+                push!(axesconf, "set logscale z")
             elseif val == "loglog"
-                push!(axisconf, "set logscale xyz")
+                push!(axesconf, "set logscale xyz")
             else
-                push!(axisconf, "set $val")
+                push!(axesconf, "set $val")
             end
             continue
         end
         # range
         if k in (:xrange, :yrange, :zrange, :cbrange)
-            val = axis[k]
+            val = axes[k]
             val isa Vector || (val = [val])
             for v in val
                 if v isa Vector || v isa Tuple
-                    push!(axisconf, "set $k [$(ifelse(isinf(v[1]),*,v[1])):$(ifelse(isinf(v[2]),*,v[2]))]")
+                    push!(axesconf, "set $k [$(ifelse(isinf(v[1]),*,v[1])):$(ifelse(isinf(v[2]),*,v[2]))]")
                 else
-                    push!(axisconf, "set $k $v")
+                    push!(axesconf, "set $k $v")
                 end
             end
             continue
         end
         # view
         if k == :view
-            val = axis[k]
+            val = axes[k]
             val isa Vector || (val = [val])
             for v in val
                 if v isa Tuple
-                    push!(axisconf, "set view $(join(v, ", "))")
+                    push!(axesconf, "set view $(join(v, ", "))")
                 else
-                    push!(axisconf, "set view $v")
+                    push!(axesconf, "set view $v")
                 end
             end
             continue
         end
         # dashtypes
         if k in (:dt, :dashtype)
-            val = axis[k]
+            val = axes[k]
             val isa Vector || (val = [val])
             for v in val
-                push!(axisconf, "set dashtype $val")
+                push!(axesconf, "set dashtype $val")
             end
             continue
         end
         ### handle remaining keys
-        val = axis[k]
+        val = axes[k]
         val isa Vector || (val = [val])
         for v in val
             # on/off arguments
             if v in (true, :on, :true, "on", "true")
-                push!(axisconf, "set $k")
+                push!(axesconf, "set $k")
             elseif v in (false, :off, :false, "false")
-                push!(axisconf, "unset $k")
+                push!(axesconf, "unset $k")
             else
-                push!(axisconf, "set $k $(symtostr(v))")
+                push!(axesconf, "set $k $(symtostr(v))")
             end
         end
     end
-    return join(axisconf, "\n")
+    return join(axesconf, "\n")
 end
 
 # Define pointtype synonyms

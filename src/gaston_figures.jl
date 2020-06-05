@@ -71,7 +71,7 @@ function closeall()
 end
 
 # Create a new figure and return it, with the specified handle (or the next
-# available one if # handle == 0, and with the specified dimensions, axisconf
+# available one if # handle == 0, and with the specified dimensions, axesconf
 # and curve. Update Gaston state as necessary.
 function newfigure(handle = 0)
 

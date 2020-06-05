@@ -14,7 +14,10 @@ function save(; term::String,
                 font        = "",
                 size        = "",
                 linewidth   = 0,
-                background  = "")
+                background  = "",
+                saveopts    = config[:saveopts])
+
+    debug("term = $term, output = $output, saveopts = $saveopts", "save")
 
     # process arguments
     isempty(output) && throw(DomainError("Please specify an output filename."))
@@ -30,10 +33,14 @@ function save(; term::String,
 
     # create print configuration
     pc = "set term $term "
-    !isempty(font) && (pc *= "font '$font' ")
-    !isempty(size) && (pc *= "size $size ")
-    linewidth > 0 && (pc *= "linewidth $linewidth ")
-    !isempty(background) && (pc *= "background '$background' ")
+    if isempty(saveopts)
+        !isempty(font) && (pc *= "font '$font' ")
+        !isempty(size) && (pc *= "size $size ")
+        linewidth > 0 && (pc *= "linewidth $linewidth ")
+        !isempty(background) && (pc *= "background '$background' ")
+    else
+        pc *= saveopts
+    end
 
     # send gnuplot commands
     llplot(fig, printstring=(pc,output))
