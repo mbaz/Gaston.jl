@@ -47,6 +47,15 @@ surf!(x.*0, y, z, w = :l, lw = 3)
 surf!(x, y.*0, z, w = :l, lw = 3)
 ```
 
+# Variable marker size and color
+
+```@example 3dgal
+x = 0:0.1:6π;
+scatter3(x, cos.(x), sin.(x), supp = x./10,
+         ps = "variable", pt = "fcircle", lc = "palette",
+         Axes(colorbox = :off))
+```
+
 # Surface with contours
 
 ```@example 3dgal
