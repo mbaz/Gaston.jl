@@ -19,17 +19,6 @@ using ColorSchemes
 
 const VERSION = v"1.0.0"
 
-## Handle Unix/Windows differences
-#
-# Define gnuplot's end-of-plot delimiter. It is different in Windows
-# than in Unix, thanks to different end-of-line conventions.
-gmarker_start = "GastonBegin\n"
-gmarker_done = "GastonDone\n"
-if Sys.iswindows()
-    gmarker_start = "GastonBegin\r\n"
-    gmarker_done = "GastonDone\r\n"
-end
-
 # load files
 include("gaston_types.jl")
 include("gaston_config.jl")
