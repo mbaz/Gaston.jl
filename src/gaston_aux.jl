@@ -24,14 +24,14 @@ function debug(msg, f="")
         s = split(msg, "\n", keepempty=false)
         if !isempty(s)
             if !isempty(f)
-                printstyled("⌈Gaston in function $f\n", color=:yellow)
+                printstyled("┌ Gaston in function $f\n", color=:yellow)
             else
-                printstyled("⌈Gaston\n", color=:yellow)
+                printstyled("┌ Gaston\n", color=:yellow)
             end
             for ss in s
-                println("| $ss")
+                println("│ $ss")
             end
-            printstyled("⌊\n", color=:yellow)
+            printstyled("└\n", color=:yellow)
         end
     end
 end
