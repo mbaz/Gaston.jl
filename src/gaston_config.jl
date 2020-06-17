@@ -8,7 +8,7 @@
 const default_config() = Dict(:mode      => "normal",
                               :timeout   => Sys.isunix() ? 10 : 20,
                               :debug     => false,
-                              :term      => "qt",
+                              :term      => Sys.iswindows() ? "windows" : "qt",
                               :termopts  => "",
                               :preamble  => "",
                               :saveopts  => "",
