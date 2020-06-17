@@ -4,7 +4,7 @@
 
 # Auxiliary, non-exported functions are declared here.
 
-""" mesgrid(x, y, z)
+""" meshgrid(x, y, z)
 
     Create a z-coordinate matrix from `x`, `y` coordinates and a function `f`,
     such that `z[row,col] = f(x[col], y[row)`"""
