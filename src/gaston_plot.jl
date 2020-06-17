@@ -96,10 +96,9 @@ plot!(c::ComplexCoord ; args...) = plot!(real(c), imag(c) ; args...)
 plot!(x, f::Function ; args...) = plot!(x, f.(x) ; args...)
 
 ### Multiplot
-function plot(P::FigArray)
+function plot(P::FigArray ; handle::Int =0)
     # Create new figure
-    handle = figure()
-    fig = gnuplot_state.figs[findfigure(handle)]
+    fig = newfigure(handle)
     if P isa Vector
         fig.layout = (size(P)[1], 1)
     else
