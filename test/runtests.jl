@@ -277,7 +277,12 @@ end
             s = MIME"image/svg+xml"()
             p = plot(1:10)
             a = repr(s, p)
-            a[end-7:end-2] == "</svg>"
+            idx = 0
+            while a[end-idx] == '\n' || a[end-idx] == '\r'
+                idx = idx + 1
+                idx > 20 && return false
+            end
+            a[end-5-idx:end-idx] == "</svg>"
         end == true
     end
 end
