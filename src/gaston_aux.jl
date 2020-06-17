@@ -435,7 +435,7 @@ function gnuplot_send(s)
         w = write(P.gstdin, s*"\n")
         # check that data was accepted by the pipe
         if !(w > 0)
-            println("Something went wrong writing to gnuplot STDIN.")
+            @warn "Something went wrong writing to gnuplot STDIN."
             return
         end
         flush(P.gstdin)
