@@ -17,7 +17,7 @@ using Random
 using DelimitedFiles
 using ColorSchemes
 
-const VERSION = v"1.0.0"
+const VERSION = v"1.0.1"
 
 # load files
 include("gaston_types.jl")
