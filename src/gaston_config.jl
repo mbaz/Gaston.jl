@@ -46,7 +46,7 @@ end
 
 ### Encode terminal capabilities
 # supports multiple windows
-const term_window = ["qt", "wxt", "x11", "aqua"]
+const term_window = ["qt", "wxt", "x11", "aqua", "windows"]
 # outputs text
 const term_text = ["dumb", "sixelgd"]
 
