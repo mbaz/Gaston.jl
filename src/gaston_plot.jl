@@ -96,7 +96,7 @@ plot!(c::ComplexCoord ; args...) = plot!(real(c), imag(c) ; args...)
 plot!(x, f::Function ; args...) = plot!(x, f.(x) ; args...)
 
 ### Multiplot
-function plot(P::FigArray ; handle::Int =0)
+function plot(P::FigArray ; handle::Int = 0)
     # Create new figure
     fig = newfigure(handle)
     if P isa Vector
