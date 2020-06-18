@@ -101,3 +101,65 @@ plot!(dset.SepalLength[indc], dset.SepalWidth[indc],
       curveconf = "w p tit '$(c)' pt 7 ps 1.4 ");
 P
 ```
+
+# Vector fields (arrow plots)
+
+Vector fields can be plotted with the `vectors` plot style. The arrows' `x` and `y` coordinates need to be specified in supplementary columns.
+
+```@example 2dgal
+x = range(0, 6π, length = 50)
+A = range(0, 2, length = 50)
+xdelta = A./7.0.*rand(50)
+ydelta = A./3.0.*rand(50)
+plot(A.*cos.(x), A.*sin.(x), supp = [xdelta ydelta], w = :vectors, lc = "'dark-turquoise'")
+```
+
+# Violin plots
+
+A violin plot is created by plotting `(y, x)` instead of `(x, y)`, using the `filledcurves` style, and mirroring the plot.
+
+```@example 2dgal
+x = range(0, 5, length=100)
+y = 2cos.(x) + sin.(2x) + 0.5cos.(3x) - sin.(4x) .+ 3
+M = maximum(y)
+plot(y, x, w = "filledcurves x = $M", lc = :turquoise,
+     Axes(title = "'Violin plot'"))
+plot!(-y .+ 2M, x, w = "filledcurves x = $M", lc = :turquoise)
+```
+
+Violin plot with a superimposed boxplot:
+
+```@example 2dgal
+plot(y, x, w = "filledcurves x = $M", lc = :turquoise,
+     Axes(title     = "'Violin plot'",
+          style     = "fill solid bo -1",
+          boxwidth  = 0.075,
+          errorbars = "lt black lw 1"))
+plot!(-y .+ 2M, x, w="filledcurves x = $M", lc=:turquoise)
+plot!(x, y, w = "boxplot", u = "($M):2", fc = :white, lw = 2)
+```
+
+# Plotting times/dates
+
+The key to plotting dates and times is converting them to strings, and then telling gnuplot what the format is, using `timefmt`. In Julia, dates and times are defined in module `Dates`. This example is inspired by [this gnuplot demo](http://gnuplot.sourceforge.net/demo_5.2/timedat.html).
+
+```@example 2dgal
+using Dates
+dates = [DateTime(2013,6,1,0,0),
+                DateTime(2013,6,10,9,30),
+                DateTime(2013,6,18,13,05),
+                DateTime(2013,7,4,20,35),
+                DateTime(2013,7,13,17,18)]
+concentrations = [0.2, 0.3, 0.5, 0.38, 0.18]
+x = Dates.format.(dates, "dd/mm/yy HHMM")
+plot(x, values, u = "1:3",
+     Axes(xdata   = "time",
+          timefmt = "'%d/%m/%y %H%M'",
+          style   = "data fsteps",
+          format  = "x \"%d/%m\\n%H:%M\"",
+          xlabel  = "\"Date\\nTime\"",
+          ylabel  = "\"Concentration\\nmg/l\"",
+          title   = "'Plot with date and time as x-values'",
+          key     = "right"))
+plot!(x, values, u="1:3", w=:p, marker="esquare", legend = "'Total P'")
+```
