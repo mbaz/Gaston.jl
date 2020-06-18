@@ -1,6 +1,6 @@
 name = "Gaston"
 uuid = "4b11ee91-296f-5714-9832-002c20994614"
-version = "1.0.1"
+version = "1.0.2"
 
 [deps]
 ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
