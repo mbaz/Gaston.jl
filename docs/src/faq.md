@@ -2,7 +2,7 @@
 
 ## How to set the terminal
 
-Gnuplot supports a huge amount of terminals. Most modern gnuplot installations should support the qt terminal. A different terminal can be selected with
+Gnuplot supports a huge amount of terminals. Most modern gnuplot installations should support the `qt` terminal. A different terminal can be selected with
 
     set(term = t::String)
 
@@ -14,6 +14,9 @@ For example, to set the font on the qt terminal to Consolas size 11, one could d
 
     set(term = "qt")  # not needed in most installations
     set(termpts = "font 'Consolas,11')
+
+!!! info "Choosing a terminal on Windows"
+    On Windows, Gaston selects the `windows` terminal by default. Changing the terminal is not recommended, since they tend to be very slow and have other issues (for example, see [here](https://github.com/mbaz/Gaston.jl/issues/136) and [here](https://sourceforge.net/p/gnuplot/bugs/2279/)).
 
 ## What settings are available in Gaston?
 
