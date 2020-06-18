@@ -147,7 +147,9 @@ function llplot(F::Figure ; printstring=nothing)
         # send plot command to gnuplot
         gnuplot_send(plotstring(sp))
         # clear session for next plot
-        gnuplot_send("reset session")
+        if multiplot
+            gnuplot_send("reset session")
+        end
     end
 
     if multiplot
