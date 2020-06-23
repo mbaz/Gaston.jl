@@ -55,33 +55,33 @@ set(termopts="size 550,325 font 'Consolas,11'") # hide
 # plot with lines and markers
 t = -5:0.05:5
 plot(t, sin,
-            # linespoints plot style
-            w  = :lp,
-            # line color
-            lc = :turquoise,
-            # line width
-            lw = 3,
-            # empty circles
-            marker = "ecircle",
-            # marker size
-            ms = 1.5,
-            # plot only ten markers
-            pn = 10,
-            # legend
-            legend = :A_sine_wave
-           )
+     # linespoints plot style
+     w  = :lp,
+     # line color
+     lc = :turquoise,
+     # line width
+     lw = 3,
+     # empty circles
+     marker = "ecircle",
+     # marker size
+     ms = 1.5,
+     # plot only ten markers
+     pn = 10,
+     # legend
+     legend = :A_sine_wave
+    )
 ```
 
 ```@example 2dtut
 # plot with dashed line
 plot(t, sin,
-            # lines plot style
-            w  = :l,
-            # line width
-            lw = 3,
-            # dashed line
-            ls = "'-.-'"
-           )
+     # lines plot style
+     w  = :l,
+     # line width
+     lw = 3,
+     # dashed line
+     ls = "'-.-'"
+    )
 ```
 
 ## Set the plot title, axis labels, tics, legends and grid
@@ -94,19 +94,19 @@ The following example shows how to use these attributes.
 
 ```@example 2dtut
 plot(t, sin,
-            w  = :lp, lc = :turquoise, lw = 3,
-            marker = "ecircle", ms = 1.5,
-            pn = 10, legend = :A_sine_wave,
-            Axes(# set the title
-                 title = "'Example plot'",
-                 # turn on the grid
-                 grid = :on,
-                 # specify tics
-                 xtics = -5:2:5,
-                 ytics = ([-1 0 1], ["- one", "zero", "+ one"]),
-                 # configure legend box
-                 key = "outside center bottom"
-                 ))
+    w  = :lp, lc = :turquoise, lw = 3,
+    marker = "ecircle", ms = 1.5,
+    pn = 10, legend = :A_sine_wave,
+    Axes(# set the title
+         title = "'Example plot'",
+         # turn on the grid
+         grid = :on,
+         # specify tics
+         xtics = -5:2:5,
+         ytics = ([-1 0 1], ["- one", "zero", "+ one"]),
+         # configure legend box
+         key = "outside center bottom")
+    )
 ```
 
 ## Logarithmic plots
@@ -123,7 +123,8 @@ plot(10log10.(SNR), Q.(sqrt.(SNR)),
           ylabel = "'Bit Error Rate'",
           ytics  = "out format '10^{%T}'",
           grid   = "xtics mytics",
-          title  = "'BPSK Bit Error Rate'"))
+          title  = "'BPSK Bit Error Rate'")
+    )
 ```
 
 ## Step plots
@@ -134,14 +135,16 @@ In step plots, data points are joined with a horizontal line. To obtain a step p
 t = -2:0.06:2
 plot(t, sin.(2π*t),
      plotstyle = :steps,
-     Axes(title = "'Steps plot'"))
+     Axes(title = "'Steps plot'")
+    )
 ```
 
 ```@example 2dtut
 plot(t, sin.(2π*t),
      w = :fillsteps,
      Axes(style = "fill solid 0.5",
-          title = "'Fillsteps plot'"))
+          title = "'Fillsteps plot'")
+    )
 ```
 
 The color can be specified with `fillcolor`:
@@ -151,7 +154,8 @@ plot(t, sin.(2π*t),
      w = :fillsteps,
      fc = :plum,
      Axes(style = "fill solid 0.5",
-          title = "'Fillsteps plot'"))
+          title = "'Fillsteps plot'")
+    )
 ```
 
 ## Plotting with financial and error bars
@@ -166,7 +170,8 @@ low = open .- 1;
 high = open .+ 1.5;
 fin = [low high close]
 plot(x, open, supp = fin, plotstyle = "financebars",
-     Axes(title = "'Example of financial bars'"))
+     Axes(title = "'Example of financial bars'")
+    )
 ```
 
 ```@example 2dtut
@@ -174,7 +179,8 @@ x = 0:2:50
 y = @. 2.5x/(5.67+x)^2
 err = 0.05*rand(length(x))
 plot(x, y, supp = err, plotstyle = :errorlines,
-     Axes(title = "'Example of error lines'"))
+     Axes(title = "'Example of error lines'")
+    )
 ```
 
 ## Plotting filled curves
@@ -220,7 +226,8 @@ plot(x, y, supp=[yerr lcval],
      curveconf = "w boxerrorbars notit lc palette fs solid 0.5",
      Axes(palette = :summer,
           xrange=(0,22),
-          yrange=(0,6)))
+          yrange=(0,6))
+    )
 ```
 
 ## Scatter plots (point clouds)
@@ -234,7 +241,8 @@ scatter(p,
         marker = "fsquare",
         pointsize = 0.25,
         Axes(object = "ellipse at 0,0 size 2,2",
-             title = "'Random points within the unit circle'"))
+             title = "'Random points within the unit circle'")
+       )
 ```
 
 Note that, when the data to plot is complex, the real part is interpreted as the `x` coordinate and the imaginary part as the `y` coordinate.
@@ -257,7 +265,8 @@ plot(x, y, supp = [5z z],
      Axes(palette = :ice,
           xrange = (-2.2, 2.5),
           yrange = (-2.2, 2.2),
-          colorbox = :off))
+          colorbox = :off)
+    )
 ```
 
 !!! info "`scatter` with gnuplot"
@@ -292,9 +301,9 @@ bar(year, data,
     fc = "'dark-goldenrod'",
     legend = "'Random number'",
     Axes(xtics = "rotate",
-        key = "box under",
-        boxwidth = 0.66,
-        style = "fill pattern 2")
+         key = "box under",
+         boxwidth = 0.66,
+         style = "fill pattern 2")
    )
 ```
 
@@ -310,7 +319,8 @@ histogram(rand(10000),
           bins = 15,
           norm = 1,
           Axes(title = :Histogram,
-               yrange = "[0:1.8]"))
+               yrange = "[0:1.8]")
+         )
 ```
 
 It is of course possible to use `histogram` (or any other plot command) along with `plot!` to produce different kinds of plots in the same figure:

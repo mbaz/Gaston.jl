@@ -22,7 +22,7 @@ t = 0:0.01:1
 plot(t, sin.(2π*5*t),
      linecolor  = :coral,
      Axes(title = :First_Plot)
-     )
+    )
 ```
 
 To add a second curve, use `plot!`:
@@ -31,7 +31,8 @@ To add a second curve, use `plot!`:
 plot!(t, cos.(2π*5*t),
       plotstyle = "linespoints",
       pointtype = "ecircle",
-      linecolor = "'blue'")
+      linecolor = "'blue'"
+     )
 ```
 
 Curves are added to a figure one by one; the first curve is plotted with `plot`, and the rest with succesive `plot!` commands.
@@ -51,7 +52,7 @@ plot(t, sin.(2π*5*t),
      linecolor  = :coral,
      Axes(title = :First_Plot,
           xtics = "(0.25, 0.5, 0.75)")
-     )
+    )
 ```
 
 ```julia
@@ -59,7 +60,7 @@ plot(t, sin.(2π*5*t),
      curveconf = "with linespoints linecolor 'coral'",
      Axes(title = :First_Plot,
           xtics = "(0.25, 0.5, 0.75)")
-     )
+    )
 ```
 
 ```julia

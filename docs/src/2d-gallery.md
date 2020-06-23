@@ -19,7 +19,8 @@ plot(x, a, curveconf = "w lp lw 1 lc '#08F7FE' pt 7 t 'e^{-x}'",
           xlabel="'x' textcolor 'white'",
           grid="ls 1 lc '#2A3459' dt 4",
           key="t r textcolor 'white'",
-          style="fill transparent solid 0.08 noborder"))
+          style="fill transparent solid 0.08 noborder")
+    )
 plot!(x, b, curveconf = "w lp lw 1 lc '#FFE64D' pt 7 t 'e^{-x^2}'")
 for i in 1:10
        plot!(x,a,w="l lw $(1 + 1.05*i) lc '#F508F7FE' t ''")
@@ -36,9 +37,10 @@ using RDatasets
 volcano = Matrix{Float64}(dataset("datasets", "volcano"))
 imagesc(volcano,
         Axes(palette = :inferno,
-        auto="fix",
-        size="ratio -1",
-        title = "'Aukland s Maunga Whau Volcano'"))
+             auto="fix",
+             size="ratio -1",
+             title = "'Aukland s Maunga Whau Volcano'")
+       )
 ```
 
 # Animation
@@ -67,7 +69,8 @@ save(term = "gif", saveopts = "animate size 600,400 delay 1",
 ```@example 2dgal
 x = -2π:0.05:2π
 plot(x, sin.(3x), supp = x, curveconf = "w l notitle lw 3 lc palette",
-     Axes(palette = :ice))
+     Axes(palette = :ice)
+    )
 ```
 
 # Categorical data
@@ -162,4 +165,14 @@ plot(x, values, u = "1:3",
           title   = "'Plot with date and time as x-values'",
           key     = "right"))
 plot!(x, values, u="1:3", w=:p, marker="esquare", legend = "'Total P'")
+```
+
+# Displaying a flag with bars
+
+This example shows how one can use `set palette defined` to associate particular colors with numerical values.
+
+```@example 2dgal
+imagesc([0 0.5 1 ; 0 0.5 1],
+        Axes(palette="defined (0 'blue', 0.5 'white', 1 'red')",
+             colorbox=:off))
 ```
