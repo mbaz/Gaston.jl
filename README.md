@@ -12,7 +12,7 @@ Current stable release is v1.0.0, and it is tested with Julia 1.3.x and 1.4.x.
 Documentation
 -------------
 
-Gaston's documentation can be found [here](https://mbaz.github.io/Gaston.jl/v1.0.0/).
+Gaston's documentation can be found [here](https://mbaz.github.io/Gaston.jl/stable/).
 
 Why use Gaston?
 --------------
