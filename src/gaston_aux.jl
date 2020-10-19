@@ -221,7 +221,7 @@ function parse(kwargs)
             end
         end
         # pointsize
-        for kw in (:pointsize, :ps, :markersize)
+        for kw in (:pointsize, :ps, :markersize, :ms)
             if kw in K
                 push!(curveconf, " pointsize $(kwargs[kw]) ")
             end
