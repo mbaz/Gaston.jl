@@ -102,7 +102,7 @@ function imagesc(z::Matrix, a::Axes = Axes() ; args...)
     imagesc(1:size(z)[2], 1:size(z)[1], z, a ; args...)
 end
 # rgb
-function imagesc(z::AbstractArray{<:Real,3}, a::Axes = axes() ; args...)
+function imagesc(z::AbstractArray{<:Real,3}, a::Axes = Axes() ; args...)
     imagesc(1:size(z)[3], 1:size(z)[2], z, a ; args...)
 end
 
