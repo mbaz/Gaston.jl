@@ -130,17 +130,19 @@ end
               pointsize = "1"
              )
     end isa Gaston.Figure
-    @test begin
-        plot!(cos.(-3:0.01:3),
-              legend = :cos,
-              w = :linespoints,
-              lc = :red,
-              lw = 2,
-              dt = :.,
-              pt = 'λ',
-              ps = 1
-             )
-    end isa Gaston.Figure
+    for ptype in ('λ', 'a', '%', "⋅", "plus")
+        @test begin
+            plot!(cos.(-3:0.01:3),
+                  legend = :cos,
+                  w = :linespoints,
+                  lc = :red,
+                  lw = 2,
+                  dt = :.,
+                  pt = ptype,
+                  ps = 1
+                 )
+        end isa Gaston.Figure
+    end
     @test plot(1:10,cos) isa Gaston.Figure
     @test plot!(1:10,cos) isa Gaston.Figure
     @test stem(1:10,cos) isa Gaston.Figure

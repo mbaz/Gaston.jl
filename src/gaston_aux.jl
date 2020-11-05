@@ -410,21 +410,45 @@ function parse(axes::Axes)
 end
 
 # Define pointtype synonyms
+const pt_syns = Dict("dot"      => 0,
+                     "⋅"        => 0,
+                     "+"        => 1,
+                     "plus"     => 1,
+                     "x"        => 2,
+                     "*"        => 3,
+                     "star"     => 3,
+                     "esquare"  => 4,
+                     "fsquare"  => 5,
+                     "ecircle"  => 6,
+                     "fcircle"  => 7,
+                     "etrianup" => 8,
+                     "ftrianup" => 9,
+                     "etriandn" => 10,
+                     "ftriandn" => 11,
+                     "edmd"     => 12,
+                     "fdmd"     => 13
+                    )
+const pt_syns_aqua = Dict("dot"      => 0,
+                          "⋅"        => 0,
+                          "+"        => 1,
+                          "plus"     => 1,
+                          "x"        => 2,
+                          "*"        => 3,
+                          "star"     => 3,
+                          "esquare"  => 4,
+                          "edmd"     => 5,
+                          "etrianup" => 6
+                         )
 function pointtypes(pt)
-    pt == "dot" && return 0
-    pt == "+" && return 1
-    pt == "x" && return 2
-    pt == "*" && return 3
-    pt == "esquare" && return 4
-    pt == "fsquare" && return 5
-    pt == "ecircle" && return 6
-    pt == "fcircle" && return 7
-    pt == "etrianup" && return 8
-    pt == "ftrianup" && return 9
-    pt == "etriandn" && return 10
-    pt == "ftriandn" && return 11
-    pt == "edmd" && return 12
-    pt == "fdmd" && return 13
+    if config[:term] == "aqua"
+        if pt in keys(pt_syns_aqua)
+            return pt_syns_aqua[pt]
+        end
+    else
+        if pt in keys(pt_syns)
+            return pt_syns[pt]
+        end
+    end
     return "'$pt'"
 end
 
