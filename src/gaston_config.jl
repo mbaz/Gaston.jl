@@ -5,10 +5,11 @@
 # This file contains configuration-related functions and types
 
 # Dicts to store user-specified configuration
+_t = @static Sys.iswindows() ? "windows" : (@static Sys.isapple() ? "aqua" : "qt")
 const default_config() = Dict(:mode      => "normal",
                               :timeout   => Sys.isunix() ? 10 : 20,
                               :debug     => false,
-                              :term      => Sys.iswindows() ? "windows" : "qt",
+                              :term      => _t,
                               :termopts  => "",
                               :preamble  => "",
                               :saveopts  => "",
