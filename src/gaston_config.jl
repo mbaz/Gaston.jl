@@ -15,11 +15,12 @@ w = joinpath(ENV["APPDATA"], "gnuplot.ini")
 u = joinpath(homedir(), ".gnuplot")
 path = @static Sys.iswindows() ? w : u
 
-if isfile(path) == true
-    config_gnu = join(readlines(joinpath(ENV["APPDATA"], "gnuplot.ini")))
+if isfile(path)
+    config_gnu = join(readlines(path))
     for i in term_window
        if match(Regex("set term $i"),config_gnu) !== nothing
-       global _t = i
+          global _t = i
+          break
        end
     end   
 else
