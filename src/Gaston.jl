@@ -29,6 +29,7 @@ include("gaston_recipes.jl")
 include("gaston_llplot.jl")
 include("gaston_save.jl")
 
+
 # initialize internal state
 gnuplot_state = GnuplotState()
 
@@ -40,7 +41,6 @@ mutable struct Pipes
 end
 
 const P = Pipes()
-
 config = default_config()
 
 function showable(mime::MIME"text/plain", f::Figure)
