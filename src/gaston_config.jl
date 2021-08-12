@@ -4,8 +4,27 @@
 
 # This file contains configuration-related functions and types
 
-# Dicts to store user-specified configuration
-_t = @static Sys.iswindows() ? "windows" : (@static Sys.isapple() ? "aqua" : "qt")
+### Encode terminal capabilities
+# supports multiple windows
+const term_window = ["qt", "wxt", "x11", "aqua", "windows"]
+# outputs text
+const term_text = ["dumb", "sixelgd"]
+# configuration for the terminal
+config_term = ""
+
+# Dicts to store user-specified configuration in the Gnuplot configuration file
+if isfile(joinpath(ENV["APPDATA"], "gnuplot.ini")) == true
+    config_gnu = join(readlines(joinpath(ENV["APPDATA"], "gnuplot.ini")))
+    for i in term_window
+       if match(Regex("set term $i"),config_gnu) !== nothing
+       global config_term = i
+       end
+    end   
+elseif global config_term = "windows"
+end
+
+_t = @static Sys.iswindows() ? config_term : (@static Sys.isapple() ? "aqua" : "qt")
+
 const default_config() = Dict(:mode      => "normal",
                               :timeout   => Sys.isunix() ? 10 : 20,
                               :debug     => false,
@@ -44,12 +63,6 @@ function set(;reset::Bool = false,
 
     return nothing
 end
-
-### Encode terminal capabilities
-# supports multiple windows
-const term_window = ["qt", "wxt", "x11", "aqua", "windows"]
-# outputs text
-const term_text = ["dumb", "sixelgd"]
 
 # Validate coordinates
 # TODO: validate all possible cases
