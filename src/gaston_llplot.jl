@@ -106,11 +106,11 @@ end
 function llplot(F::Figure ; printstring=nothing)
     global gnuplot_state
 
-    isempty(F) && return nothing
+    isempty(F) && return false
 
-    config[:mode] == "null" && return nothing
+    config[:mode] == "null" && return false
 
-    gnuplot_state.gnuplot_available || return nothing
+    gnuplot_state.gnuplot_available || return false
 
     gnuplot_send("reset session")
 
@@ -182,6 +182,6 @@ function llplot(F::Figure ; printstring=nothing)
         @warn("Gnuplot returned an error message:\n  $err")
     end
 
-    return nothing
+    return true
 
 end

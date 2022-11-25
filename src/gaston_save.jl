@@ -7,6 +7,8 @@
 
 Save current figure (or figure specified by `handle`) using the specified `term`. Optionally,
 the font, size, linewidth, and background may be specified as arguments.
+
+Returns `true` in any gnuplot command have been sent else `false`.
 """
 function save(; term::String,
                 output::String,
@@ -43,7 +45,5 @@ function save(; term::String,
     end
 
     # send gnuplot commands
-    llplot(fig, printstring=(pc,output))
-
-    return nothing
+    return llplot(fig, printstring=(pc,output))
 end
