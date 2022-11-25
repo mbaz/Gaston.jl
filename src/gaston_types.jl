@@ -63,7 +63,8 @@ Figure(handle::Int) = Figure(handle=handle)
 getindex(f::Figure, args... ; kwargs...) = getindex(f.subplots, args... ; kwargs...)
 
 isempty(f::Nothing) = false
-isempty(f::Figure; subplot = 1) = isempty(f[subplot])
+isempty(f::Figure; subplot = nothing) =
+    subplot === nothing ? all(isempty, f.subplots) : isempty(f[subplot])
 
 length(f::Figure) = length(f.subplots)
 
