@@ -170,8 +170,15 @@ function llplot(F::Figure ; printstring=nothing)
     # Start reading gnuplot's streams in "background"
     ch_out = async_reader(P.gstdout, config[:timeout])
     out = take!(ch_out)
-    out === :timeout && @warn("Gnuplot is taking too long to respond.")
-    out === :eof     && error("Gnuplot crashed")
+    ok = if out === :timeout
+        @warn("Gnuplot is taking too long to respond.")
+        false
+    elseif out === :eof
+        error("Gnuplot crashed")
+        false
+    else
+        true
+    end
 
     # check for errors while plotting
     yield()
@@ -182,6 +189,6 @@ function llplot(F::Figure ; printstring=nothing)
         @warn("Gnuplot returned an error message:\n  $err")
     end
 
-    return true
+    return ok
 
 end

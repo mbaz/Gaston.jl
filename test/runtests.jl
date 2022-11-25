@@ -445,31 +445,19 @@ end
 @testset "Saving plots" begin
     closeall()
     set(reset=true)
-    set(mode="null")
+    # set(mode="null")
     p = plot(1:10)
     filename = tempname()
-    @test begin
-        save(output=filename,term="pdf")
-    end == nothing
-    @test begin
-        save(handle=1,term="png",output=filename)
-    end == nothing
-    @test begin
-        save(term="eps",output=filename)
-    end == nothing
-    @test begin
-        save(term="pdf",
+    @test save(output=filename,term="pdf")
+    @test save(handle=1,term="png",output=filename)
+    @test save(term="eps",output=filename)
+    @test save(term="pdf",
              output=filename,
              font = "Arial, 12",
              size = "5,3",
              linewidth = 3)
-    end == nothing
-    @test begin
-        save(term="svg",output=filename,linewidth=3)
-    end == nothing
-    @test begin
-        save(term="gif",output=filename,size="640,480")
-    end == nothing
+    @test save(term="svg",output=filename,linewidth=3)
+    @test save(term="gif",output=filename,size="640,480")
 end
 
 @testset "Tests that should fail" begin
