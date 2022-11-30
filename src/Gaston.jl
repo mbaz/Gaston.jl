@@ -18,7 +18,7 @@ using DelimitedFiles
 using ColorSchemes
 
 const GASTON_VERSION = v"1.0.4"
-const GNUPLOT_VERSION = Ref(v"0.0.0")
+const GNUPLOT_VERSION = Ref(v"0")
 
 # load files
 include("gaston_types.jl")
@@ -69,8 +69,9 @@ end
 function __init__()
     global P, gnuplot_state
     try
-        ver_str = replace(read(`gnuplot --version`, String), "gnuplot" => "", "patchlevel" => "", "." => " ") |> strip |> split
-        GNUPLOT_VERSION[] = VersionNumber(parse.(Int, ver_str)...)
+        ver_str = replace(read(`gnuplot --version`, String), "gnuplot" => "", "patchlevel" => "", "." => " ")
+        GNUPLOT_VERSION[] = version = VersionNumber(parse.(Int, strip(ver_str) |> split)...)
+        @assert version > v"1"
         gnuplot_state.gnuplot_available = true
         gstdin = Pipe()
         gstdout = Pipe()
