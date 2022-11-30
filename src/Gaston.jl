@@ -71,6 +71,7 @@ function __init__()
     try
         ver_str = replace(read(`gnuplot --version`, String), "gnuplot" => "", "patchlevel" => "", "." => " ") |> strip |> split
         GNUPLOT_VERSION[] = VersionNumber(parse.(Int, ver_str)...)
+        gnuplot_state.gnuplot_available = true
         gstdin = Pipe()
         gstdout = Pipe()
         gstderr = Pipe()
