@@ -27,8 +27,8 @@ function plot(x::Coord, y::Coord, z::Coord = nothing, axes::Axes = Axes() ;
               args...)
 
     ## Process optional keyword arguments.
-    axesconf = parse(axes)
-    curveconf = parse(args)
+    axesconf = gparse(axes)
+    curveconf = gparse(args)
 
     # create curve
     c = Curve(x, y, z, supp, curveconf)
@@ -68,7 +68,7 @@ function plot!(x::Coord, y::Coord, z::Coord = nothing;
                args...)
 
     # Process optional keyword arguments.
-    curveconf = parse(args)
+    curveconf = gparse(args)
 
     # determine handle
     handles = gethandles()

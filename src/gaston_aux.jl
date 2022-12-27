@@ -179,7 +179,7 @@ function symtostr(s)
 end
 
 # parse plot configuration
-function parse(kwargs)
+function gparse(kwargs)
     # string that will be returned
     curveconf = String[]
     # the `curveconf` argument overrides all others
@@ -255,7 +255,7 @@ function parse(kwargs)
     return join(curveconf, " ")
 end
 
-function parse(axes::Axes)
+function gparse(axes::Axes)
     axesconf = String[]
     K = keys(axes)
     for k in K

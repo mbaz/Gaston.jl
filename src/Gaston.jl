@@ -18,7 +18,7 @@ using DelimitedFiles
 using ColorSchemes
 
 const GASTON_VERSION = v"1.0.4"
-const GNUPLOT_VERSION = Ref(v"0")
+GNUPLOT_VERSION = v"0"
 
 # load files
 include("gaston_types.jl")
@@ -67,12 +67,25 @@ end
 
 # initialize gnuplot
 function __init__()
-    global P, gnuplot_state
+    global P, gnuplot_state, GNUPLOT_VERSION
+
+    gnuplot_state.gnuplot_available = false
+
     try
-        ver_str = replace(read(`gnuplot --version`, String), "gnuplot" => "", "patchlevel" => "", "." => " ")
-        GNUPLOT_VERSION[] = version = VersionNumber(parse.(Int, strip(ver_str) |> split)...)
-        @assert version > v"1"
-        gnuplot_state.gnuplot_available = true
+        code = success(`gnuplot --version`)
+        if code
+            gnuplot_state.gnuplot_available = true
+        else
+            @warn ("There was a problem starting gnuplot. Gaston will be unable to produce any plots.")
+        end
+    catch
+        @warn "Gnuplot is not available on this system. Gaston will be unable to produce any plots."
+    end
+
+    if gnuplot_state.gnuplot_available
+        ver_str = replace(chomp(read(`gnuplot --version`, String)), "gnuplot " => "", "patchlevel " => "", "." => " ")
+        GNUPLOT_VERSION = VersionNumber(parse.(Int, split(ver_str, " "))...)
+        @assert GNUPLOT_VERSION > v"1"
         gstdin = Pipe()
         gstdout = Pipe()
         gstderr = Pipe()
@@ -87,8 +100,6 @@ function __init__()
         P.gstdin = gstdin
         P.gstdout = gstdout
         P.gstderr = gstderr
-    catch
-        @warn "Gnuplot is not available on this system. Gaston will be unable to produce any plots."
     end
 
     return nothing
