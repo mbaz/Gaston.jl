@@ -83,8 +83,10 @@ function __init__()
     end
 
     if gnuplot_state.gnuplot_available
-        ver_str = chomp(read(`gnuplot --version`, String)) |> String
-        ver_str = replace(ver_str, "gnuplot " => "", "patchlevel " => "", "." => " ")
+        ver_str = chomp(read(`gnuplot --version`, String))
+        for pair in ("gnuplot " => "", "patchlevel " => "", "." => " ")
+            ver_str = replace(ver_str, pair)
+        end
         GNUPLOT_VERSION = VersionNumber(parse.(Int, split(ver_str, " "))...)
         @assert GNUPLOT_VERSION > v"1"
         gstdin = Pipe()
