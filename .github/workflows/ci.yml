@@ -25,6 +25,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - name: Ubuntu LaTeX dependencies
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get -y update
+          sudo apt-get -y install gnuplot
       - uses: julia-actions/setup-julia@latest
         with:
           version: ${{ matrix.version }}
