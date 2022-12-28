@@ -1,11 +1,10 @@
 name = "Gaston"
 uuid = "4b11ee91-296f-5714-9832-002c20994614"
-version = "1.0.7"
+version = "1.1.0"
 
 [deps]
 ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
-OhMyREPL = "5fb14364-9ced-5910-84b2-373655c76a03"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [compat]

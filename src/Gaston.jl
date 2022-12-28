@@ -17,7 +17,7 @@ using Random
 using DelimitedFiles
 using ColorSchemes
 
-const GASTON_VERSION = v"1.0.7"
+const GASTON_VERSION = v"1.1.0"
 GNUPLOT_VERSION = v"0"
 
 # load files
