@@ -1,13 +1,11 @@
 Gaston: Julia plotting using gnuplot
 ==================================== 
 
-Gaston is a [Julia](https://julialang.org)  package for plotting. It provides an interface to [gnuplot](http://gnuplot.info), a powerful plotting package available on all major platforms.
+Gaston is a [Julia](https://julialang.org) package for plotting. It provides an interface to [gnuplot](http://gnuplot.info), a powerful plotting package available on all major platforms.
 
-Current stable release is v1.0.0, and it is tested with Julia 1.3.x and 1.4.x.
+Current stable release is v1.1.0, and it has been tested with Julia 1.6 and up.
 
-|                  | Stable (v1.0)  | Dev               |
-|:----------------:|:----------------: | :----------------:|
-| **Build Status** | [![Build Status](https://travis-ci.org/mbaz/Gaston.jl.svg?branch=v0.10.0)](https://travis-ci.org/mbaz/Gaston.jl) | [![Build Status](https://travis-ci.org/mbaz/Gaston.jl.svg?branch=master)](https://travis-ci.org/mbaz/Gaston.jl) |
+**CI Status:** ![CI Status](https://github.com/mbaz/Gaston.jl/actions/workflows/ci.yml/badge.svg)
 
 Documentation
 -------------
@@ -34,7 +32,7 @@ Knowledge of gnuplot is not required. Users familiar with gnuplot, however, will
 Installation
 ------------
 
-Gaston requires gnuplot to be installed in your system. It has been tested with versions 5.0 and above, and version 5.2 is recommended. Gaston also requires Julia v1.3.0 or above.
+Gaston requires gnuplot to be installed in your system. It has been tested with versions 5.4 and above, but it should work with any 5.x version. Gaston also requires Julia v1.6.0 or above.
 
 To install Gaston using Julia's packaging system, enter Julia's package manager prompt with `]`, and run
 
@@ -46,6 +44,6 @@ Tests
 Gaston includes many tests, wich you can run to make sure your installation is
 working properly. To run the tests, enter Julia's package manager with `]` and run
 
-    (v1.4) pkg> test Gaston
+    (v1.6) pkg> test Gaston
 
-All tests should pass.
+All tests should pass, although some tests may be labeled as "broken".
