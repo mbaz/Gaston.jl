@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+   branches: [master]
+
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        version:
+          - '1.6'  # latest LTS
+          - '1'
+          - 'nightly'
+        os: [ubuntu-latest]
+        arch: [x64]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Ubuntu LaTeX dependencies
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get -y update
+          sudo apt-get -y install gnuplot
+      - uses: julia-actions/setup-julia@latest
+        with:
+          version: ${{ matrix.version }}
+          arch: ${{ matrix.arch }}
+      - uses: julia-actions/cache@v1
+      - uses: julia-actions/julia-buildpkg@latest
+      - uses: julia-actions/julia-runtest@latest
