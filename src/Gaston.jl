@@ -17,7 +17,7 @@ using Random
 using DelimitedFiles
 using ColorSchemes
 
-const GASTON_VERSION = v"1.0.5"
+const GASTON_VERSION = v"1.0.7"
 GNUPLOT_VERSION = v"0"
 
 # load files
@@ -83,7 +83,10 @@ function __init__()
     end
 
     if gnuplot_state.gnuplot_available
-        ver_str = replace(chomp(read(`gnuplot --version`, String)), "gnuplot " => "", "patchlevel " => "", "." => " ")
+        ver_str = chomp(read(`gnuplot --version`, String))
+        for pair in ("gnuplot " => "", "patchlevel " => "", "." => " ")
+            ver_str = replace(ver_str, pair)
+        end
         GNUPLOT_VERSION = VersionNumber(parse.(Int, split(ver_str, " "))...)
         @assert GNUPLOT_VERSION > v"1"
         gstdin = Pipe()
