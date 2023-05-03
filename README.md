@@ -10,12 +10,12 @@ Current stable release is v1.1.0, and it has been tested with Julia 1.6 and up.
 Documentation
 -------------
 
-Gaston's documentation can be found [here](https://mbaz.github.io/Gaston.jl/stable/).
+`Gaston.jl`'s documentation can be found [here](https://mbaz.github.io/Gaston.jl/stable/).
 
 Why use Gaston?
 --------------
 
-Why use Gaston, when there are powerful alternatives such as Plots.jl and MakiE.jl? These are some Gaston features that may be attractive to you:
+Why use Gaston, when there are powerful alternatives such as Plots.jl and Makie.jl? These are some Gaston features that may be attractive to you:
 
 * Gaston can plot:
     * Using graphical windows, and keeping multiple plots active at a time, with mouse interaction
