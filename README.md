@@ -3,9 +3,10 @@ Gaston: Julia plotting using gnuplot
 
 Gaston is a [Julia](https://julialang.org) package for plotting. It provides an interface to [gnuplot](http://gnuplot.info), a powerful plotting package available on all major platforms.
 
-Current stable release is v1.1.0, and it has been tested with Julia 1.6 and up.
+Current stable release is v1.1.0, and it has been tested with Julia LTS (1.6) and stable (1.8), on
+Linux. Gaston _should_ work on any platform that runs gnuplot.
 
-**CI Status:** ![CI Status](https://github.com/mbaz/Gaston.jl/actions/workflows/ci.yml/badge.svg)
+**CI Status:** [![CI](https://github.com/mbaz/Gaston.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/mbaz/Gaston.jl/actions/workflows/ci.yml)
 
 Documentation
 -------------
