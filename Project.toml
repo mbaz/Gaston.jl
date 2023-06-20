@@ -1,15 +1,21 @@
 name = "Gaston"
 uuid = "4b11ee91-296f-5714-9832-002c20994614"
-version = "1.1.0"
+version = "2.0.0-rc1"
 
 [deps]
 ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
-Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
+PrecompileTools = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
-ColorSchemes = "^3.9"
-julia = "^1.6"
+ColorSchemes = "3.9"
+DelimitedFiles = "1"
+MacroTools = "0.5"
+PrecompileTools = "1"
+StatsBase = "0"
+julia = "^1.8"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

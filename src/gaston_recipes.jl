@@ -1,68 +1,258 @@
-### 2-D Recipes
+## Copyright (c) 2013 Miguel Bazdresch
+##
+## This file is distributed under the 2-clause BSD License.
 
-## Scatter plots
-# real vectors
+# Recipes: argument conversion and specialized plot commands
+
 """
-    scatter(x, y [, axes] [, curve] ; args...) -> Gaston.Figure
+    convert_args(...)
 
-Create a scatter plot with vectors `x` and `y`. `axes` and `curve` specify the
-axes and curve configurations, respectively.
+Convert values of specific types to data that gnuplot can plot.
 
-    scatter(c, args...) -> Gaston.Figure
+Users should add methods to this function for their own types. These
+methods must return a tuple of two sets of coordinates, `x` and `y`.
 
-If `c` is a complex vector, Create a scatter plot of the real and imaginary
-parts of `c`.
+# Example:
+
+```
+julia> struct Data
+           x
+           y
+       end
+
+julia> data = Data(1:10, rand(10))
+julia> plot(data)
+ERROR: MethodError: no method matching ndims(::Data)
+```
+To plot `data::Data`, a method must be added to `convert_args`:
+```
+Gaston.convert_args(d::Data) = d.x, d.y
+```
+Now, `plot(data)` works as expected.
+
+See also: [`convert_args3`](@ref).
 """
-scatter(x, y ; args...) = plot(x, y, w=:points ; args...)
-scatter(x, y, a::Axes ; args...) = plot(x, y, nothing, a, w=:points ; args...)
+convert_args() = throw(MethodError("Not implemented"))
 
-# complex vectors
-scatter(y::ComplexCoord ; args...) = scatter(real(y), imag(y) ; args...)
-scatter(y::ComplexCoord, a::Axes ; args...) = scatter(real(y), imag(y), a ; args...)
+const SoS = Union{String, Symbol, Vector{<:Pair}}
 
-# add curves
-"""
-    scatter!(...) -> Gaston.Figure
-
-Add a new scatter plot to an existing plot.
-"""
-scatter!(x, y ; args...) = plot!(x, y, ps=:points ; args...)
-scatter!(y::ComplexCoord ; args...) = scatter!(real(y), imag(y); args...)
-
-## Stem plots
-"""
-    stem(x, y, onlyimpulses=false, [,axes] [, curve], args...) -> Gaston.Figure
-
-Create a stem plot using `x` and `y`. If `onlyimpulses` is true, then the
-conventional circles indicating each sample are not drawn.
-
-    stem(x, f::Function, onlyimpulses=false, [,axes] [, curve], args...) -> Gaston.Figure
-
-Use `y = f.(x)`
-"""
-function stem(x, y, a::Axes = Axes() ; onlyimpulses=false, args...)
-    p = plot(x, y, nothing, a ; w=:impulses, lc=:blue, lw=1.25, args...)
-    onlyimpulses || (p = plot!(x, y ; w=:points, lc=:blue, pt="ecircle", ps=1.5, args...))
-    return p
+struct TimeSeries{P <: SoS}
+    ts   :: Tuple{Vararg{Array{<:Real}}}
+    pl   :: P
+    is3d :: Bool
 end
-stem(y ; args...) = stem(1:length(y), y ; args...)
-stem(y, a::Axes ; args...) = stem(1:length(y), y, a ; args...)
-stem(x, f::Function ; args...) = stem( x, f.(x) ; args...)
-stem(x, f::Function, a::Axes ; args...) = stem( x, f.(x), a ; args...)
 
-## Bar plots
+TimeSeries(ts... ; pl = "", is3d = false) = TimeSeries(collect.(ts), parse_plotline(pl), is3d)
+
+struct TSBundle{P <: SoS}
+    series   :: Tuple{Vararg{TimeSeries{<:SoS}}}
+    settings :: P
+end
+
+TSBundle(b::TimeSeries... ; settings = "") = TSBundle(b, parse_settings(settings))
+
+struct PlotObject
+    bundles     :: Tuple{Vararg{TSBundle{<:SoS}}}
+    mp_settings :: String
+end
+
+PlotObject(ts::TimeSeries... ; mp_settings = "") = PlotObject(TSBundle(ts...); mp_settings)
+
+PlotObject(bs::TSBundle... ; mp_settings = "") = PlotObject(bs, mp_settings)
+
+function show(io::IO, b::TSBundle)
+    println(io, "TSBundle:")
+    println(io, "  with settings: \"$(b.settings)\"")
+    println(io, "  and $(length(b.series)) time series.")
+end
+
+function show(io::IO, po::PlotObject)
+    println(io, "PlotObject:")
+    println(io, "  with multiplot settings: \"$(po.mp_settings)\"")
+    _bb = length(po.bundles) > 1 ? "bundles" : "bundle"
+    println(io, "  and $(length(po.bundles)) $(_bb).")
+    for (i, b) in enumerate(po.bundles)
+        println(io, "    Bundle $i:")
+        println(io, "      with settings: \"$(b.settings)\"")
+        println(io, "      and $(length(b.series)) time series:")
+        for (j, ts) in enumerate(b.series)
+            println(io, "        Time series $j with plotline \"$(ts.pl)\"")
+        end
+    end
+end
+
+# 2-D conversions
+
+# 1-argument
+function convert_args(y::R) where {R <: Real}
+    PlotObject( TimeSeries([1], [y]) )
+end
+
+function convert_args(x::Vector{<:Real})
+    PlotObject( TimeSeries(firstindex(x):lastindex(x), x) )
+end
+
+function convert_args(x::AbstractRange{<:Real})
+    PlotObject( TimeSeries(firstindex(x):lastindex(x), x) )
+end
+
+function convert_args(x::Vector{<:Complex})
+    PlotObject( TimeSeries(real(x), imag(x)) )
+end
+
+function convert_args(x::F) where {F <: Function}
+    r = range(-10, 10-1/100, length=100)
+    PlotObject( TimeSeries(r, x.(r)) )
+end
+
+# 2-argument
+function convert_args(x::R1, y::R2) where {R1 <: Real, R2 <: Real}
+    PlotObject( TimeSeries([x], [y]) )
+end
+
+function convert_args(y::Tuple, x::F) where {F<:Function}
+    samples = length(y) == 3 ? y[3] : 100
+    r = range(y[1], y[2], length=samples)
+    PlotObject( TimeSeries(r, x.(r)) )
+end
+
+function convert_args(r::AbstractVector, x::F) where {F<:Function}
+    PlotObject( TimeSeries(r, x.(r)) )
+end
+
+# for use with "w image"
+function convert_args(a::Matrix{<:Real})
+    x = collect(axes(a,2))
+    y = collect(axes(a,1))
+    PlotObject( TimeSeries(x, y, a) )
+end
+
+function convert_args(a::Array{<:Real, 3})
+    x = collect(axes(a, 3))
+    y = collect(axes(a, 2))
+    PlotObject( TimeSeries(x, y, a[1,:,:], a[2,:,:], a[3,:,:]) )
+end
+
+# histogram
+function convert_args(h::Histogram)
+    # convert from StatsBase histogram to gnuplot x, y values
+    if h.weights isa Vector
+        xx = collect(h.edges[1])
+        x = (xx[1:end-1]+xx[2:end])./2
+        y = h.weights
+        return PlotObject( TimeSeries(x, y) )
+    else
+        xx = collect(h.edges[1])
+        x = (xx[1:end-1]+xx[2:end])./2
+        yy = collect(h.edges[2])
+        y = (yy[1:end-1]+yy[2:end])./2
+        z = permutedims(h.weights)
+        return PlotObject( TimeSeries(x, y, z) )
+    end
+end
+
+# 3-D conversions
+convert_args3() = throw(MethodError("Not implemented"))
+
+function convert_args3(x::R1, y::R2, z::R3) where {R1 <: Real, R2 <: Real, R3 <: Real}
+    PlotObject( TimeSeries([x], [y], [z], is3d = true) )
+end
+
+function convert_args3(x::R1, y::R2, z::R3, x1::R4, y1::R5, z1::R6) where
+    {R1 <: Real, R2 <: Real, R3 <: Real, R4 <: Real, R5 <: Real, R6 <: Real}
+    PlotObject( TimeSeries([x], [y], [z], [x1], [y1], [z1], is3d = true) )
+end
+
+function convert_args3(a::Matrix{<:Real})
+    x = axes(a, 2)
+    y = axes(a, 1)
+    PlotObject( TimeSeries(x, y, a, is3d = true) )
+end
+
+function convert_args3(x::AbstractVector{<:Real}, y::AbstractVector{<:Real}, z::Matrix{<:Real})
+    PlotObject( TimeSeries(x, y, z, is3d = true) )
+end
+
+function convert_args3(x::AbstractVector{<:Real}, y::AbstractVector{<:Real}, f::F) where {F <: Function}
+    PlotObject( TimeSeries(x, y, meshgrid(x, y, f), is3d = true) )
+end
+
+function convert_args3(f::F) where {F <: Function}
+    x = y = range(-10, 10, length = 100)
+    PlotObject( TimeSeries(x, y, meshgrid(x, y, f), is3d = true) )
+end
+
+convert_args3(xy::Tuple, f::F) where {F <: Function} = convert_args3(xy, xy, f)
+
+function convert_args3(xr::Tuple, yr::Tuple, f::F) where {F <: Function}
+    samples_x = samples_y = 100
+    length(xr) == 3 && (samples_x = xr[3])
+    length(yr) == 3 && (samples_y = yr[3])
+    xx = range(xr[1], xr[2], length = samples_x)
+    yy = range(yr[1], yr[2], length = samples_y)
+    PlotObject( TimeSeries(xx, yy, meshgrid(xx, yy, f), is3d = true) )
+end
+
+#= Attempt to create a recipe (with a macro or with a function -- both work)
+macro recipe(name, theme)
+    escname = esc(name)
+    :( function $escname(args... ; kwargs...)
+            args, plotline = _getplotline(args...)
+            s = merge(themes[$theme].settings, NamedTuple(kwargs),)
+            p = themes[$theme].plotline * " " * plotline
+            plot(args..., p ; s...)
+        end
+    )
+end
+
+function recipe(theme)
+    (args... ; kwargs...) -> begin
+        args, plotline = _getplotline(args...)
+        s = merge(themes[theme].settings, NamedTuple(kwargs),)
+        p = themes[theme].plotline * " " * plotline
+        plot(args..., p ; s...)
+    end
+end
+
+themedplot(theme) = let theme = theme
+                        f(args... ; kwargs...)::Figure = plot(args... ; kwargs..., theme = theme)
+                    end
+
+themedplot!(theme) = let theme = theme
+                         f(args... ; kwargs...)::Figure = plot!(args... ; kwargs..., theme = theme)
+                     end
+=#
+
+scatter(args... ; kwargs...) = plot(args... ; kwargs..., ptheme = :scatter)
+scatter!(args... ; kwargs...) = plot!(args... ; kwargs..., ptheme = :scatter)
+
+function stem(args... ; onlyimpulses = false, color = "'blue'", kwargs...)
+    clr = color != "" ? "linecolor $(color)" : ""
+    f = plot(args..., clr; kwargs..., ptheme = :impulses)
+    if !onlyimpulses
+        plot!(f, args..., clr ; kwargs..., ptheme = :stem)
+    end
+    return f
+end
+
+function stem!(args... ; onlyimpulses = false, color = "'blue'", kwargs...)
+    clr = color != "" ? "linecolor $(color)" : ""
+    plot!(args..., clr; kwargs..., ptheme = :impulses)
+    if !onlyimpulses
+        plot!(args..., clr ; kwargs..., ptheme = :stem)
+    end
+end
+
 """
     bar([x,] y, [axes,] args...) -> Gaston.Figure
 
 Generate a bar plot with axes configuration `axes`.
 """
-function bar(x, y, a::Axes = Axes() ; args...)
-    plot(x, y, nothing,
-         merge(Axes(boxwidth="0.8 relative", style="fill solid 0.5"), a),
-         w=:boxes ; args...)
-end
-bar(y ; args...) = bar(1:length(y), y ; args...)
-bar(y, a::Axes ; args...) = bar(1:length(y), y, a ; args...)
+bar(args... ; kwargs...) = plot(args... ; kwargs..., stheme = :boxplot, ptheme = :box)
+bar!(args... ; kwargs...) = plot!(args... ; kwargs..., ptheme = :box)
+
+barerror(args... ; kwargs...) = plot(args... ; kwargs..., stheme = :boxplot, ptheme = :boxerror)
+barerror!(args... ; kwargs...) = plot!(args... ; kwargs..., ptheme = :boxerror)
 
 ## Histograms
 """
@@ -71,19 +261,60 @@ bar(y, a::Axes ; args...) = bar(1:length(y), y, a ; args...)
 Plot a histogram of `data`. `bins` specifies the number of bins (default 10),
 and the histogram area is normalized to `norm` (default 1.0).
 """
-function histogram(data, a::Axes = Axes() ; bins::Int=10, norm::Real=1.0, args...)
-    # validation
-    bins < 1 && throw(DomainError(bins, "at least one bin is required"))
-    norm < 0 && throw(DomainError(norm, "norm must be a positive number."))
-    # calculate data
-    x, y = hist(data,bins)
-    # make area under histogram equal to norm
-    y = norm*y/(step(x)*sum(y))
-    # plot
-    bar(x, y, a; args...)
+function histogram(args... ;
+                   edges                = nothing,
+                   nbins                = 10,
+                   norm       :: Bool   = false,
+                   mode       :: Symbol = :pdf,
+                   horizontal :: Bool   = false,
+                   kwargs...)
+    # Extract data and non-data from args...
+    data = []
+    front = []
+    back = []
+    i = 1
+    while i <= length(args)
+        a = args[i]
+        if typeof(a) in (Axis, Figure, FigureAxis, String, Symbol) || a isa Vector{T} where T<:Pair
+            push!(front, a)
+            i = i + 1
+        else
+            break
+        end
+    end
+    while i <= length(args)
+        a = args[i]
+        if !(typeof(a) in (Axis, Figure, FigureAxis, String, Symbol) || a isa Vector{T} where T<:Pair)
+            push!(data, a)
+            i = i + 1
+        else
+            break
+        end
+    end
+    while i <= length(args)
+        a = args[i]
+        if typeof(a) in (Axis, Figure, FigureAxis, String, Symbol) || a isa Vector{T} where T<:Pair
+            push!(back, a)
+            i = i + 1
+        else
+            break
+        end
+    end
+    if length(data) == 1
+        h = edges === nothing ? hist(data[1] ; nbins, norm, mode) : hist(data[1] ; edges,  norm, mode)
+        if horizontal
+            return plot(front..., h, back... ; kwargs..., stheme = :histplot, ptheme = :horhist)
+        else
+            return plot(front..., h, back... ; kwargs..., stheme = :histplot, ptheme = :box)
+        end
+    else
+        nbins isa Number && (nbins = (nbins, nbins))
+        h = edges === nothing ? hist(data[1], data[2] ; nbins, norm, mode) :
+                                hist(data[1], data[2] ; edges, norm, mode)
+        return plot(front..., h, back... ; kwargs..., ptheme = :image)
+    end
 end
 
-## Images
 """
     imagesc([x,] [y,] z, [axes,] args...) -> Gaston.Figure
 
@@ -92,80 +323,48 @@ is assumed. If the array is three-dimensional, an rgbimage is assumed, with
 `z[1,:,:]` the red channel, `z[2,:,:]` the blue channel, and `z[3,:,:]` the
 blue channel.
 """
-function imagesc(x, y, z, a::Axes = Axes() ; args...)
-    ps = "image"
-    ndims(z) == 3 && (ps = "rgbimage")
-    plot(x, y, z, a, w=ps ; args...)
-end
-# grayscale
-function imagesc(z::Matrix, a::Axes = Axes() ; args...)
-    imagesc(1:size(z)[2], 1:size(z)[1], z, a ; args...)
-end
-# rgb
-function imagesc(z::AbstractArray{<:Real,3}, a::Axes = Axes() ; args...)
-    imagesc(1:size(z)[3], 1:size(z)[2], z, a ; args...)
+function imagesc(args... ; kwargs...)
+    rgb = false
+    for a in args
+        if a isa AbstractArray && ndims(a) == 3
+            rgb = true
+            break
+        end
+    end
+    if rgb
+        plot(args... ; kwargs..., stheme = :imagesc, ptheme = :rgbimage)
+    else
+        plot(args... ; kwargs..., stheme = :imagesc, ptheme = :image)
+    end
 end
 
 ### 3-D recipes
 
+## Wireframes
+wireframe(args... ; kwargs...) = splot(args... ; kwargs..., stheme = :wireframe)
+wireframe!(args... ; kwargs...) = splot!(args... ; kwargs...)
+
 ## Surfaces
-"""
-    surf([x,] [y,] z, [axes,] args...)-> Gaston.Figure
+surf(args... ; kwargs...) = splot(args... ; kwargs..., stheme = :wireframe, ptheme = :pm3d)
+surf!(args... ; kwargs...) = splot!(args... ; kwargs..., ptheme = :pm3d)
 
-Plot the surface specified by `z` with axes specification `axes`.
-
-    surf(x, y f::Function, args...)-> Gaston.Figure
-
-Plot the surface `f.(x,y)`.
-"""
-surf(x, y, z, a::Axes = Axes() ; args...) = plot(x, y, z, a, dims=3 ; args...)
-surf!(x, y, z ; args...) = plot!(x, y, z, dims=3 ; args...)
-# function
-function surf(x, y, f::Function, a::Axes = Axes() ; args...)
-    plot(x, y, meshgrid(x, y, f), a, dims=3 ; args...)
+# Surface with contours on the base
+function surfcontour(args... ; labels = true, kwargs...)
+    splot(args... ; kwargs..., stheme = :contourproj)
+    if labels
+        splot!(args... ; kwargs..., ptheme = :labels)
+    end
+    figure()
 end
 
-"""
-    surf!(...)
+# surface with superimposed wireframe
+wiresurf(args... ; kwargs...) = splot(args... ; kwargs..., stheme = :wiresurf)
+wiresurf!(args... ; kwargs...) = splot!(args... ; kwargs...)
 
-Add a surface to an existing figure.
-"""
-surf!(x, y, f::Function ; args...) = plot!(x, y, meshgrid(x, y, f), dims=3 ; args...)
-# matrix
-function surf(z::Matrix, a::Axes = Axes() ; args...)
-    surf(1:size(z)[2], 1:size(z)[1], z, a, dims=3 ; args...)
-end
-surf!(z::Matrix ; args...) = surf!(1:size(z)[2], 1:size(z)[1], z, dims=3 ; args...)
+# 3D scatter plots
+scatter3(args... ; kwargs...) = splot(args... ; kwargs..., stheme = :scatter3, ptheme = :scatter)
+scatter3!(args... ; kwargs...) = splot!(args... ; kwargs..., ptheme = :scatter)
 
-## 3-D scatter
-"""
-    scatter3(x, y, z, [axes,] [curve,], args...) -> Gaston.Figure
-
-Create a 3-D scatter plot with vectors `x`, `y` and `z`. `axes` and `curve`
-specify the axes and curve configurations, respectively.
-
-    scatter3(x, f1::Function, f2::Function, args...) -> Gaston.Figure
-
-Create the scatter plot of `x`, `f1.(x)`, and `f2.(x)`.
-"""
-function scatter3(x, y, z, a::Axes = Axes() ; args...)
-    surf(x, y, z, a, w=:points ; args...)
-end
-scatter3!(x, y, z ; args...) = surf!(x, y, z, w=:points ; args...)
-# functions
-function scatter3(x, f1::Function, f2::Function, a::Axes = Axes() ; args...)
-    scatter3(x, f1.(x), f2.(x), a, dims=3 ; args...)
-end
-""""
-    scatter3!(...) -> Gaston.Figure
-
-Add a new scatter plot to an existing plot.
-"""
-function scatter3!(x, f1::Function, f2::Function ; args...)
-    scatter3!(x, f1.(x), f2.(x), dims=3 ; args...)
-end
-
-# 3-D contour plots
 """
     contour([x,] [y,] z::Matrix, labels = true, [axes,] args...) -> Gaston.Figure
 
@@ -176,27 +375,17 @@ are included in the plot.
 
 Plot the contours of the surface `f.(x,y)`.
 """
-function contour(x, y, z, a::Axes = Axes() ; labels=true, args...)
-    conaxes = Axes(key = false,
-                   view = "map",
-                   contour = "base",
-                   surface = false,
-                   cntrlabel = "font '7'",
-                   cntrparam = "levels 10"
-                  )
-    p = surf(x, y, z, merge(conaxes, a) ; args...)
-    labels && (p = surf!(x, y, z ; plotstyle=:labels))
-    return p
+function contour(args... ; labels = true, kwargs...)
+    splot(args... ; kwargs..., stheme = :contour)
+    if labels
+        splot!(args... ; kwargs..., ptheme = :labels)
+    end
+    figure()
 end
-contour(x, y, f::Function ; args...) = contour(x, y, meshgrid(x, y, f) ; args...)
-contour(z::Matrix ; args...) = contour(1:size(z)[2], 1:size(z)[1], z ; args...)
 
-# 3-D heatmaps
 """
     heatmap(x, y, z::Matrix, [axes,] args...)
 
 Plot the heatmap of the surface specified by `z`.
 """
-function heatmap(x, y, z, a::Axes = Axes(); args...)
-    surf(x, y, z, merge(Axes(view="map"), a), w=:pm3d ; args...)
-end
+heatmap(args... ; kwargs...) = splot(args... ; kwargs..., stheme = :heatmap, ptheme = :pm3d)

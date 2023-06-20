@@ -1,0 +1,62 @@
+Tests to be run manually.
+
+* Produce a sixelgd plot, using `xterm -ti vt340`, `wezterm` or other
+  sixelgd-capable terminal.
+
+using Gaston
+Gaston.config.term = "sixelgd size 300,200"
+Gaston.config.output = :echo
+plot(1:10)
+
+--
+
+* In the repl, produce an ascii plot
+
+Gaston.config.term = "dumb"
+Gaston.config.output = :echo
+plot(1:10)
+
+--
+
+* In the repl, produce an svg script
+
+Gaston.config.term = "svg"
+Gaston.config.output = :echo
+plot(1:10)
+
+--
+
+* In the repl, produce an html page
+
+Gaston.config.term = "canvas"
+Gaston.config.output = :echo
+plot(1:10)
+
+--
+
+* In the repl, produce no output
+
+Gaston.config.output = :null
+plot(1:10)
+
+--
+
+* In the repl, produce a qt plot
+
+Gaston.config.output = :external
+Gaston.config.term = "qt"
+plot(1:10)
+
+--
+
+* In the repl, save a plot
+
+plot(1:10);
+save("test.gif", term = "gif size 300,200")
+save("test.pdf", term = "pdfcairo")
+save("test.png", term = "png enhanced background 'blue' size 300,200")
+
+--
+
+* In Pluto, load the notebooks under notebeook/*
+

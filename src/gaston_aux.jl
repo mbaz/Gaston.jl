@@ -4,169 +4,379 @@
 
 # Auxiliary, non-exported functions are declared here.
 
-""" meshgrid(x, y, z)
-
-    Create a z-coordinate matrix from `x`, `y` coordinates and a function `f`,
-    such that `z[row,col] = f(x[col], y[row)`"""
-function meshgrid(x,y,f)
-    z = zeros(length(y),length(x))
-    for (yi,yy) in enumerate(y)
-        for (xi,xx) in enumerate(x)
-            z[yi,xi] = f(xx,yy)
-        end
-    end
-    return z
-end
-
-### Debug mode
-function debug(msg, f="")
-    if config[:debug]
-        s = split(msg, "\n", keepempty=false)
-        if !isempty(s)
-            if !isempty(f)
-                printstyled("┌ Gaston in function $f\n", color=:yellow)
-            else
-                printstyled("┌ Gaston\n", color=:yellow)
-            end
-            for ss in s
-                println("│ $ss")
-            end
-            printstyled("└\n", color=:yellow)
-        end
-    end
-end
-
-# create x,y coordinates for a histogram, from a sample vector, using a number
-# of bins
-function hist(s,bins)
-    # When adding an element s to a bin, we use an iequality m < s <= M.
-    # In order to account for elements s==m, we need to special-case
-    # the computation for the first bin
-    ms = minimum(s)
-    Ms = maximum(s)
-    bins = max(bins, 1)
-    if Ms == ms
-        # compute a "natural" scale
-        g = (10.0^floor(log10(abs(ms)+eps()))) / 2
-        ms, Ms = ms - g, ms + g
-    end
-    delta = (Ms-ms)/bins
-    x = ms:delta:Ms
-    y = zeros(bins)
-    # this is special-cased because we want to include the minimum in the
-    # first bin
-    y[1] = sum(ms .<= s .<= x[2])
-    for i in 2:length(x)-2
-        y[i] = sum(x[i] .< s .<= x[i+1])
-    end
-    # this is special-cased because there is no guarantee that x[end] == Ms
-    # (because of how ranges work)
-    if length(y) > 1 y[end] = sum(x[end-1] .< s .<= Ms) end
-
-    if bins != 1
-        # We want the left bin to start at ms and the right bin to end at Ms
-        x = (ms+delta/2):delta:Ms
+"Returns a new gnuplot process."
+function gp_start()
+    if state.enabled
+        inp = Base.PipeEndpoint()
+        out = Base.PipeEndpoint()
+        err = Base.PipeEndpoint()
+        process = run(config.exec, inp, out, err, wait=false)
+        return process
     else
-        # add two empty bins on the sides to provide a scale to gnuplot
-        x = (ms-delta/2):delta:(ms+delta/2)
-        y = [0.0, y[1], 0.0]
+        @warn "gnuplot is not available on this system."
     end
-    return x,y
 end
 
-function Base.display(x::Figure)
-    debug("Entering display()")
-    isempty(x) && return nothing
-    if config[:term] in term_text
-        show(stdout, "text/plain", x)
+"End gnuplot process `process`"
+function gp_quit(process::Base.Process)
+    if state.enabled
+        if process_running(process)
+            write(process, "exit gnuplot\n")
+            close(process.in)
+            wait(process)
+        end
+        return process.exitcode
+    else
+        @warn "gnuplot is not available on this system."
+    end
+end
+
+gp_quit(f::Figure) = gp_quit(f.gp_proc)
+
+"Send string `message` to `process` and handle its response."
+function gp_send(process::Base.Process, message::String)
+    if state.enabled
+        if process_running(process)
+            message *= "\n"
+            write(process, message) # send user input to gnuplot
+
+            @debug "String sent to gnuplot:" message
+
+            # ask gnuplot to return sigils when it is done
+            write(process, """set print '-'
+                  print 'GastonDone'
+                  set print
+                  print 'GastonDone'
+                  """)
+
+            gpout = readuntil(process, "GastonDone\n", keep=true)
+            gperr = readuntil(process.err, "GastonDone\n", keep=true)
+
+            # handle errors
+            gpout == "" && @warn "gnuplot crashed."
+
+            gperr = gperr[1:end-11]
+            gperr != "" && @info "gnuplot returned a message in STDERR:" gperr
+
+            return gpout, gperr
+        else
+            @warn "Tried to send a message to a process that is not running"
+            return nothing
+        end
+    else
+        @warn "gnuplot is not available on this system."
+    end
+end
+
+gp_send(f::Figure, message) = gp_send(f.gp_proc, message)
+
+"Run an arbitrary gnuplot command and return gnuplot's stdout"
+function gp_exec(message::String)
+    if state.enabled
+        p = gp_start()
+        (gpout, gperr) = gp_send(p, message)
+        gp_quit(p)
+        return gpout[1:end-11]
+    else
+        @warn "gnuplot is not available on this system."
+    end
+end
+
+"""
+    save(term, output, [termopts,] [font,] [size,] [linewidth,] [background,] [handle]) -> nothing
+
+Save active figure (or figure specified by `handle`) using the specified `term`. Optionally,
+the font, size, linewidth, and background may be specified as arguments.
+"""
+function save(f::Figure ; term = "pngcairo font ',7'")
+    # determine file name
+    ext = split(term)[1]
+    output = "figure-$(f.handle)."*ext
+    save(f, output ; term)
+end
+
+function save(output::AbstractString ; handle = state.activefig, term = "pngcairo font ',8'")
+    # determine target figure
+    f = figure(handle)
+    if ismissing(f)
+        error("Cannot save: no existing figure was specified.")
+    else
+        save(f::Figure, output ; term)
+    end
+end
+
+function save(; handle = state.activefig, term = "pngcairo font ',8'")
+    # determine target figure
+    f = figure(handle)
+    if ismissing(f)
+        error("Cannot save: no existing figure was specified.")
+    else
+        save(f::Figure ; term)
+    end
+end
+
+function save(f::Figure, output::AbstractString ; term = "pngcairo font ',8'") ;
+    # send print commands to gnuplot
+    @debug "save():" term output
+    producefigure(f ; output, term)
+    return nothing
+end
+
+"Return a list of available gnuplot terminals"
+terminals() = print(gp_exec("set term"))
+
+"Enable or disable debug mode."
+function debug(flag)
+    if flag
+        ENV["JULIA_DEBUG"] = Gaston
+    else
+        ENV["JULIA_DEBUG"] = ""
+    end
+    return nothing
+end
+
+"Restore default configuration."
+function reset()
+    global config
+    config.embedhtml = false
+    config.output = :external
+    config.term = ""
+    config.exec = `gnuplot`
+end
+
+""" meshgrid(x, y, z)
+    Return a z-coordinate matrix from `x`, `y` coordinates and a function `f`,
+    such that `z[row,col] = f(x[row], y[col])`
+"""
+meshgrid(x, y, f::F) where {F<:Function} = [f(xx,yy) for yy in y, xx in x]
+
+"""
+    hist(s::Vector{T}, nbins=10, normalize=false) where {T<:Real}
+
+Return the histogram of values in `s` using `nbins` bins. If `normalize` is true, the values of `s` are scaled so that `sum(s) == 1.0`.
+"""
+function hist(s ;
+              edges        = nothing,
+              nbins        = 10,
+              norm::Bool   = false,
+              mode::Symbol = :pdf)
+    if edges === nothing
+        # Unfortunately, `StatsBase.fit` regards `nbins` as a mere suggestion.
+        # Therefore, we need to give it the actual edges.
+        (ms, Ms) = extrema(s)
+        if Ms == ms
+            # compute a "natural" scale
+            g = (10.0^floor(log10(abs(ms)+eps()))) / 2
+            ms, Ms = ms - g, ms + g
+        end
+        edges = range(ms, Ms, length=nbins+1)
+    end
+
+    h = fit(Histogram, s, edges)
+    norm && (h = normalize(h, mode=mode))
+
+    @debug "hist():" nbins collect(edges) h.weights
+
+    return h
+end
+
+# 2D histogram
+function hist(s1, s2 ;
+              edges        = nothing,
+              nbins        = (10, 10),
+              norm::Bool   = false,
+              mode::Symbol = :pdf)
+    edg = edges
+    if edges === nothing
+        (ms1, Ms1) = extrema(s1)
+        if Ms1 == ms1
+            g = (10.0^floor(log10(abs(ms1)+eps()))) / 2
+            ms1, Ms1 = ms1 - g, ms1 + g
+        end
+        edges1 = range(ms1, Ms1, length=nbins[1]+1)
+
+        (ms2, Ms2) = extrema(s2)
+        if Ms2 == ms2
+            g = (10.0^floor(log10(abs(ms2)+eps()))) / 2
+            ms2, Ms2 = ms2 - g, ms2 + g
+        end
+        edges2 = range(ms2, Ms2, length=nbins[2]+1)
+        edg = (edges1, edges2)
+    elseif !(edges isa Tuple)
+        edg = (edges, edges)
+    end
+
+    h = fit(Histogram, (s1, s2), edg)
+    norm && (h = normalize(h, mode=mode))
+
+    @debug "hist():" nbins collect(edges) h.weights
+
+    return h
+end
+
+function showable(::MIME{mime}, f::Figure) where {mime}
+    rv = false
+    if config.alttoggle
+        t = split(config.altterm)[1]
+    else
+        t = split(config.term)[1]
+    end
+    h = config.embedhtml
+    if (mime == Symbol("image/gif")) && (t == "gif")
+        rv = true
+    end
+    if (mime == Symbol("image/webp")) && (t == "webp")
+        rv = true
+    end
+    if (mime == Symbol("image/png")) && (t == "png" || t == "pngcairo")
+        rv = true
+    end
+    if (mime == Symbol("image/svg+xml")) && (t == "svg")
+        rv = true
+    end
+    if (mime == Symbol("text/html")) && (t == "svg" || t == "canvas") && h
+        rv = true
+    end
+    @debug "showable():" mime config.term config.embedhtml t rv
+    return rv
+end
+
+function show(io::IO, figax::FigureAxis)
+    show(io, figax.f)
+end
+
+function show(io::IO, a::Axis)
+    p = length(a) == 1 ? "plot" : "plots"
+    print(io, "Gaston.Axis\n  length: $(length(a.plots)) $p")
+end
+
+function show(io::IO, p::Plot)
+    d = p.is3d ? "3d" : "2d"
+    print(io, "Gaston.Plot\n  $d\n  with plotline: \"$(p.plotline)\"")
+end
+
+function internal_show(io::IO, f::Figure)
+
+    @debug "internal_show()" config.term config.output state.enabled
+
+    # handle cases where no output is produced
+    state.enabled || return nothing
+    config.output == :null && return nothing
+
+    # verify figure's gnuplot process is running
+    if !process_running(f.gp_proc)
+        error("gnuplot process associated with figure handle $(f.handle) has exited.")
+    end
+
+    if isempty(f)
+        println(io, "Empty Gaston.Figure with handle ", f.handle)
         return nothing
     end
-    if config[:mode] == "null"
-        return nothing
+
+    # echo mode: save plot, read it and write to io
+    if config.output == :echo
+        @debug "Notebook plotting" config.term config.embedhtml
+        tmpfile = tempname()
+        producefigure(f, output = tmpfile, term = config.term)
+        while !isfile(tmpfile) end  # avoid race condition with read in next line
+        if config.embedhtml
+            println(io, "<html><body>")
+        end
+        write(io, read(tmpfile))
+        if config.embedhtml
+            println(io, "</body></html>")
+        end
+        rm(tmpfile, force=true)
+    # external mode: create graphical window
+    elseif config.output == :external
+        producefigure(f)
     end
-    llplot(x)
+
+    return nothing
 end
 
-Base.show(io::IO, ::MIME"text/plain", x::Figure) = show(io, x)
+function producefigure(f::Figure ; output::String = "", term = config.term)
+    iob = IOBuffer()
+    # Determine which terminal to use. Precedence order is:
+    # * `config.altterm` if `config.alttoggle` (highest)
+    # * function kw argument `term`
+    # * default global value `config.term` (lowest)
+    if config.alttoggle
+        term = config.altterm
+    elseif term isa Symbol
+        term = String(term)
+    end
+    # determine if this is a multiplot
+    ismp = false
+    if length(f) > 1 && !contains(term, "animate")
+        ismp = true
+    end
 
-function Base.show(io::IO, x::Figure)
-    debug("showable = $(config[:showable])\nmode = $(config[:mode])", "show():text/plain")
+    # auto-calculate multiplot layout if none given
+    # warning: here we're trying to be clever, there may be undiscovered edge cases
+    autolayout = ""
+    if ismp && isempty(f.multiplot)
+        if length(f) <= 2
+            rows = 1
+            cols = length(f)
+        elseif length(f) <= 4
+            rows = 2
+            cols = 2
+        else
+            cols = 3
+            rows = ceil(Int, length(f)/3)
+        end
+        autolayout = " layout $rows, $cols "
+    end
 
-    isempty(x) && return nothing
-    config[:mode] == "null" && return nothing
-    gnuplot_state.gnuplot_available || return nothing
-    config[:term] in term_text || return nothing
+    write(iob, "reset session\n")
 
-    tmpfile = tempname()
-    save(term = config[:term], saveopts = config[:termopts], output=tmpfile)
-    while !isfile(tmpfile) end  # avoid race condition with read in next line
-    write(io, read(tmpfile))
-    rm(tmpfile, force=true)
-    nothing
+    # if term is different than config.term, push it, and pop it after plotting is done
+    term != config.term && write(iob, "set term push\n")
+    term != "" && write(iob, "set term $(term)\n")
+    output != "" && write(iob, "set output '$(output)'\n")
+    ismp && write(iob, "set multiplot " * autolayout * f.multiplot * "\n")
+    for axis in f.axes
+        if isempty(axis) && ismp
+            write(iob, "set multiplot next\n")
+            continue
+        else
+            write(iob, axis.settings*"\n")
+            write(iob, plotstring(axis)*"\n") # send plotline
+        end
+    end
+    ismp && write(iob, "unset multiplot\n")
+    output != "" && write(iob, "set output\n")
+    term != config.term && write(iob, "set term pop\n")
+    config.alttoggle = false
+    seekstart(iob)
+    gp_send(f, String(read(iob)))
 end
 
-
-function Base.show(io::IO, ::MIME"image/svg+xml", x::Figure)
-    debug("showable = $(config[:showable])\nmode = $(config[:mode])", "show():image/svg+xml")
-
-    isempty(x) && return nothing
-    config[:mode] == "null" && return nothing
-    gnuplot_state.gnuplot_available || return nothing
-
-    tmpfile = tempname()
-    save(term="svg", saveopts = config[:termopts], output=tmpfile)
-    while !isfile(tmpfile) end  # avoid race condition with read in next line
-    write(io, read(tmpfile))
-    rm(tmpfile, force=true)
-    nothing
-end
-
-
-function Base.show(io::IO, ::MIME"image/png", x::Figure)
-    debug("showable = $(config[:showable])\nmode = $(config[:mode])", "show():image/png")
-
-    isempty(x) && return nothing
-    config[:mode] == "null" && return nothing
-    gnuplot_state.gnuplot_available || return nothing
-
-    tmpfile = tempname()
-    save(term="png", saveopts = config[:termopts], output=tmpfile)
-    while !isfile(tmpfile) end  # avoid race condition with read in next line
-    write(io, read(tmpfile))
-    rm(tmpfile, force=true)
-    nothing
-end
+Base.show(io::IO, ::MIME"text/plain", x::Figure) = internal_show(io, x)
+Base.show(io::IO, ::MIME"text/html", x::Figure) = internal_show(io, x)
+Base.show(io::IO, ::MIME"image/png", x::Figure) = internal_show(io, x)
+Base.show(io::IO, ::MIME"image/gif", x::Figure) = internal_show(io, x)
+Base.show(io::IO, ::MIME"image/webp", x::Figure) = internal_show(io, x)
+Base.show(io::IO, ::MIME"image/svg+xml", x::Figure) = internal_show(io, x)
+Base.show(io::IO, x::Figure) = internal_show(io, x)
 
 # build a string with plot commands according to configuration
-function plotstring(sp::SubPlot)
-    curves = sp.curves
-    file = sp.datafile
-    # We have to insert "," between plot commands. One easy way to do this
-    # is create the first plot command, then the rest
-    # We also need to keep track of the current index (starts at zero)
-    p = Vector{String}()
-    for (i, curve) in enumerate(curves)
-        push!(p, "'$file' i $(i-1) $(curve.conf)")
+function plotstring(a::Axis)
+    # We have to insert "," between plot commands.
+    pstring = Vector{String}()
+    for p in a.plots
+        push!(pstring, " '$(p.datafile)' " * p.plotline)
     end
-    cmd = "plot "
-    sp.dims == 3 && (cmd = "splot ")
-    return cmd*join(p, ", ")
-end
-
-# Build a "set term" string appropriate for the terminal type
-function termstring(handle ; term=config[:term], termopts=config[:termopts])
-    global gnuplot_state
-
-    # build termstring
-    ts = "set term $term "
-    term ∈ term_window && (ts = ts*string(handle)*" ")
-    ts = ts*termopts
-    return ts
+    command = "plot "
+    a.plots[1].is3d && (command = "splot ")
+    command * join(pstring, ", ")
 end
 
 # Calculating palettes is expensive, so store them in a cache. The cache is
-# pre-populated with gnuplot's gray palette
-Palette_cache = Dict{Symbol, String}(:gray => "set palette gray")
+# pre-populated with gnuplot's gray palette. The key is `(name, rev)`, where
+# `name` is the palette name and `rev` is true if the palette is reversed.
+Palette_cache = Dict{Tuple{Symbol, Bool}, String}((:gray, false) => "set palette gray")
 
 # Calculating linetypes from a colorscheme is expensive, so we use a cache.
 Linetypes_cache = Dict{Symbol, String}()
@@ -178,127 +388,96 @@ function symtostr(s)
     return "'$(join(split(s,"_")," "))'"
 end
 
-# parse plot configuration
-function gparse(kwargs)
-    # string that will be returned
-    curveconf = String[]
-    # the `curveconf` argument overrides all others
-    if :curveconf in keys(kwargs)
-        curveconf = [kwargs[:curveconf]]
-    else
-        K = keys(kwargs)
-        ## These keys are processed first and in order.
-        # Keys that take arguments.
-        for kw in (:every, :e, :skip, :using, :u, :smooth, :bins)
-            if kw in K
-                push!(curveconf, " $kw $(kwargs[kw]) ")
-                break
-            end
-        end
-        # Keys that don't take arguments.
-        if :noautoscale in keys(kwargs) && kwargs[:noautoscale] in (:on, :true, "on", "true")
-            push!(curveconf, " noautoscale ")
-        end
-        # with or plotstyle
-        for kw in (:with, :w, :plotstyle)
-            if kw in K
-                push!(curveconf, " with $(kwargs[kw]) ")
-                break
-            end
-        end
-        # pointtype
-        for kw in (:pointtype, :pt, :marker)
-            if kw in K
-                val = kwargs[kw]
-                if val isa String
-                    push!(curveconf, " pointtype $(pointtypes(val)) ")
-                elseif val isa Char
-                    push!(curveconf, " pointtype '$val' ")
-                else
-                    push!(curveconf, " pointtype $val ")
-                end
-                break
-            end
-        end
-        # pointsize
-        for kw in (:pointsize, :ps, :markersize, :ms)
-            if kw in K
-                push!(curveconf, " pointsize $(kwargs[kw]) ")
-            end
-        end
-        # other curveconf elements with arguments
-        for kw in (:linecolor, :lc, :ls, :linestyle, :lt, :linetype, :lw,
-                   :linewidth, :fill, :fs, :fillcolor, :fc, :dashtype, :dt,
-                   :pointinterval, :pi, :pointnumber, :pn)
-            if kw in K
-                val = symtostr(kwargs[kw])
-                push!(curveconf, " $kw $val ")
-            end
-        end
-        # legend
-        for kw in (:legend, :leg, :title, :t)
-            if kw in K
-                val = symtostr(kwargs[kw])
-                push!(curveconf, " title $val ")
-                break
-            end
-        end
-        # elements with no arguments
-        for kw in (:nohidden3d, :nocontours, :nosurface, :noautoscale)
-            if kw in K
-                if kwargs[kw] in (true, :on, :true, "on", "true")
-                    push!(curveconf, " $kw ")
-                end
-            end
-        end
-    end
-    return join(curveconf, " ")
+function strstr(s)
+    s isa String || return s
+    return "'$s'"
 end
 
-function gparse(axes::Axes)
-    axesconf = String[]
-    K = keys(axes)
-    for k in K
-        # axesconf is a string with gnuplot commands
-        if k == :axesconf
-            push!(axesconf, axes[:axesconf])
-            continue
-        end
-        # palette; code inspired by @gcalderone's Gnuplot.jl
-        if k in (:pal, :palette)
-            val = axes[k]
-            val isa Vector || (val = [val])
-            for v in val
-                if v isa Symbol
-                    if haskey(Palette_cache, v)
-                        push!(axesconf, Palette_cache[v])
-                        continue
-                    end
-                    cm = colorschemes[v]
-                    colors = String[]
-                    for i in range(0, 1, length=length(cm))
-                        c = get(cm, i)
-                        push!(colors, "$i $(c.r) $(c.g) $(c.b)")
-                    end
-                    s = "set palette defined ("*join(colors, ", ")*")\nset palette maxcolors $(length(cm))"
-                    push!(Palette_cache, (v => s))
-                    push!(axesconf, s)
-                else
-                    push!(axesconf, "set palette $v")
+parse_settings(x) = x
+
+function parse_settings(s::Vector{<:Pair})::String
+    @debug "parse_settings" s
+    # Initialize string that will be returned
+    settings = String[]
+    for (key::String, v) in s
+        if v isa Bool
+            v && push!(settings, "set $key")
+            v || push!(settings, "unset $key")
+        elseif key ∈ ("xtics", "ytics", "ztics", "tics")
+            # tics
+            if v isa AbstractRange
+                push!(settings,"set $key $(first(v)),$(step(v)),$(last(v))")
+            elseif v isa Tuple
+                push!(settings, "set $key $v")
+            elseif v isa NamedTuple
+                ticstr = "("
+                for i in eachindex(v.positions)
+                    ticstr *= string("'", v.labels[i], "' ", v.positions[i], ", ")
+                end
+                ticstr *= ")"
+                push!(settings,"set $key $ticstr")
+            else
+                push!(settings,"set $key $v")
+            end
+        elseif key ∈ ("xrange", "yrange", "zrange", "cbrange")
+            # ranges
+            if v isa Vector || v isa Tuple
+                push!(settings, "set $key [$(ifelse(isinf(v[1]),*,v[1])):$(ifelse(isinf(v[2]),*,v[2]))]")
+            else
+                push!(settings, "set $key $v")
+            end
+        elseif key == "ranges"
+            if v isa Vector || v isa Tuple
+                r = "[$(ifelse(isinf(v[1]),*,v[1])):$(ifelse(isinf(v[2]),*,v[2]))]"
+                push!(settings, "set xrange $r\nset yrange $r\nset zrange $r\nset cbrange $r")
+            else
+                push!(settings, "set xrange $v\nset yrange $v\nset zrange $v\nset cbrange $v")
+            end
+        elseif key ∈ ("pal", "palette")
+            # palette; code inspired by @gcalderone's Gnuplot.jl
+            rev = false
+            if v isa Tuple{Symbol, Symbol}
+                if v[2] == :reverse
+                    rev = true
+                    v = v[1]
                 end
             end
-            continue
-        end
-        # linetype definitions; code inspired by @gcalderone's Gnuplot.jl
-        if k in (:lt, :linetype)
-            val = axes[k]
-            val isa Vector || (val = [val])
-            for v in val
-                if v isa Symbol
-                    if haskey(Linetypes_cache, v)
-                        push!(axesconf, Linetypes_cache[v])
-                        continue
+            if v isa Symbol
+                if haskey(Palette_cache, (v, rev))
+                    push!(settings, Palette_cache[(v, rev)])
+                else
+                    cm = colorschemes[v]
+                    colors = String[]
+                    if rev
+                        r = range(1, 0, length(cm))
+                    else
+                        r = range(0, 1, length(cm))
                     end
+                    for i in 1:length(cm)
+                        c = get(cm, r[i])
+                        push!(colors, "$i $(c.r) $(c.g) $(c.b)")
+                    end
+                    cols = join(colors, ", ")
+                    pal = "set palette defined (" * cols * ")\nset palette maxcolors $(length(cm))"
+                    push!(Palette_cache, ((v, rev) => pal))
+                    push!(settings, pal)
+                end
+            else
+                push!(settings, "set palette $v")
+            end
+        elseif key == "view"
+            # view
+            if v isa Tuple
+                push!(settings, "set view $(join(v, ", "))")
+            else
+                push!(settings, "set view $v")
+            end
+        elseif key ∈ ("lt", "linetype")
+            # linetype definitions; code inspired by @gcalderone's Gnuplot.jl
+            if v isa Symbol
+                if haskey(Linetypes_cache, v)
+                    push!(settings, Linetypes_cache[v])
+                else
                     cm = colorschemes[v]
                     linetypes = String[]
                     for i in 1:length(cm)
@@ -308,160 +487,82 @@ function gparse(axes::Axes)
                     end
                     s = join(linetypes,"\n")*"\nset linetype cycle $(length(cm))"
                     push!(Linetypes_cache, (v => s))
-                    push!(axesconf, s)
-                else
-                    push!(axesconf, "set linetype $v")
+                    push!(settings, s)
                 end
+            else
+                push!(settings, "set linetype $v")
             end
-            continue
+        elseif key == "margins" && v isa Tuple
+            # margin definitions using at screen: left, right, bottom top
+            push!(settings, """set lmargin at screen $(v[1])
+                               set rmargin at screen $(v[2])
+                               set bmargin at screen $(v[3])
+                               set tmargin at screen $(v[4])""")
+        else
+            push!(settings, "set $key $v")
         end
-        # tics
-        if k in (:xtics, :ytics, :ztics, :tics)
-            val = axes[k]
-            val isa Vector || (val = [val])
-            for v in val
-                if v isa AbstractRange
-                    push!(axesconf,"set $k $(first(v)),$(step(v)),$(last(v))")
-                elseif v isa Tuple
-                    tics = v[1]
-                    labs = v[2]
-                    tics isa AbstractRange && (tics = collect(tics))
-                    println(tics)
-                    s = """("$(labs[1])" $(tics[1])"""
-                    for i in 2:length(tics)
-                        s *= """, "$(labs[i])" $(tics[i])"""
+    end
+    return join(settings, "\n")
+end
+
+# parse plot configuration
+parse_plotline(x) = x
+
+function parse_plotline(pl::Vector{<:Pair})::String
+    @debug "parse_plotline()" pl
+    # Initialize string that will be returned
+    plotline = String[]
+    count::Int = 0
+    for (k, v) in pl
+        # ensure that the same key does not appear later
+        flag = true
+        count += 1
+        for z in pl[(count+1):end]
+            if k == z[1]
+                flag = false
+                break
+            end
+        end
+        if flag
+            if v == true
+                push!(plotline, k)
+            else
+                if k == "marker" || k == "pointtype" || k == "pt"
+                    k = "pointtype"
+                    if v isa Symbol
+                        v = get(pointtypes, v, "'$v'")
                     end
-                    s *= ")"
-                    push!(axesconf,"set $k $s")
-                elseif v in (:off, :false, false, "false")
-                    push!(axesconf,"unset $k")
-                else
-                    push!(axesconf,"set $k $v")
+                    @debug k v
+                elseif k == "plotstyle"
+                    k = "with"
+                elseif k == "markersize" || k == "ms"
+                    k = "pointsize"
+                elseif k == "legend"
+                    k = "title"
                 end
-            end
-            continue
-        end
-        # axis type
-        if k == :axis
-            val = symtostr(axes[k])
-            if val == "semilogx"
-                push!(axesconf, "set logscale x")
-            elseif val == "semilogy"
-                push!(axesconf, "set logscale y")
-            elseif val == "semilogz"
-                push!(axesconf, "set logscale z")
-            elseif val == "loglog"
-                push!(axesconf, "set logscale xyz")
-            else
-                push!(axesconf, "set $val")
-            end
-            continue
-        end
-        # range
-        if k in (:xrange, :yrange, :zrange, :cbrange)
-            val = axes[k]
-            val isa Vector || (val = [val])
-            for v in val
-                if v isa Vector || v isa Tuple
-                    push!(axesconf, "set $k [$(ifelse(isinf(v[1]),*,v[1])):$(ifelse(isinf(v[2]),*,v[2]))]")
-                else
-                    push!(axesconf, "set $k $v")
-                end
-            end
-            continue
-        end
-        # view
-        if k == :view
-            val = axes[k]
-            val isa Vector || (val = [val])
-            for v in val
-                if v isa Tuple
-                    push!(axesconf, "set view $(join(v, ", "))")
-                else
-                    push!(axesconf, "set view $v")
-                end
-            end
-            continue
-        end
-        # dashtypes
-        if k in (:dt, :dashtype)
-            val = axes[k]
-            val isa Vector || (val = [val])
-            for v in val
-                push!(axesconf, "set dashtype $val")
-            end
-            continue
-        end
-        ### handle remaining keys
-        val = axes[k]
-        val isa Vector || (val = [val])
-        for v in val
-            # on/off arguments
-            if v in (true, :on, :true, "on", "true")
-                push!(axesconf, "set $k")
-            elseif v in (false, :off, :false, "false")
-                push!(axesconf, "unset $k")
-            else
-                push!(axesconf, "set $k $(symtostr(v))")
+                push!(plotline, k*" "*string(v))
             end
         end
     end
-    return join(axesconf, "\n")
+    return join(plotline, " ")
 end
 
 # Define pointtype synonyms
-const pt_syns = Dict("dot"      => 0,
-                     "⋅"        => 0,
-                     "+"        => 1,
-                     "plus"     => 1,
-                     "x"        => 2,
-                     "*"        => 3,
-                     "star"     => 3,
-                     "esquare"  => 4,
-                     "fsquare"  => 5,
-                     "ecircle"  => 6,
-                     "fcircle"  => 7,
-                     "etrianup" => 8,
-                     "ftrianup" => 9,
-                     "etriandn" => 10,
-                     "ftriandn" => 11,
-                     "edmd"     => 12,
-                     "fdmd"     => 13
-                    )
-const pt_syns_aqua = Dict("dot"      => 0,
-                          "⋅"        => 0,
-                          "+"        => 1,
-                          "plus"     => 1,
-                          "x"        => 2,
-                          "*"        => 3,
-                          "star"     => 3,
-                          "esquare"  => 4,
-                          "edmd"     => 5,
-                          "etrianup" => 6
-                         )
-function pointtypes(pt)
-    if config[:term] == "aqua"
-        if pt in keys(pt_syns_aqua)
-            return pt_syns_aqua[pt]
-        end
-    else
-        if pt in keys(pt_syns)
-            return pt_syns[pt]
-        end
-    end
-    return "'$pt'"
-end
-
-# write commands to gnuplot's pipe
-function gnuplot_send(s)
-    debug(s, "gnuplot_send")
-    if gnuplot_state.gnuplot_available
-        w = write(P.gstdin, s*"\n")
-        # check that data was accepted by the pipe
-        if !(w > 0)
-            @warn "Something went wrong writing to gnuplot STDIN."
-            return
-        end
-        flush(P.gstdin)
-    end
-end
+pointtypes = (dot      = 0,
+              ⋅        = 0,
+              +        = 1,
+              plus     = 1,
+              x        = 2,
+              *        = 3,
+              star     = 3,
+              esquare  = 4,
+              fsquare  = 5,
+              ecircle  = 6,
+              fcircle  = 7,
+              etrianup = 8,
+              ftrianup = 9,
+              etriandn = 10,
+              ftriandn = 11,
+              edmd     = 12,
+              fdmd     = 13,
+            )
