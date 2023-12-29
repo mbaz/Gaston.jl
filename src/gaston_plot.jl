@@ -252,5 +252,6 @@ splot!(args... ; kwargs...) = plot!(args... ; kwargs..., is3d = true, handle = s
 
 function animate(f::Figure, term = config.altterm)
     global config.alttoggle = true
+    global config.altterm = term
     return f
 end
