@@ -36,16 +36,16 @@ convert_args() = throw(MethodError("Not implemented"))
 
 const SoS = Union{String, Symbol, Vector{<:Pair}}
 
-struct TimeSeries{P <: SoS}
-    ts   :: Tuple{Vararg{Array{<:Real}}}
+struct TimeSeries{P <: SoS, N}
+    ts   :: NTuple{N, Array{<:Real}}
     pl   :: P
     is3d :: Bool
 end
 
 TimeSeries(ts... ; pl = "", is3d = false) = TimeSeries(collect.(ts), parse_plotline(pl), is3d)
 
-struct TSBundle{P <: SoS}
-    series   :: Tuple{Vararg{TimeSeries{<:SoS}}}
+struct TSBundle{P <: SoS, N}
+    series   :: NTuple{N, TimeSeries}
     settings :: P
 end
 
