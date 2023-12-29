@@ -1,4 +1,4 @@
-## Copyright (c) 2013 Miguel Bazdresch
+# Copyright (c) 2013 Miguel Bazdresch
 ##
 ## This file is distributed under the 2-clause BSD License.
 
@@ -303,7 +303,8 @@ function producefigure(f::Figure ; output::String = "", term = config.term)
     # * default global value `config.term` (lowest)
     if config.alttoggle
         term = config.altterm
-    elseif term isa Symbol
+    end
+    if term isa Symbol
         term = String(term)
     end
     # determine if this is a multiplot
@@ -348,9 +349,9 @@ function producefigure(f::Figure ; output::String = "", term = config.term)
     ismp && write(iob, "unset multiplot\n")
     output != "" && write(iob, "set output\n")
     term != config.term && write(iob, "set term pop\n")
-    config.alttoggle = false
     seekstart(iob)
     gp_send(f, String(read(iob)))
+    config.alttoggle = false
 end
 
 Base.show(io::IO, ::MIME"text/plain", x::Figure) = internal_show(io, x)
