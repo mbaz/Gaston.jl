@@ -56,6 +56,8 @@ struct PlotObject
     mp_settings :: String
 end
 
+PlotObject(; kwargs...) = throw(MethodError("At least one argument is required"))
+
 PlotObject(ts::TimeSeries... ; mp_settings = "") = PlotObject(TSBundle(ts...); mp_settings)
 
 PlotObject(bs::TSBundle... ; mp_settings = "") = PlotObject(bs, mp_settings)
