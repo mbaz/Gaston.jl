@@ -9,13 +9,15 @@ reset = Gaston.reset
 null() = Gaston.config.output = :null
 
 @testset "AQUA" begin
+    #Aqua.test_all(Gaston)
+    #Aqua.test_ambiguities(Gaston) # disabled -- fails with ambiguities from StatsBase
     Aqua.test_unbound_args(Gaston)
     Aqua.test_undefined_exports(Gaston)
-    Aqua.test_piracy(Gaston)
-    Aqua.test_project_toml_formatting(Gaston)
+    Aqua.test_project_extras(Gaston)
     Aqua.test_stale_deps(Gaston)
-    Aqua.test_unbound_args(Gaston)
-    Aqua.test_undefined_exports(Gaston)
+    Aqua.test_deps_compat(Gaston)
+    Aqua.test_piracies(Gaston)
+    Aqua.test_persistent_tasks(Gaston)
 end
 
 @testset "JET" begin

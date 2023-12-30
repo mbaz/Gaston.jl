@@ -15,6 +15,7 @@ DelimitedFiles = "1"
 MacroTools = "0.5"
 PrecompileTools = "1"
 StatsBase = "0"
+Test = "0"
 julia = "^1.8"
 
 [extras]
