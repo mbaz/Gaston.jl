@@ -1,6 +1,6 @@
 # Macro and functions to handle options in brackets
 
-macro qs_str(s)
+macro sqs_str(s)
     "'$s'"
 end
 
@@ -51,7 +51,7 @@ function procopts(d)
     end
 end
 
-macro options(ex)
+macro gptheme(ex)
     esc(postwalk(procopts, ex))
 end
 

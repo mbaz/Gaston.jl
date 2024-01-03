@@ -2,7 +2,7 @@
 # Each theme is identified by a name.
 
 # settings themes
-sthemes = @options Dict(
+sthemes = @gptheme Dict(
     :none => Pair[],
 
     :notics => {tics = false},
@@ -36,7 +36,7 @@ sthemes = @options Dict(
 )
 
 # plotline themes
-pthemes = @options Dict(
+pthemes = @gptheme Dict(
     :none => Pair[],
 
     :scatter => {with = "points", pointtype = :fcircle, pointsize = 1.5},

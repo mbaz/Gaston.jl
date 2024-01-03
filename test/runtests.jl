@@ -25,7 +25,7 @@ end
     #JET.test_package("Gaston"; toplevel_logger=nothing)
     JET.@test_call target_modules=(Gaston,) Figure(1)
     JET.@test_call target_modules=(Gaston,) plot(rand(10), rand(10))
-    JET.@test_call target_modules=(Gaston,) @options plot({grid, title = qs"test"}, rand(10), rand(10), {lc = "'red'"})
+    JET.@test_call target_modules=(Gaston,) @gptheme plot({grid, title = sqs"test"}, rand(10), rand(10), {lc = "'red'"})
     f = Figure()
     x = 1:10; y = rand(10); z = rand(10,10)
     JET.@test_call target_modules=(Gaston,) plot(f, x, y, z)
@@ -36,7 +36,7 @@ end
 
 @testset "Options" begin
         w = 5.3
-        x = @options {a = :summer, b, c = 3, d = qs"long title", e = w}
+        x = @gptheme {a = :summer, b, c = 3, d = sqs"long title", e = w}
         @test x[1] == Pair("a", :summer)
         @test x[2] == Pair("b", true)
         @test x[3] == Pair("c", 3)
@@ -149,7 +149,7 @@ end
     @test p.plotline == "w l"
     p = Plot(1:10)
     @test p.plotline == ""
-    p = @options Plot(1:10, {with="lines"})
+    p = @gptheme Plot(1:10, {with="lines"})
     @test p.plotline == "with lines"
 end
 
@@ -186,7 +186,7 @@ end
     a = Axis(["title" => "1"], p)
     @test a.settings == "set title 1"
     @test length(a.plots) == 1
-    @options a = Axis({title = "1", grid})
+    @gptheme a = Axis({title = "1", grid})
     @test a.settings == "set title 1\nset grid"
 end
 
@@ -227,57 +227,57 @@ end
     ps = Gaston.parse_settings
     @test ps("x") == "x"
     # booleans
-    @test @options ps({g}) == "set g"
-    @test @options ps({g=true}) == "set g"
-    @test @options ps({g=false}) == "unset g"
-    @test @options ps({g,g=false}) == "set g\nunset g"
+    @test @gptheme ps({g}) == "set g"
+    @test @gptheme ps({g=true}) == "set g"
+    @test @gptheme ps({g=false}) == "unset g"
+    @test @gptheme ps({g,g=false}) == "set g\nunset g"
     # tics
-    @test @options ps({tics="axis border"}) == "set tics axis border"
-    @test @options ps({xtics=1:2}) == "set xtics 1,1,2"
-    @test @options ps({ytics=1:2}) == "set ytics 1,1,2"
-    @test @options ps({ztics=1:2:7}) == "set ztics 1,2,7"
-    @test @options ps({tics=1:2}) == "set tics 1,1,2"
-    @test @options ps({tics,tics=1:5}) == "set tics\nset tics 1,1,5"
-    @test @options ps({tics=(0,5)}) == "set tics (0, 5)"
-    @test @options ps({tics=(labels=("one", "two"), positions=(0, 5))}) == "set tics ('one' 0, 'two' 5, )"
+    @test @gptheme ps({tics="axis border"}) == "set tics axis border"
+    @test @gptheme ps({xtics=1:2}) == "set xtics 1,1,2"
+    @test @gptheme ps({ytics=1:2}) == "set ytics 1,1,2"
+    @test @gptheme ps({ztics=1:2:7}) == "set ztics 1,2,7"
+    @test @gptheme ps({tics=1:2}) == "set tics 1,1,2"
+    @test @gptheme ps({tics,tics=1:5}) == "set tics\nset tics 1,1,5"
+    @test @gptheme ps({tics=(0,5)}) == "set tics (0, 5)"
+    @test @gptheme ps({tics=(labels=("one", "two"), positions=(0, 5))}) == "set tics ('one' 0, 'two' 5, )"
     # ranges
-    #@test @options ps({})
-    @test @options ps({xrange=(-5,5)}) == "set xrange [-5:5]"
-    @test @options ps({xrange=(-5.1,5.6)}) == "set xrange [-5.1:5.6]"
-    @test @options ps({xrange=[-Inf,0]}) == "set xrange [*:0.0]"
-    @test @options ps({yrange=[0,Inf]}) == "set yrange [0.0:*]"
-    @test @options ps({zrange=[-Inf,Inf]}) == "set zrange [*:*]"
-    @test @options ps({cbrange=(1,2)}) == "set cbrange [1:2]"
-    @test @options ps({cbrange=(0,Inf)}) == "set cbrange [0:*]"
-    @test @options ps({zrange=(-Inf,Inf)}) == "set zrange [*:*]"
-    @test @options ps({ranges=(-3,3)}) == "set xrange [-3:3]\nset yrange [-3:3]\nset zrange [-3:3]\nset cbrange [-3:3]"
+    #@test @gptheme ps({})
+    @test @gptheme ps({xrange=(-5,5)}) == "set xrange [-5:5]"
+    @test @gptheme ps({xrange=(-5.1,5.6)}) == "set xrange [-5.1:5.6]"
+    @test @gptheme ps({xrange=[-Inf,0]}) == "set xrange [*:0.0]"
+    @test @gptheme ps({yrange=[0,Inf]}) == "set yrange [0.0:*]"
+    @test @gptheme ps({zrange=[-Inf,Inf]}) == "set zrange [*:*]"
+    @test @gptheme ps({cbrange=(1,2)}) == "set cbrange [1:2]"
+    @test @gptheme ps({cbrange=(0,Inf)}) == "set cbrange [0:*]"
+    @test @gptheme ps({zrange=(-Inf,Inf)}) == "set zrange [*:*]"
+    @test @gptheme ps({ranges=(-3,3)}) == "set xrange [-3:3]\nset yrange [-3:3]\nset zrange [-3:3]\nset cbrange [-3:3]"
     # palette
-    @test @options ps({palette=:jet}) == "set palette defined (1 0.0 0.0 0.498, 2 0.0 0.0 1.0, 3 0.0 0.498 1.0, 4 0.0 1.0 1.0, 5 0.498 1.0 0.498, 6 1.0 1.0 0.0, 7 1.0 0.498 0.0, 8 1.0 0.0 0.0, 9 0.498 0.0 0.0)\nset palette maxcolors 9"
-    @test @options ps({palette=(:jet,:reverse)}) == "set palette defined (1 0.498 0.0 0.0, 2 1.0 0.0 0.0, 3 1.0 0.498 0.0, 4 1.0 1.0 0.0, 5 0.498 1.0 0.498, 6 0.0 1.0 1.0, 7 0.0 0.498 1.0, 8 0.0 0.0 1.0, 9 0.0 0.0 0.498)\nset palette maxcolors 9"
-    @test @options ps({palette="x"}) == "set palette x"
+    @test @gptheme ps({palette=:jet}) == "set palette defined (1 0.0 0.0 0.498, 2 0.0 0.0 1.0, 3 0.0 0.498 1.0, 4 0.0 1.0 1.0, 5 0.498 1.0 0.498, 6 1.0 1.0 0.0, 7 1.0 0.498 0.0, 8 1.0 0.0 0.0, 9 0.498 0.0 0.0)\nset palette maxcolors 9"
+    @test @gptheme ps({palette=(:jet,:reverse)}) == "set palette defined (1 0.498 0.0 0.0, 2 1.0 0.0 0.0, 3 1.0 0.498 0.0, 4 1.0 1.0 0.0, 5 0.498 1.0 0.498, 6 0.0 1.0 1.0, 7 0.0 0.498 1.0, 8 0.0 0.0 1.0, 9 0.0 0.0 0.498)\nset palette maxcolors 9"
+    @test @gptheme ps({palette="x"}) == "set palette x"
     # view
-    @test @options ps({view=(50,60)}) == "set view 50, 60"
-    @test @options ps({view=5}) == "set view 5"
+    @test @gptheme ps({view=(50,60)}) == "set view 50, 60"
+    @test @gptheme ps({view=5}) == "set view 5"
     # linetype
-    @test @options ps({linetype = 5}) == "set linetype 5"
-    @test @options ps({lt = :jet}) == "set lt 1 lc rgb '#00007f'\nset lt 2 lc rgb '#0000ff'\nset lt 3 lc rgb '#007fff'\nset lt 4 lc rgb '#00ffff'\nset lt 5 lc rgb '#7fff7f'\nset lt 6 lc rgb '#ffff00'\nset lt 7 lc rgb '#ff7f00'\nset lt 8 lc rgb '#ff0000'\nset lt 9 lc rgb '#7f0000'\nset linetype cycle 9"
+    @test @gptheme ps({linetype = 5}) == "set linetype 5"
+    @test @gptheme ps({lt = :jet}) == "set lt 1 lc rgb '#00007f'\nset lt 2 lc rgb '#0000ff'\nset lt 3 lc rgb '#007fff'\nset lt 4 lc rgb '#00ffff'\nset lt 5 lc rgb '#7fff7f'\nset lt 6 lc rgb '#ffff00'\nset lt 7 lc rgb '#ff7f00'\nset lt 8 lc rgb '#ff0000'\nset lt 9 lc rgb '#7f0000'\nset linetype cycle 9"
     # margins
-    @test ps(@options {margins = (.2, .3, .4, .5)}) == "set lmargin at screen 0.2\nset rmargin at screen 0.3\nset bmargin at screen 0.4\nset tmargin at screen 0.5"
-    @test ps(@options {margins = "1,2,3,4"}) == "set margins 1,2,3,4"
+    @test ps(@gptheme {margins = (.2, .3, .4, .5)}) == "set lmargin at screen 0.2\nset rmargin at screen 0.3\nset bmargin at screen 0.4\nset tmargin at screen 0.5"
+    @test ps(@gptheme {margins = "1,2,3,4"}) == "set margins 1,2,3,4"
 end
 
 @testset "Parsing plotlines" begin
     pp = Gaston.parse_plotline
-    @test @options pp({w=1,w=2}) == "w 2"
-    @test @options pp({marker=:dot}) == "pointtype 0"
-    @test @options pp({pointtype=:⋅}) == "pointtype 0"
-    @test @options pp({pt=:+}) == "pointtype 1"
-    @test @options pp({marker=qs"λ"}) == "pointtype 'λ'"
-    @test @options pp({marker="'k'"}) == "pointtype 'k'"
-    @test @options pp({plotstyle="lt"}) == "with lt"
-    @test @options pp({markersize=8}) == "pointsize 8"
-    @test @options pp({ms=5}) == "pointsize 5"
-    @test @options pp({legend=qs"title"}) == "title 'title'"
+    @test @gptheme pp({w=1,w=2}) == "w 2"
+    @test @gptheme pp({marker=:dot}) == "pointtype 0"
+    @test @gptheme pp({pointtype=:⋅}) == "pointtype 0"
+    @test @gptheme pp({pt=:+}) == "pointtype 1"
+    @test @gptheme pp({marker=sqs"λ"}) == "pointtype 'λ'"
+    @test @gptheme pp({marker="'k'"}) == "pointtype 'k'"
+    @test @gptheme pp({plotstyle="lt"}) == "with lt"
+    @test @gptheme pp({markersize=8}) == "pointsize 8"
+    @test @gptheme pp({ms=5}) == "pointsize 5"
+    @test @gptheme pp({legend=sqs"title"}) == "title 'title'"
 end
 
 @testset "convert_args" begin
@@ -344,13 +344,13 @@ end
     @test f.handle == 1
     @test f(1).settings == ""
     @test f(1,1).plotline == ""
-    f = @options plot({grid}, 1:10)
+    f = @gptheme plot({grid}, 1:10)
     @test f.handle == 1
     @test f(1).settings == "set grid"
     @test f(1,1).plotline == ""
-    f = @options plot({grid}, 1:10, "w l")
+    f = @gptheme plot({grid}, 1:10, "w l")
     @test f(1,1).plotline == "w l"
-    f = @options plot({grid}, 1:10, {w="l"})
+    f = @gptheme plot({grid}, 1:10, {w="l"})
     @test f(1,1).plotline == "w l"
     plot(f[2], (1:10).^2)
     @test length(f) == 2
@@ -363,7 +363,7 @@ end
     @test f(2,2).plotline == "w lp"
     plot!(f[2], 1:10, "w lp pt 1")
     @test f(2,3).plotline == "w lp pt 1"
-    @options plot!(f[2], 1:10, {w="p", marker=qs"λ"})
+    @gptheme plot!(f[2], 1:10, {w="p", marker=sqs"λ"})
     @test f(2,4).plotline == "w p pointtype 'λ'"
     plot(1:10)
     @test length(f) == 1
@@ -376,31 +376,31 @@ end
     closeall()
     reset()
     null()
-    f = @options plot({grid},{xtics}, 1:10)
+    f = @gptheme plot({grid},{xtics}, 1:10)
     @test f(1).settings == "set grid\nset xtics"
-    f = @options plot({grid},"set xtics", 1:10)
+    f = @gptheme plot({grid},"set xtics", 1:10)
     @test f(1).settings == "set grid\nset xtics"
-    f = @options plot("set grid",{xtics}, 1:10)
+    f = @gptheme plot("set grid",{xtics}, 1:10)
     @test f(1).settings == "set grid\nset xtics"
-    f = @options plot("set grid",{xtics},"set view", 1:10)
+    f = @gptheme plot("set grid",{xtics},"set view", 1:10)
     @test f(1).settings == "set grid\nset xtics\nset view"
     f = plot(1:10, "1", "2", "3")
     @test f(1,1).plotline == "1 2 3"
     plot!(f, 1:10, "1", "2", "3")
     @test f(1,2).plotline == "1 2 3"
-    f = @options plot(1:10, "1", {2}, "3")
+    f = @gptheme plot(1:10, "1", {2}, "3")
     @test f(1,1).plotline == "1 2 3"
-    @options plot!(f, 1:10, "1", {2}, "3")
+    @gptheme plot!(f, 1:10, "1", {2}, "3")
     @test f(1,2).plotline == "1 2 3"
-    f = @options plot(1:10, {1}, {2}, {w="l"})
+    f = @gptheme plot(1:10, {1}, {2}, {w="l"})
     @test f(1,1).plotline == "1 2 w l"
-    @options plot!(f, 1:10, {1}, {2}, {w="l"})
+    @gptheme plot!(f, 1:10, {1}, {2}, {w="l"})
     @test f(1,2).plotline == "1 2 w l"
-    f = @options plot(1:10, {1}, {2}, :scatter)
+    f = @gptheme plot(1:10, {1}, {2}, :scatter)
     @test f(1,1).plotline == "1 2 with points pointtype 7 pointsize 1.5"
-    @options plot!(f, 1:10, {1}, {2}, :scatter)
+    @gptheme plot!(f, 1:10, {1}, {2}, :scatter)
     @test f(1,2).plotline == "1 2 with points pointtype 7 pointsize 1.5"
-    f = @options plot({grid}, :heatmap, 1:10)
+    f = @gptheme plot({grid}, :heatmap, 1:10)
     @test f(1).settings == "set grid\nset view map"
 end
 
@@ -408,20 +408,20 @@ end
     closeall()
     reset()
     null()
-    f = @options scatter({grid}, rand(2), rand(2), {1}, "2")
+    f = @gptheme scatter({grid}, rand(2), rand(2), {1}, "2")
     @test f isa Figure
     @test f(1).settings == "set grid"
     @test f(1,1).plotline == "with points pointtype 7 pointsize 1.5 1 2"
-    @options scatter!(rand(2), rand(2), {3}, "4")
+    @gptheme scatter!(rand(2), rand(2), {3}, "4")
     @test f isa Figure
     @test f(1).settings == "set grid"
     @test f(1,2).plotline == "with points pointtype 7 pointsize 1.5 3 4"
-    f = @options stem({grid}, rand(2), {1}, "2")
+    f = @gptheme stem({grid}, rand(2), {1}, "2")
     @test f isa Figure
     @test f(1).settings == "set grid"
     @test f(1,1).plotline == "with impulses 1 2 linecolor 'blue'"
     @test f(1,2).plotline == "with points pointtype 6 pointsize 2 1 2 linecolor 'blue'"
-    @options stem!(rand(2), rand(2), {3}, "4")
+    @gptheme stem!(rand(2), rand(2), {3}, "4")
     @test f isa Figure
     @test f(1).settings == "set grid"
     @test f(1,3).plotline == "with impulses 3 4 linecolor 'blue'"
@@ -491,32 +491,32 @@ end
     null()
     x = y = -15:0.4:15
     f1 = (x,y) -> @. sin(sqrt(x*x+y*y))/sqrt(x*x+y*y)
-    f = @options wireframe({title="'wireframe'"},x,y,f1,"lc 'turquoise'")
+    f = @gptheme wireframe({title="'wireframe'"},x,y,f1,"lc 'turquoise'")
     @test f isa Figure
     @test f(1).settings == "set hidden3d\nset title 'wireframe'"
     @test f(1,1).plotline == "lc 'turquoise'"
-    @options wireframe!({title="'wireframe'"},x.-5,y,f1,"lc 'orange'")
+    @gptheme wireframe!({title="'wireframe'"},x.-5,y,f1,"lc 'orange'")
     @test length(f) == 1
     @test length(f(1)) == 2
     @test f(1,2).plotline == "lc 'orange'"
     plot(f[2], 1:10)
     @test length(f) == 2
-    f = @options surf({title="'surf'"},x,y,f1,"lc 'turquoise'")
+    f = @gptheme surf({title="'surf'"},x,y,f1,"lc 'turquoise'")
     @test f isa Figure
     @test f(1).settings == "set hidden3d\nset title 'surf'"
     @test f(1,1).plotline == "with pm3d lc 'turquoise'"
-    @options surf!({title="'surf'"},x.-5,y,f1,"lc 'orange'")
+    @gptheme surf!({title="'surf'"},x.-5,y,f1,"lc 'orange'")
     @test length(f) == 1
     @test length(f(1)) == 2
     @test f(1,2).plotline == "with pm3d lc 'orange'"
-    f = @options surfcontour(x,y,f1,"lc 'turquoise'")
+    f = @gptheme surfcontour(x,y,f1,"lc 'turquoise'")
     @test f isa Figure
     @test f(1).settings == "set hidden3d\nunset key\nset contour base\nset cntrlabel font ',7'\nset cntrparam levels auto 10"
     @test f(1,1).plotline == "lc 'turquoise'"
     @test length(f) == 1
     @test length(f(1)) == 2
     @test f(1,2).plotline == "with labels lc 'turquoise'"
-    f = @options surfcontour(x,y,f1,labels=false)
+    f = @gptheme surfcontour(x,y,f1,labels=false)
     @test length(f(1)) == 1
     f = wiresurf(x,y,f1)
     @test f isa Figure
@@ -531,7 +531,7 @@ end
     f = contour(x,y,f1)
     @test f isa Figure
     @test length(f(1)) == 2
-    f = @options heatmap({palette=:summer},x,y,f1)
+    f = @gptheme heatmap({palette=:summer},x,y,f1)
     @test f isa Figure
     @test f(1,1).plotline == "with pm3d"
 end
