@@ -4,15 +4,25 @@
 
 module Gaston
 
-export @sqs_str, @plot, @plot!, @splot, @splot!, @gptheme,
-       Figure, Axis, Plot, Plot3,
-       figure, closefigure, closeall,
-       plot, plot!, splot, splot!,
-       scatter, scatter!, stem, stem!, bar, bar!, barerror, barerror!,
-       histogram, imagesc,
-       surf, surf!, surfcontour, contour,
-       scatter3, scatter3!, heatmap, wireframe, wireframe!, wiresurf, wiresurf!,
-       save, animate
+# Basic commands
+export @Q_str, @gpkw
+export @plot, @plot!, @splot, @splot!
+export plot, plot!, splot, splot!
+export figure, closefigure, closeall
+
+# Types
+export Figure, Axis, Plot, Plot3
+
+# 2-D styled plots
+export scatter,  stem,  bar,  barerror, histogram, imagesc
+export scatter!, stem!, bar!, barerror!
+
+# 3-D styled plots
+export surf,  scatter3,  wireframe,  wiresurf, surfcontour, contour,heatmap
+export surf!, scatter3!, wireframe!, wiresurf!
+
+# Saving and animations
+export save, animate
 
 import Base: show, showable, keys, getindex, isempty, push!, setindex!, length
 
@@ -121,7 +131,7 @@ end
     f = Figure()
     y = 1.1:0.5:10.6
     plot(y)
-    @plot({grid}, y, {w = "l", lc = sqs"red"})
+    @plot({grid}, y, {w = "l", lc = Q"red"})
     f1 = (x,y) -> sin(sqrt(x*x+y*y))/sqrt(x*x+y*y)
     splot(f, (-5,5), f1)
     save(f, "test.png")
