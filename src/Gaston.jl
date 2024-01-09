@@ -24,15 +24,19 @@ export surf!, scatter3!, wireframe!, wiresurf!
 # Saving and animations
 export save, animate
 
-import Base: show, showable, keys, getindex, isempty, push!, setindex!, length
+# New methods are added to these functions
+import Base: show, showable, getindex, isempty, push!, setindex!, length
 
-import StatsBase: fit, Histogram, normalize
+# Methods from other packages
+using Base: keys
 
-import DelimitedFiles: writedlm
+using StatsBase: fit, Histogram, normalize
 
-import ColorSchemes: colorschemes, get
+using DelimitedFiles: writedlm
 
-import MacroTools: postwalk, @capture
+using ColorSchemes: colorschemes, get
+
+using MacroTools: postwalk, @capture
 
 using PrecompileTools
 
