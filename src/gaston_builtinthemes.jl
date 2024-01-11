@@ -28,7 +28,6 @@ sthemes = @gpkw Dict(
                      cntrlabel = "font ',7'",
                      cntrparam = "levels auto 10"
                     },
-    :hist_1d =>     {boxwidth = "0.8 relative", style = "fill solid 0.5", yrange = "[0:*]"},
     :scatter3 =>    {border = "4095",
                      grid = "xtics ytics ztics vertical",
                      xyplane = "relative 0.05"
