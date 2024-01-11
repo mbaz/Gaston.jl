@@ -153,7 +153,8 @@ meshgrid(x, y, f::F) where {F<:Function} = [f(xx,yy) for yy in y, xx in x]
 """
     hist(s::Vector{T}, nbins=10, normalize=false) where {T<:Real}
 
-Return the histogram of values in `s` using `nbins` bins. If `normalize` is true, the values of `s` are scaled so that `sum(s) == 1.0`.
+Return the histogram of values in `s` using `nbins` bins. If `normalize` is true,
+the values of `s` are scaled so that `sum(s) == 1.0`.
 """
 function hist(s ;
               edges        = nothing,
@@ -303,13 +304,14 @@ function producefigure(f::Figure ; output::String = "", term = config.term)
     # * default global value `config.term` (lowest)
     if config.alttoggle
         term = config.altterm
+        config.alttoggle = false
     end
     if term isa Symbol
         term = String(term)
     end
     # determine if this is a multiplot
     ismp = false
-    if length(f) > 1 && !contains(term, "animate")
+    if (length(f) > 1 && !contains(term, "animate")) || !isempty(f.multiplot)
         ismp = true
     end
 
@@ -335,7 +337,11 @@ function producefigure(f::Figure ; output::String = "", term = config.term)
     # if term is different than config.term, push it, and pop it after plotting is done
     term != config.term && write(iob, "set term push\n")
     term != "" && write(iob, "set term $(term)\n")
+
+    # if saving the plot
     output != "" && write(iob, "set output '$(output)'\n")
+
+    # handle multiplot
     ismp && write(iob, "set multiplot " * autolayout * f.multiplot * "\n")
     for axis in f.axes
         if isempty(axis) && ismp
@@ -351,7 +357,6 @@ function producefigure(f::Figure ; output::String = "", term = config.term)
     term != config.term && write(iob, "set term pop\n")
     seekstart(iob)
     gp_send(f, String(read(iob)))
-    config.alttoggle = false
 end
 
 Base.show(io::IO, ::MIME"text/plain", x::Figure) = internal_show(io, x)

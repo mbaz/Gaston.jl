@@ -62,7 +62,8 @@ function plot(args... ;
     end
 
     if (is3d && applicable(convert_args3, args...)) || (!is3d && applicable(convert_args, args...))
-        f.multiplot = po.mp_settings
+        # if figure has empty multiplot settings, use settings from recipe
+        isempty(f.multiplot) && (f.multiplot = po.mp_settings)
         for bundle in po.bundles
             if bundle.settings == ""
                 st = settings

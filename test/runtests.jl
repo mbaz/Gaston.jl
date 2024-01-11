@@ -151,6 +151,20 @@ end
     @test p.plotline == ""
     p = @gpkw Plot(1:10, {with="lines"})
     @test p.plotline == "with lines"
+    # test that an existing f.multiplot is not overwritten
+    f1 = Figure(multiplot = "title '1'")
+    plot(1:10)
+    @test f1.multiplot == "title '1'"
+    f2 = Figure(multiplot = "title '1'")
+    plot(f2, 1:10)
+    @test f2.multiplot == "title '1'"
+    f3 = Figure(multiplot = "title '1'")
+    plot(f3[1], 1:10)
+    @test f3.multiplot == "title '1'"
+    f4 = Figure(multiplot = "title '1'")
+    plot(f4[2], 1:10)
+    @test f4.multiplot == "title '1'"
+    closeall()
 end
 
 @testset "Axis" begin
