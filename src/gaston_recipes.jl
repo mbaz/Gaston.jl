@@ -258,15 +258,14 @@ barerror!(args... ; kwargs...) = plot!(args... ; kwargs..., ptheme = :boxerror)
 
 ## Histograms
 """
-    histogram(data, [axes,] bins=10, norm=1.0, args...) -> Gaston.Figure
+    histogram(data, [axes,] bins=10, mode = :none, args...) -> Gaston.Figure
 
-Plot a histogram of `data`. `bins` specifies the number of bins (default 10),
-and the histogram area is normalized to `norm` (default 1.0).
+Plot a histogram of `data`. `bins` specifies the number of bins (default 10);
+the histogram area is normalized according to `mode` (default `:none`).
 """
 function histogram(args... ;
                    edges                = nothing,
                    nbins                = 10,
-                   norm       :: Bool   = false,
                    mode       :: Symbol = :pdf,
                    horizontal :: Bool   = false,
                    kwargs...)
@@ -303,7 +302,7 @@ function histogram(args... ;
         end
     end
     if length(data) == 1
-        h = edges === nothing ? hist(data[1] ; nbins, norm, mode) : hist(data[1] ; edges,  norm, mode)
+        h = edges === nothing ? hist(data[1] ; nbins, mode) : hist(data[1] ; edges, mode)
         if horizontal
             return plot(front..., h, back... ; kwargs..., stheme = :histplot, ptheme = :horhist)
         else
@@ -311,8 +310,8 @@ function histogram(args... ;
         end
     else
         nbins isa Number && (nbins = (nbins, nbins))
-        h = edges === nothing ? hist(data[1], data[2] ; nbins, norm, mode) :
-                                hist(data[1], data[2] ; edges, norm, mode)
+        h = edges === nothing ? hist(data[1], data[2] ; nbins, mode) :
+                                hist(data[1], data[2] ; edges, mode)
         return plot(front..., h, back... ; kwargs..., ptheme = :image)
     end
 end

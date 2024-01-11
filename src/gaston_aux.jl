@@ -151,7 +151,7 @@ end
 meshgrid(x, y, f::F) where {F<:Function} = [f(xx,yy) for yy in y, xx in x]
 
 """
-    hist(s::Vector{T}, nbins=10, normalize=false) where {T<:Real}
+    hist(s::Vector{T}, nbins=10, norm=false) where {T<:Real}
 
 Return the histogram of values in `s` using `nbins` bins. If `normalize` is true,
 the values of `s` are scaled so that `sum(s) == 1.0`.
@@ -183,10 +183,9 @@ end
 
 # 2D histogram
 function hist(s1, s2 ;
-              edges        = nothing,
-              nbins        = (10, 10),
-              norm::Bool   = false,
-              mode::Symbol = :pdf)
+              edges          = nothing,
+              nbins          = (10, 10),
+              mode :: Symbol = :none)
     edg = edges
     if edges === nothing
         (ms1, Ms1) = extrema(s1)
@@ -208,7 +207,7 @@ function hist(s1, s2 ;
     end
 
     h = fit(Histogram, (s1, s2), edg)
-    norm && (h = normalize(h, mode=mode))
+    h = normalize(h, mode = mode)
 
     @debug "hist():" nbins collect(edges) h.weights
 

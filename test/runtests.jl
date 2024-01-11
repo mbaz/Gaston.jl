@@ -450,7 +450,7 @@ end
     @test f(1).settings == "set boxwidth 0.8 relative\nset style fill solid 0.5"
     @test f(1,1).plotline == "with boxerrorbars"
     @test f(1,2).plotline == "with boxerrorbars lc 'green'"
-    f = histogram(rand(10), nbins = 20, norm = true)
+    f = histogram(rand(10), nbins = 20, mode = :pdf)
     @test f isa Figure
     @test f(1).settings == "set boxwidth 0.8 relative\nset style fill solid 0.5\nset yrange [0:*]"
     @test f(1,1).plotline == "with boxes"
@@ -482,7 +482,7 @@ end
     @test f isa Figure
     @test f(1).settings == ""
     @test f(1,1).plotline == "with image"
-    f = histogram(rand(10), rand(10), nbins = 20, norm = true)
+    f = histogram(rand(10), rand(10), nbins = 20, mode = :pdf)
     @test f isa Figure
     @test f(1).settings == ""
     @test f(1,1).plotline == "with image"
