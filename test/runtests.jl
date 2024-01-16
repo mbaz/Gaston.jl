@@ -558,6 +558,15 @@ end
     plot(f[10], 1:10)
     @test f isa Figure
     @test length(f) == 10
+    @test imagesc(f[1], rand(5,5)) isa Figure
+    @test stem(f[2], rand(5)) isa Figure
+    @test stem!(f[2], rand(5)) isa Figure
+    @test scatter(f[4], rand(5), rand(5)) isa Figure
+    @test stem!(f[4], rand(5)) isa Figure
+    @test scatter3(f[5], rand(5), rand(5), rand(5)) isa Figure
+    @test contour(f[7], rand(5,5)) isa Figure
+    @test surfcontour(f[6], rand(5,5)) isa Figure
+    @test contour(f[7], rand(5,5)) isa Figure
 end
 
 @testset "Saving plots" begin

@@ -230,11 +230,11 @@ scatter!(args... ; kwargs...) = plot!(args... ; kwargs..., ptheme = :scatter)
 
 function stem(args... ; onlyimpulses = false, color = "'blue'", kwargs...)
     clr = color != "" ? "linecolor $(color)" : ""
-    f = plot(args..., clr; kwargs..., ptheme = :impulses)
+    plot(args..., clr; kwargs..., ptheme = :impulses)
     if !onlyimpulses
-        plot!(f, args..., clr ; kwargs..., ptheme = :stem)
+        plot!(args..., clr ; kwargs..., ptheme = :stem)
     end
-    return f
+    figure()
 end
 
 function stem!(args... ; onlyimpulses = false, color = "'blue'", kwargs...)
