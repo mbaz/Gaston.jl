@@ -135,13 +135,15 @@ end
     f = Figure()
     y = 1.1:0.5:10.6
     plot(y)
+    plot!(y)
+    plot(f[2], y)
     @plot({grid}, y, {w = "l", lc = Q"red"})
     f1 = (x,y) -> sin(sqrt(x*x+y*y))/sqrt(x*x+y*y)
     splot(f, (-5,5), f1)
     save(f, "test.png")
     rm("test.png")
     closeall()
-    reset()
+    gp_quit(f)
 end
 
 end
