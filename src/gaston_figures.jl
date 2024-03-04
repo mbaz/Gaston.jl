@@ -240,13 +240,21 @@ end
 List of all existing figures.
 """
 function listfigures(io::IO = stdin)
-    println(io, "Currently managing ", length(state.figures.figs), " figure(s).")
-    println(io, state.activefig)
+    L = length(state.figures.figs)
+    if L == 0
+        println(io, "Currently managing no figures.")
+    elseif L == 1
+        println(io, "Currently managing 1 figure:")
+    else
+        println(io, "Currently managing $L figures:")
+    end
     for idx in 1:length(state.figures.figs)
         h = state.figures.figs[idx].handle
         s = "Figure with index: $idx and handle: $h"
         if h == state.activefig
-            s = "(Active) "*s
+            s = "  (Active) "*s
+        else
+            s = "  "*s
         end
         println(io, s)
     end
