@@ -342,11 +342,11 @@ end
 ### 3-D recipes
 
 ## Wireframes
-wireframe(args... ; kwargs...) = splot(args... ; kwargs..., stheme = :wireframe)
+wireframe(args... ; kwargs...) = splot(args... ; kwargs..., stheme = :hidden3d)
 wireframe!(args... ; kwargs...) = splot!(args... ; kwargs...)
 
 ## Surfaces
-surf(args... ; kwargs...) = splot(args... ; kwargs..., stheme = :wireframe, ptheme = :pm3d)
+surf(args... ; kwargs...) = splot(args... ; kwargs..., stheme = :hidden3d, ptheme = :pm3d)
 surf!(args... ; kwargs...) = splot!(args... ; kwargs..., ptheme = :pm3d)
 
 # Surface with contours on the base
