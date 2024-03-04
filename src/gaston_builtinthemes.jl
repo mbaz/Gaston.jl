@@ -12,7 +12,7 @@ sthemes = @gpkw Dict(
     :boxplot =>     {boxwidth = "0.8 relative", style = "fill solid 0.5"},
     :histplot =>    {boxwidth = "0.8 relative", style = "fill solid 0.5", yrange = "[0:*]"},
     :imagesc =>     {yrange = "reverse"},
-    :wireframe =>   {hidden3d},
+    :hidden3d =>    {hidden3d},
     :wiresurf =>    {hidden3d, pm3d = "implicit depthorder border lc 'black' lw 0.3"},
     :heatmap =>     {view = "map"},
     :contour =>     {key       =  false,
