@@ -234,6 +234,24 @@ function figure(handle = state.activefig ; index = nothing)::Figure
     end
 end
 
+"""
+    listfigures()
+
+List of all existing figures.
+"""
+function listfigures(io::IO = stdin)
+    println(io, "Currently managing ", length(state.figures.figs), " figure(s).")
+    println(io, state.activefig)
+    for idx in 1:length(state.figures.figs)
+        h = state.figures.figs[idx].handle
+        s = "Figure with index: $idx and handle: $h"
+        if h == state.activefig
+            s = "(Active) "*s
+        end
+        println(io, s)
+    end
+end
+
 ## Indexing into figures/axes
 # It is possible to set/get plots and axes using indexing.
 # Important: accessing a non-assigned location in a figure will create that location (like in Makie).
