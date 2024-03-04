@@ -88,38 +88,25 @@ end
 Save active figure (or figure specified by `handle`) using the specified `term`. Optionally,
 the font, size, linewidth, and background may be specified as arguments.
 """
-function save(f::Figure ; term = "pngcairo font ',7'")
+function save(f::Figure ; output = nothing, term = "pngcairo font ',7'")
     # determine file name
-    ext = split(term)[1]
-    output = "figure-$(f.handle)."*ext
-    save(f, output ; term)
-end
-
-function save(output::AbstractString ; handle = state.activefig, term = "pngcairo font ',8'")
-    # determine target figure
-    f = figure(handle)
-    if ismissing(f)
-        error("Cannot save: no existing figure was specified.")
-    else
-        save(f::Figure, output ; term)
+    if isnothing(output)
+        # determine extension
+        ext = split(term)[1]
+        if length(ext) > 2
+            ext = ext[1:3]
+        end
+        output = "figure-$(f.handle)."*ext
     end
-end
-
-function save(; handle = state.activefig, term = "pngcairo font ',8'")
-    # determine target figure
-    f = figure(handle)
-    if ismissing(f)
-        error("Cannot save: no existing figure was specified.")
-    else
-        save(f::Figure ; term)
-    end
-end
-
-function save(f::Figure, output::AbstractString ; term = "pngcairo font ',8'") ;
-    # send print commands to gnuplot
-    @debug "save():" term output
     producefigure(f ; output, term)
     return nothing
+end
+
+save(; kwargs...) = save(figure() ; kwargs...)
+
+function save(handle ; kwargs...)
+    f = figure(handle)
+    save(f::Figure ; kwargs...)
 end
 
 "Return a list of available gnuplot terminals"

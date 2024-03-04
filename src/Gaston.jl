@@ -140,7 +140,7 @@ end
     @plot({grid}, y, {w = "l", lc = Q"red"})
     f1 = (x,y) -> sin(sqrt(x*x+y*y))/sqrt(x*x+y*y)
     splot(f, (-5,5), f1)
-    save(f, "test.png")
+    save(f, output = "test.png")
     rm("test.png")
     closeall()
     gp_quit(f)
