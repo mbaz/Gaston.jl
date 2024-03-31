@@ -68,6 +68,7 @@ end
 # initialize gnuplot
 function __init__()
     global P, gnuplot_state, GNUPLOT_VERSION
+    ccall(:jl_generating_output, Cint, ()) == 1 && return
 
     gnuplot_state.gnuplot_available = false
 
