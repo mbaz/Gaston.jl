@@ -16,8 +16,9 @@ import Base: display, show, isempty, push!, getindex, keys, merge,
 using Random
 using DelimitedFiles
 using ColorSchemes
+using PrecompileTools
 
-const GASTON_VERSION = v"1.1.0"
+const GASTON_VERSION = v"1.1.1"
 GNUPLOT_VERSION = v"0"
 
 # load files
@@ -82,30 +83,20 @@ function __init__()
         @warn "Gnuplot is not available on this system. Gaston will be unable to produce any plots."
     end
 
-    if gnuplot_state.gnuplot_available
-        ver_str = chomp(read(`gnuplot --version`, String))
-        for pair in ("gnuplot " => "", "patchlevel " => "", "." => " ")
-            ver_str = replace(ver_str, pair)
-        end
-        GNUPLOT_VERSION = VersionNumber(parse.(Int, split(ver_str, " "))...)
-        @assert GNUPLOT_VERSION > v"1"
-        gstdin = Pipe()
-        gstdout = Pipe()
-        gstderr = Pipe()
-        gproc = run(pipeline(`gnuplot`,
-                             stdin = gstdin, stdout = gstdout, stderr = gstderr),
-                    wait = false)
-        process_running(gproc) || error("There was a problem starting up gnuplot.")
-        close(gstdout.in)
-        close(gstderr.in)
-        close(gstdin.out)
-        Base.start_reading(gstderr.out)
-        P.gstdin = gstdin
-        P.gstdout = gstdout
-        P.gstderr = gstderr
-    end
-
     return nothing
+end
+
+@compile_workload begin
+    gnuplot_state.gnuplot_available = false
+    set(mode = "null")
+    y = 1.1:0.5:10.6
+    plot(y)
+    plot!(y)
+    f1 = (x,y) -> sin(sqrt(x*x+y*y))/sqrt(x*x+y*y)
+    surf(0:0.1:1, 0:0.1:1, f1)
+    closeall()
+    gnuplot_send("exit gnuplot\n")
+    set(reset = true)
 end
 
 end
