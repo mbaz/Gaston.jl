@@ -473,7 +473,11 @@ end
     @test_throws TypeError closefigure(1.0)
     @test_throws TypeError closefigure(1:2)
     # plot
-    @test_throws ArgumentError p = plot(0:10,0:11)
+    if VERSION < v"1.7-"
+        @test_throws ArgumentError p = plot(0:10,0:11)
+    else
+        @test_throws DimensionMismatch p = plot(0:10,0:11)
+    end
     #@test_throws DimensionMismatch surf([1,2],[3,4],[5,6,7])
     #@test_throws DimensionMismatch surf([1,2,3],[3,4],[5,6,7])
     #plot!
@@ -481,7 +485,11 @@ end
     @test_throws ErrorException p = plot!(0:10)
     # imagesc
     z = rand(5,6)
-    @test_throws ArgumentError imagesc(1:5,1:7,z)
+    if VERSION < v"1.7-"
+        @test_throws ArgumentError imagesc(1:5,1:7,z)
+    else
+        @test_throws DimensionMismatch imagesc(1:5,1:7,z)
+    end
     # histogram
     #@test_throws MethodError histogram(0:10+im*0:10)
     # save

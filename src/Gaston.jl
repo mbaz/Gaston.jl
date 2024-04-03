@@ -66,9 +66,27 @@ function showable(mime::MIME"image/svg+xml", f::Figure)
     return false
 end
 
+function gp_start()
+    global P
+    gstdin = Pipe()
+    gstdout = Pipe()
+    gstderr = Pipe()
+    gproc = run(pipeline(`gnuplot`,
+                         stdin = gstdin, stdout = gstdout, stderr = gstderr),
+                wait = false)
+    process_running(gproc) || error("There was a problem starting up gnuplot.")
+    close(gstdout.in)
+    close(gstderr.in)
+    close(gstdin.out)
+    Base.start_reading(gstderr.out)
+    P.gstdin = gstdin
+    P.gstdout = gstdout
+    P.gstderr = gstderr
+end
+
 # initialize gnuplot
 function __init__()
-    global P, gnuplot_state, GNUPLOT_VERSION
+    global gnuplot_state
 
     gnuplot_state.gnuplot_available = false
 
@@ -76,6 +94,7 @@ function __init__()
         code = success(`gnuplot --version`)
         if code
             gnuplot_state.gnuplot_available = true
+            gp_start()
         else
             @warn ("There was a problem starting gnuplot. Gaston will be unable to produce any plots.")
         end
