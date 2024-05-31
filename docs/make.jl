@@ -1,6 +1,7 @@
 using Documenter, Gaston
 
-makedocs(sitename = "Gaston.jl",
+makedocs(sitename = "Gaston.jl v1.x",
+         build = "build/v1",
          pages = [
                   "Home" => "index.md",
                   "Introduction to plotting" => "introduction.md",

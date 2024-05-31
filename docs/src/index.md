@@ -1,8 +1,8 @@
-```@meta
-Author = "Miguel Bazdresch"
-```
-
 # Gaston.jl
+
+!!! note "Gaston v1.x is in maintenance mode"
+    This documentation is for Gaston version 1.x. This version is no longer under development. It is
+    recommended to switch to [version 2](https://mbaz.github.io/Gaston.jl/v2/).
 
 Gaston (source code [here](https://github.com/mbaz/Gaston.jl)) is a Julia package for plotting. It provides an interface to [gnuplot](http://www.gnuplot.info), a mature, powerful, and actively developed plotting package available on all major platforms.
 

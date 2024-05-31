@@ -1,7 +1,3 @@
-```@meta
-Author = "Miguel Bazdresch"
-```
-
 # Introduction to plotting
 
 Gaston supports essentially all 2-D plots styles that gnuplot is capable of, including regular function plots, plots with logarithmic axes, scatter, stem and step plots, bar plots and histograms, images, etcetera.
