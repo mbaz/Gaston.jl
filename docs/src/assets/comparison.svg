@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.3.2 (091e20ef0f, 2023-11-25, custom)"
+   sodipodi:docname="comparison.svg"
+   inkscape:export-filename="comparison.png"
+   inkscape:export-xdpi="100.84991"
+   inkscape:export-ydpi="100.84991"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="true"
+     inkscape:zoom="2.1543544"
+     inkscape:cx="298.69737"
+     inkscape:cy="169.42431"
+     inkscape:window-width="1910"
+     inkscape:window-height="1057"
+     inkscape:window-x="5"
+     inkscape:window-y="18"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1">
+    <inkscape:grid
+       type="xygrid"
+       id="grid132"
+       originx="0"
+       originy="0"
+       spacingy="1"
+       spacingx="1"
+       units="mm"
+       visible="true" />
+  </sodipodi:namedview>
+  <defs
+     id="defs2">
+    <rect
+       x="236.52904"
+       y="100.76398"
+       width="202.63258"
+       height="76.973869"
+       id="rect894" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="font-variation-settings:normal;opacity:1;vector-effect:none;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:0.185208;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;-inkscape-stroke:none;stop-color:#000000;stop-opacity:1"
+       id="rect950"
+       width="163.70862"
+       height="68.537285"
+       x="6.509129"
+       y="17.477684" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:normal;font-family:'Iosevka MB';-inkscape-font-specification:'Iosevka MB, Normal';font-variant-ligatures:none;text-decoration-color:#000000;fill:#000000;stroke:#000000;stroke-width:0.055;stroke-dasharray:none;stop-color:#000000"
+       x="7.6665487"
+       y="31.009987"
+       id="text238"><tspan
+         sodipodi:role="line"
+         id="tspan236"
+         style="fill:#008000;stroke:none;stroke-width:0.055;stroke-dasharray:none"
+         x="7.6665487"
+         y="31.009987">$data &lt;&lt; EOD</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#008000;stroke:none;stroke-width:0.055;stroke-dasharray:none"
+         x="7.6665487"
+         y="36.301651"
+         id="tspan1480">1 1</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#008000;stroke:none;stroke-width:0.055;stroke-dasharray:none"
+         x="7.6665487"
+         y="41.593311"
+         id="tspan1482">3 9</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#008000;stroke:none;stroke-width:0.055;stroke-dasharray:none"
+         x="7.6665487"
+         y="46.884972"
+         id="tspan1484">5 25</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#008000;stroke:none;stroke-width:0.055;stroke-dasharray:none"
+         x="7.6665487"
+         y="52.176636"
+         id="tspan1486">EOD</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ff2a2a;stroke:none;stroke-width:0.055;stroke-dasharray:none"
+         x="7.6665487"
+         y="57.4683"
+         id="tspan1478">set grid</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ff2a2a;stroke:none;stroke-width:0.055;stroke-dasharray:none"
+         x="7.6665487"
+         y="62.75996"
+         id="tspan844">set xlabel 'time (s)'</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ff2a2a;stroke:none;stroke-width:0.055;stroke-dasharray:none"
+         x="7.6665487"
+         y="68.05162"
+         id="tspan846">set ylabel 'Amplitude'</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ff2a2a;stroke:none;stroke-width:0.055;stroke-dasharray:none"
+         x="7.6665487"
+         y="73.343285"
+         id="tspan848">set title 'A Sinusoid'</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ff2a2a;stroke:none;stroke-width:0.055;stroke-dasharray:none"
+         x="7.6665487"
+         y="78.634949"
+         id="tspan850">unset key</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#0000ff;stroke:none;stroke-width:0.055;stroke-dasharray:none"
+         x="7.6665487"
+         y="83.926605"
+         id="tspan890">plot <tspan
+   style="fill:#008000"
+   id="tspan1492">$data</tspan> with linespoints lc 'green'</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="scale(0.26458333)"
+       id="text892"
+       style="font-size:16px;line-height:normal;font-family:'Iosevka MB';-inkscape-font-specification:'Iosevka MB, Normal';font-variant-ligatures:none;text-decoration-color:#000000;white-space:pre;shape-inside:url(#rect894);display:inline;fill:#000000;stroke:#000000;stroke-width:0.7;-inkscape-stroke:none;stop-color:#000000" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:normal;font-family:'Iosevka MB';-inkscape-font-specification:'Iosevka MB, Normal';font-variant-ligatures:none;text-decoration-color:#000000;fill:#000000;stroke:#000000;stroke-width:0.185208;-inkscape-stroke:none;stop-color:#000000"
+       x="94.15609"
+       y="31.442474"
+       id="text1062"><tspan
+         sodipodi:role="line"
+         id="tspan1060"
+         style="fill:#008000;stroke:none;stroke-width:0.185208"
+         x="94.15609"
+         y="31.442474">x = [1, 3, 5]</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#008000;stroke:none;stroke-width:0.185208"
+         x="94.15609"
+         y="36.734138"
+         id="tspan1064">y = x .^ 2</tspan><tspan
+         sodipodi:role="line"
+         style="stroke:none;stroke-width:0.185208"
+         x="94.15609"
+         y="42.025799"
+         id="tspan1066">plot(&quot;&quot;&quot;<tspan
+   style="fill:#ff0000"
+   id="tspan1082">set grid</tspan></tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ff0000;stroke:none;stroke-width:0.185208"
+         x="94.15609"
+         y="47.317459"
+         id="tspan1068">        set xlabel 'time (s)'</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ff0000;stroke:none;stroke-width:0.185208"
+         x="94.15609"
+         y="52.609123"
+         id="tspan1070">        set ylabel 'Amplitude'</tspan><tspan
+         sodipodi:role="line"
+         style="fill:#ff0000;stroke:none;stroke-width:0.185208"
+         x="94.15609"
+         y="57.900787"
+         id="tspan1072">        set title 'A Sinusoid'</tspan><tspan
+         sodipodi:role="line"
+         style="stroke:none;stroke-width:0.185208"
+         x="94.15609"
+         y="63.192448"
+         id="tspan1074"><tspan
+           style="fill:#ff0000"
+           id="tspan1084">        unset key</tspan><tspan
+           id="tspan2"
+           style="fill:#1a1a1a">&quot;&quot;&quot;,</tspan></tspan><tspan
+         sodipodi:role="line"
+         style="stroke:none;stroke-width:0.185208"
+         x="94.15609"
+         y="68.484108"
+         id="tspan1076">     <tspan
+   style="fill:#008000"
+   id="tspan1080">x, y,</tspan></tspan><tspan
+         sodipodi:role="line"
+         style="stroke:none;stroke-width:0.185208"
+         x="94.15609"
+         y="73.775772"
+         id="tspan1078">     &quot;<tspan
+   style="fill:#0000ff"
+   id="tspan1086">with linespoints&quot;</tspan><tspan
+   id="tspan4"
+   style="fill:#1a1a1a">,</tspan></tspan><tspan
+         sodipodi:role="line"
+         style="stroke:none;stroke-width:0.185208"
+         x="94.15609"
+         y="79.067436"
+         id="tspan1392"><tspan
+   style="fill:#0000ff"
+   id="tspan1394">     <tspan
+   style="fill:#1a1a1a"
+   id="tspan1">&quot;</tspan>lc 'green'</tspan><tspan
+   id="tspan7"
+   style="fill:#1a1a1a">&quot;</tspan>)</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:normal;font-family:'Iosevka MB';-inkscape-font-specification:'Iosevka MB, Normal';font-variant-ligatures:none;text-decoration-color:#000000;fill:#000000;stroke:#000000;stroke-width:0.185208;-inkscape-stroke:none;stop-color:#000000"
+       x="7.8742886"
+       y="23.318083"
+       id="text1090"><tspan
+         sodipodi:role="line"
+         id="tspan1088"
+         style="font-style:oblique;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.64444px;font-family:'Iosevka MB';-inkscape-font-specification:'Iosevka MB, Oblique';font-variant-ligatures:none;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke:none;stroke-width:0.185208"
+         x="7.8742886"
+         y="23.318083">gnuplot</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.23333px;line-height:normal;font-family:'Iosevka MB';-inkscape-font-specification:'Iosevka MB, Normal';font-variant-ligatures:none;text-decoration-color:#000000;fill:#000000;stroke:#000000;stroke-width:0.185208;-inkscape-stroke:none;stop-color:#000000"
+       x="93.987694"
+       y="24.531637"
+       id="text1094"><tspan
+         sodipodi:role="line"
+         id="tspan1092"
+         style="font-style:oblique;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.64444px;font-family:'Iosevka MB';-inkscape-font-specification:'Iosevka MB, Oblique';font-variant-ligatures:none;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke:none;stroke-width:0.185208"
+         x="93.987694"
+         y="24.531637">Gaston</tspan></text>
+    <path
+       style="fill:#0000ff;fill-opacity:1;stroke:none;stroke-width:0.055;stroke-dasharray:none;stroke-opacity:1"
+       d="M 9.5062833,24.973673 C 148.10598,25.084493 148.10598,25.084493 148.10598,25.084493"
+       id="path1307" />
+    <circle
+       id="path3"
+       style="fill:#000000;stroke:none;stroke-width:1;stroke-dasharray:none"
+       cx="28.364759"
+       cy="25.133991"
+       r="0.082500003" />
+    <path
+       style="fill:#1a1a1a;stroke:#000000;stroke-width:0.4;stroke-dasharray:none"
+       d="m 93.91498,25.111219 17.47524,0.01146"
+       id="path4" />
+    <path
+       style="fill:#1a1a1a;stroke:#000000;stroke-width:0.4;stroke-dasharray:none"
+       d="M 8.0266452,25.210304 28.160585,25.075422"
+       id="path5" />
+  </g>
+</svg>
