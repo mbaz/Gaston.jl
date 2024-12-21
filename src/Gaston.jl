@@ -11,7 +11,7 @@ export plot, plot!, splot, splot!
 export figure, closefigure, closeall
 
 # Types
-export Figure, Axis, Plot, Plot3
+export Figure, MultiFigure
 
 # 2-D styled plots
 export scatter,  stem,  bar,  barerror, histogram, imagesc
@@ -129,6 +129,8 @@ function __init__()
    return nothing
 end
 
+#=
+
 @compile_workload begin
     state.enabled = true
     config.output = :null
@@ -145,5 +147,7 @@ end
     closeall()
     gp_quit(f)
 end
+
+=#
 
 end

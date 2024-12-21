@@ -67,7 +67,7 @@ end
 
 macro splot(ex...)
     args = (esc(procopts(v)) for v in ex)
-    :( splot($(args...)) )
+:( splot($(args...)) )
 end
 
 macro splot!(ex...)

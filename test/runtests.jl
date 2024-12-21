@@ -3,6 +3,8 @@
 ## This file is distributed under the 2-clause BSD License.
 
 using Test, Gaston, Aqua, JET
+using Gaston: Axis, Axis3, Plot
+import Gaston: convert_args, convert_args3
 
 gh = Gaston.gethandles
 reset = Gaston.reset
@@ -142,28 +144,28 @@ end
     @test_throws ArgumentError Plot()
     @test_throws ArgumentError Plot("w l")
     p = Plot(1:10, "w l")
-    @test p.is3d == false
     @test p.plotline == "w l"
-    p = Plot3(1:10, 1:10, 1:10, "w l")
-    @test p.is3d == true
+    p = Plot(1:10, 1:10, 1:10, "w l")
     @test p.plotline == "w l"
     p = Plot(1:10)
     @test p.plotline == ""
     p = @gpkw Plot(1:10, {with="lines"})
     @test p.plotline == "with lines"
     # test that an existing f.multiplot is not overwritten
-    f1 = Figure(multiplot = "title '1'")
+    f1 = MultiFigure("title '1'")
     plot(1:10)
-    @test f1.multiplot == "title '1'"
-    f2 = Figure(multiplot = "title '1'")
+    @test f1.mp_settings == ""
+    f2 = MultiFigure("title '1'")
     plot(f2, 1:10)
-    @test f2.multiplot == "title '1'"
-    f3 = Figure(multiplot = "title '1'")
+    @test f2.mp_settings == ""
+    f3 = MultiFigure("title '1'")
     plot(f3[1], 1:10)
-    @test f3.multiplot == "title '1'"
-    f4 = Figure(multiplot = "title '1'")
+    @test f3.mp_settings == "title '1'"
+    f4 = MultiFigure("title '1'")
     plot(f4[2], 1:10)
-    @test f4.multiplot == "title '1'"
+    @test f4.mp_settings == "title '1'"
+    f5 = MultiFigure()
+    @test f5.mp_settings == ""
     closeall()
 end
 
@@ -202,6 +204,10 @@ end
     @test length(a.plots) == 1
     @gpkw a = Axis({title = "1", grid})
     @test a.settings == "set title 1\nset grid"
+    a = Axis()
+    @test a.is3d == false
+    a = Axis3()
+    @test a.is3d == true
 end
 
 @testset "Figure and figure" begin
@@ -217,7 +223,7 @@ end
     f = Figure(π)
     @test f.handle == π
     @test f.gp_proc isa Base.Process
-    @test f.multiplot == ""
+    @test f.mp_settings == ""
     @test f.axes == Axis[]
     @test isempty(f)
     @test length(f) == 0
@@ -294,59 +300,33 @@ end
     @test @gpkw pp({legend=Q"title"}) == "title 'title'"
 end
 
-@testset "convert_args" begin
-    cc = Gaston.convert_args
-    PO = Gaston.PlotObject
-    ts(po::PO) = po.bundles[1].series[1].ts
-    pl(po::PO) = po.bundles[1].series[1].pl
+@testset "Argument conversion" begin
+    for arg in (1, (1,2), ComplexF64[1,2,3], (1:10, sin), ((1,10), sin), ((1,10,10), sin),
+                [1 2; 3 4], rand(4,3,4))
+        p = convert_args(arg...)
+        @test p isa Plot
+        @test p.plotline == ""
+    end
+    for arg in (1, (1,2), ComplexF64[1,2,3], (1:10, sin), ((1,10), sin), ((1,10,10), sin),
+                [1 2; 3 4], rand(4,3,4))
+        p = convert_args(arg..., pl = "test")
+        @test p isa Plot
+        @test p.plotline == "test"
+    end
+    for arg in ((1,2,3), rand(2,2), ([1,2], [3,4], (x,y)->y*sin(x)), ((x,y)->y*sin(x),))
+        p = convert_args3(arg..., pl = "test")
+        @test p isa Plot
+        @test p.plotline == "test"
+    end
 
-    po = cc(1)
-    @test ts(po) == ([1], [1])
-    @test pl(po) == ""
+    struct TestType end
+    tt = TestType()
+    Gaston.convert_args(x::TestType, args... ; pl = "", kwargs...) = true
+    @test convert_args(tt)
+    Gaston.convert_args3(x::TestType, args... ; pl = "", kwargs...) = true
+    @test convert_args3(tt)
 
-    po = cc(1, 2)
-    @test ts(po) == ([1], [2])
-    @test pl(po) == ""
-
-    po = cc([1,3])
-    @test ts(po) == ([1,2],[1,3])
-    @test pl(po) == ""
-
-    @test ts(cc(3:4)) == ([1,2],[3,4])
-    @test ts(cc(ComplexF64.([1,2], [3,4]))) == ([1,2], [3,4])
-
-    po = cc(t->1)
-    @test ts(po)[1] == range(-10,9.99,100)
-    @test ts(po)[2] == ones(Int, 100)
-    po = cc((1,2),t->1)
-    @test ts(po)[1] == range(1,2,100)
-    @test ts(po)[2] == ones(Int, 100)
-    po = cc((1,2,10),t->1)
-    @test ts(po)[1] == range(1,2,10)
-    @test ts(po)[2] == ones(Int,10)
-    po = cc(1:10,t->1)
-    @test ts(po)[1] == 1:10
-    @test ts(po)[2] == ones(Int,10)
-    po = cc([1 2; 3 4])
-    @test ts(po)[1] == 1:2
-    @test ts(po)[2] == 1:2
-    @test ts(po)[3] == [1 2 ; 3 4]
-    y = rand(3,4,5)
-    po = cc(y)
-    @test ts(po)[1] == 1:5
-    @test ts(po)[2] == 1:4
-    @test ts(po)[3] == y[1,:,:]
-    @test ts(po)[4] == y[2,:,:]
-    @test ts(po)[5] == y[3,:,:]
-
-    cc3 = Gaston.convert_args3
-    po = cc3(1,2,3)
-    @test ts(po) == ([1], [2], [3])
-    @test pl(po) == ""
-    @test ts(cc3([1 2; 3 4])) == ([1, 2], [1, 2], [1 2; 3 4])
-    @test ts(cc3([1 2 3; 3 4 5])) == ([1, 2, 3], [1, 2], [1 2 3; 3 4 5])
-    @test ts(cc3(1:2, 1:3, [1 2 3; 3 4 5])) == ([1, 2], [1, 2, 3], [1 2 3; 3 4 5])
-    # TODO: test histograms 
+    # TODO: test histograms
 end
 
 @testset "plot" begin

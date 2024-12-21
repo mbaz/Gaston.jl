@@ -5,17 +5,18 @@
 # Code related to figures.
 
 """
-    Plot(is3d, datafile, plotline)
+    Plot(datafile, plotline)
 
-Type to store the data needed to plot a curve: name of data file, a gnuplot plotline,
-and whether the plot is 3d.
+Type to store the data needed to plot a curve.
+
+* datafile: name (full path) of file where data to plot is stored
+* plotline: a gnuplot plotline associated with the data
 """
-struct Plot
-    is3d     :: Bool
-    datafile :: String
+mutable struct Plot
+    const datafile :: String
     plotline :: String
 
-    function Plot(args... ; is3d = false)
+    function Plot(args...)
         if isempty(args) || all(i -> isa(i, Union{String, Vector{<:Pair}}), args)
             throw(ArgumentError("No plot data provided."))
         end
@@ -30,46 +31,66 @@ struct Plot
         end
         datafile = tempname()
         writedata(datafile, args...)
-        new(is3d, datafile, plotline)
+        new(datafile, plotline)
     end
 end
 
-"""Instantiate a Plot with `is3d` set to `true`."""
-Plot3(args...) = Plot(args... ; is3d = true)
-
 """
-    Gaston.Axis(data, settings, plotlines)
+    Gaston.Axis(settings, plots, is3d)
 
 Type that stores all information required to create a 2-D or 3-D axis.
+
+* settings: stores the axis settings
+* plots: a vector of Plot, one per curve
+* is3d: determines if axis is generated with 'plot' or 'splot'
 """
 mutable struct Axis
-    settings :: String         # plot settings
-    plots    :: Vector{Plot}   # plot lines ("w lp pt 2 ps 3 ...."), one per curve
+    settings :: String         # axis settings
+    plots    :: Vector{Plot}   # one Plot per curve in the axis
+    is3d     :: Bool           # if true, 'splot' is used; otherwise, 'plot' is used
 end
 
 # Axis constructors
+Axis(x, y) = Axis(x, y, false)
+Axis3(x, y) = Axis(x, y, true)
+
 Axis() = Axis("", Plot[])
+Axis3() = Axis3("", Plot[])
 
 Axis(p::Plot) = Axis("", [p])
+Axis3(p::Plot) = Axis3("", [p])
 
 Axis(s::String) = Axis(s, Plot[])
+Axis3(s::String) = Axis3(s, Plot[])
 
 Axis(s::String, p::Plot) = Axis(s, [p])
+Axis3(s::String, p::Plot) = Axis3(s, [p])
 
 Axis(s::Vector{T}) where T <: Pair = Axis(parse_settings(s), Plot[])
+Axis3(s::Vector{T}) where T <: Pair = Axis3(parse_settings(s), Plot[])
 
 Axis(s::Vector{T}, p::Plot) where T <: Pair = Axis(parse_settings(s), [p])
+Axis3(s::Vector{T}, p::Plot) where T <: Pair = Axis3(parse_settings(s), [p])
+
+Axis(s::Vector{T}, p::Vector{Plot}) where T <: Pair = Axis(parse_settings(s), p)
+Axis3(s::Vector{T}, p::Vector{Plot}) where T <: Pair = Axis3(parse_settings(s), p)
+
+# Figures
+
+abstract type AbstractFigure end
 
 """
     Gaston.Figure
 
 Type that stores a figure.
 """
-mutable struct Figure
+mutable struct Figure <: AbstractFigure
     handle
-    gp_proc   :: Base.Process
-    multiplot :: String
-    axes      :: Vector{Axis}
+    gp_proc     :: Base.Process
+    axes        :: Vector{Axis}
+    is_mp       :: Bool
+    mp_auto     :: Bool
+    mp_settings :: String
 end
 
 """
@@ -92,18 +113,28 @@ Examples:
     f = Figure(multiplot = "title 'Title' font Sans,12")
 
 """
-function Figure(handle = nothing ; multiplot = "")
+function Figure(handle = nothing ; is_mp = false, mp_auto = false, mp_settings = "")
     global state
     handle === nothing && (handle = nexthandle())
     if handle ∈ gethandles()
         error("Figure with given handle already exists. Handle: ", handle)
     else
-        fig = finalizer(finalize_figure, Figure(handle, gp_start(), multiplot, Axis[]))
+        fig = finalizer(finalize_figure, Figure(handle,
+                                                gp_start(),
+                                                Axis[],
+                                                is_mp,
+                                                mp_auto,
+                                                mp_settings)
+                       )
         push!(state.figures.figs, fig)
         state.activefig = handle
     end
     @debug "Returning figure with handle: " handle
     return fig
+end
+
+function MultiFigure(settings = "", args... ; autolayout = true)
+    Figure(args... ; is_mp = true, mp_auto = autolayout, mp_settings = settings)
 end
 
 function finalize_figure(f::Figure)
@@ -114,9 +145,13 @@ function finalize_figure(f::Figure)
     @async gp_quit(f)
 end
 
+"""
+    When indexing a figure, a FigureAxis is returned. It contains the figure
+    itself along with the index.
+"""
 struct FigureAxis
-    f::Figure
-    a::Axis
+    f   :: Figure
+    idx :: Int
 end
 
 function push!(a::Axis, p::Plot)
@@ -137,7 +172,7 @@ function push!(f::Figure, p::Plot, index = 1)
     return f
 end
 
-push!(f::FigureAxis, p::Plot) = push!(f.a, p)
+push!(f::FigureAxis, p::Plot) = push!(f.f.axes[f.idx], p)
 
 function set!(a::Axis, s::String)
     a.settings = s
@@ -149,9 +184,13 @@ function set!(a::Axis, s::Vector{<:Pair})
     return a
 end
 
+"""
+    Allows indexing a Figure. If the indexed axis does not exists, create it.
+    Returns the Figure and the provided index.
+"""
 function getindex(f::Figure, idx)::FigureAxis
     ensure(f.axes, idx)
-    return FigureAxis(f, f.axes[idx])
+    return FigureAxis(f, idx)
 end
 
 getindex(a::Axis, idx)::Plot = a.plots[idx]
@@ -258,6 +297,19 @@ function listfigures(io::IO = stdin)
         end
         println(io, s)
     end
+end
+
+"""
+    reset!(f::Figure)
+
+    Reset figure f to its initial state, without restarting its associated
+    gnuplot process.
+"""
+function reset!(f::Figure)
+    f.axes = Axis[]
+    f.is_mp = false
+    f.mp_settings = ""
+    f.mp_auto = true
 end
 
 ## Indexing into figures/axes

@@ -2,7 +2,6 @@
 ##
 ## This file is distributed under the 2-clause BSD License.
 
-
 """
     plot(...) -> Gaston.Figure
 
@@ -33,17 +32,21 @@ See also [plot!](@ref), [splot](@ref).
 
 """
 function plot(args... ;
-              handle          = state.activefig,
-              is3d   ::Bool   = false,
-              stheme ::Symbol = :none,
-              ptheme ::Symbol = :none,
+              handle           = state.activefig,
+              splot  :: Bool   = false,  # true if called by splot
+              stheme :: Symbol = :none,
+              ptheme :: Symbol = :none,
               kwargs...
-             )::Figure
+             ) :: Figure
     @debug args
 
-    ### 1. Determine figure to use
-    (f, a, args) = whichfigaxis(handle, args...)
-    empty!(a) # remove all previous curves in this axis
+    ### 1. Determine figure and axis to use, and reset them as appropriate
+    # if no index is provided, the whole figure is reset and the first axis is used
+    (f, idx, args) = whichfigaxis(handle, args...)
+    if ismissing(idx)
+        reset!(f)
+        idx = 1
+    end
     @debug args
 
     ### 2. settings -- loop over all strings, symbols or Vector{Pairs} and join them
@@ -54,44 +57,50 @@ function plot(args... ;
     (plotline, args) = whichplotline(ptheme, args...)
     @debug args
 
-    ### 4. Populate figure
-    if is3d && applicable(convert_args3, args...)
+    ### 4. Apply recipe to arguments, if one exists
+    if splot && applicable(convert_args3, args...)
         po = convert_args3(args... ; kwargs...)
-    elseif applicable(convert_args, args...)
+    elseif !splot && applicable(convert_args, args...)
         po = convert_args(args...; kwargs...)
+    else
+        try
+            # if there is no conversion function, try to parse data directly
+            po = Plot(args...)
+        catch
+            err = """Gaston does not know how to plot this. The data provided has the following type(s):
+                  """
+            for i in eachindex(args)
+                err *= "           argument $i of type $(typeof(args[i]))\n"
+            end
+            error(err)
+        end
     end
 
-    if (is3d && applicable(convert_args3, args...)) || (!is3d && applicable(convert_args, args...))
-        # if figure has empty multiplot settings, use settings from recipe
-        isempty(f.multiplot) && (f.multiplot = po.mp_settings)
-        for bundle in po.bundles
-            if bundle.settings == ""
-                st = settings
-            elseif bundle.settings isa Symbol
-                st = join((parse_settings(sthemes[bundle.settings]), settings), "\n")
-            else
-                st = join((bundle.settings, settings), "\n")
-            end
-            set!(a, st)
-            for ts in bundle.series
-                pl = plotline
-                if ts.pl == ""
-                    pl = plotline
-                elseif ts.pl isa String
-                    pl = ts.pl
-                elseif ts.pl isa Symbol
-                    pl = parse_plotline(pthemes[ts.pl])
-                end
-                push!(a, Plot(ts.ts..., pl; ts.is3d))
-            end
-            if length(po.bundles) > 1
-                a = Axis()
-                push!(f, a)
-            end
+    ### 5. Build axis and place it in figure
+    if po isa Plot
+        ensure(f.axes, idx)
+        if isempty(po.plotline)
+            po.plotline = plotline
+        elseif !isempty(plotline)
+            po.plotline = join( (plotline, po.plotline, " ") )
         end
-    else
-        set!(a, settings)
-        push!(a, Plot(args..., plotline; is3d))
+        if splot
+            f.axes[idx] = Axis3(settings, po)
+        else
+            f.axes[idx] = Axis(settings, po)
+        end
+    elseif po isa Axis
+        po.settings = po.settings * "\n" * settings
+        if isempty(f)
+            push!(f, po)
+        else
+            f.axes[idx] = po
+        end
+    elseif po isa NamedTuple
+        f.axes = po.axes
+        f.mp_settings = po.mp_settings * settings
+        f.is_mp = po.is_mp
+        f.mp_auto = po.mp_auto
     end
 
     return f
@@ -109,46 +118,83 @@ Similar to `plot`, but adds a new curve to an existing axis.
 
 See also [plot](@ref).
 """
-function plot!(args... ; is3d = false, handle = state.activefig, ptheme = :none, kwargs...)::Figure
-    (f, a, args) = whichfigaxis(handle, args...)
-    # remove all arguments related to settings
+function plot!(args... ; splot = false, handle = state.activefig, ptheme = :none, kwargs...)::Figure
+    # determine figure and axis to use
+    (f, idx, args) = whichfigaxis(handle, args...)
+    if ismissing(idx)
+        idx = 1
+    end
+
+    # parse plotline
     while args[1] isa String || args[1] isa Vector{Pair} || args[1] isa Symbol
         args = args[2:end]
     end
     (plotline, args) = whichplotline(ptheme, args...)
 
-    if is3d && applicable(convert_args3, args...)
+    # apply recipe if one exists
+    if splot && applicable(convert_args3, args...)
         po = convert_args3(args... ; kwargs...)
-    elseif applicable(convert_args, args...)
+    elseif !splot && applicable(convert_args, args...)
         po = convert_args(args...; kwargs...)
+    else
+        try
+            # if there is no conversion function, try to parse data directly
+            po = Plot(args...)
+        catch
+            err = """Gaston does not know how to plot this. The data provided has the following type(s):
+                  """
+            for i in eachindex(args)
+                err *= "           argument $i of type $(typeof(args[i]))\n"
+            end
+            error(err)
+        end
     end
 
-    if (is3d && applicable(convert_args3, args...)) || applicable(convert_args, args...)
-        for bundle in po.bundles
-            for ts in bundle.series
-                pl = plotline
-                if isempty(ts.pl)
-                    pl = plotline
-                elseif ts.pl isa String
-                    pl = ts.pl
-                elseif ts.pl isa Symbol
-                    pl = parse_plotline(pthemes[ps.pl])
-                else
-                    pl = ""
-                end
-                push!(a, Plot(ts.ts..., pl; is3d))
-            end
+    if po isa Plot
+        ensure(f.axes, idx)
+        # For flexibility, we want to allow splot! before any splot commands. We want to make sure
+        # that, in this case, the axis is set to 3D.
+        if splot
+            f.axes[idx].is3d = true
         end
+        if isempty(po.plotline)
+            po.plotline = plotline
+        elseif !isempty(plotline)
+            po.plotline = join( (plotline, po.plotline, " ") )
+        end
+        push!(f.axes[idx], po)
     else
-        push!(a, Plot(args..., plotline; is3d))
+        error("Argument to plot! must be a single curve.")
     end
 
     return f
 end
 
+"""
+   splot(...) -> Figure
+
+Similar to [plot](@ref), but creates a 3D plot.
+
+# Example:
+
+Plot an equation in the specified range:
+`splot(-1:0.1:1, -1:0.1:1, (x,y)->sin(x)*cos(y))`
+
+See also: [plot](@ref), [splot!](@ref).
+"""
+splot(args... ; kwargs...) = plot(args... ; splot = true, handle = state.activefig, kwargs...)
+
+"""
+    splot!(...) -> Figure
+
+Similar to [splot](@ref), but adds a new surface to an existing plot.
+"""
+splot!(args... ; kwargs...) = plot!(args... ; splot = true, handle = state.activefig, kwargs...)
+
 struct DataTable
     data :: IOBuffer
 end
+
 function DataTable(vs::Vector{String})
     iob = IOBuffer()
     for l in vs
@@ -157,20 +203,22 @@ function DataTable(vs::Vector{String})
     DataTable(iob)
 end
 
-"Create and generate a table"
-function plotwithtable(settings::String, args...)
+"""Create and generate a table
+   splot = true -> 3d is assumed"""
+function plotwithtable(settings::String, args... ; splot = true)
     if applicable(convert_args3, args...)
         po = convert_args3(args...)
-        x = po.bundles[1].series[1].ts[1]
-        y = po.bundles[1].series[1].ts[2]
-        z = po.bundles[1].series[1].ts[3]
+        tmpf = po.datafile
+    elseif applicable(convert_args, args...)
+        po = convert_args(args...)
+        tmpf = po.datafile
     else
-        x, y, z = args
+        tmpf = tempname()
+        writedata(tmpf, args...)
     end
-    tmpf = tempname()
     tblf = tempname()
-    writedata(tmpf, x, y, z)
-    s = "set term unknown\n" * settings * "\nset table '$tblf'\n" * "splot '$tmpf'\n" * "unset table\n"
+    cmd = splot ? "splot" : "plot"
+    s = "set term unknown\n" * settings * "\nset table '$tblf'\n" * "$cmd '$tmpf'\n" * "unset table\n"
     gp_exec(s)
     table = readlines(tblf)
     rm(tmpf)
@@ -178,23 +226,35 @@ function plotwithtable(settings::String, args...)
     return DataTable(table)
 end
 
+"""
+    Return a figure and an index into its axes.
+
+    Provided arguments may be:
+    * f::Figure. Returns (f, missing, remaining args)
+    * f::FigureAxis. Returns (f, index, true, remaining args)
+    * Else, returns (f, missing, remaining args)
+"""
 function whichfigaxis(handle, args...)
+    index_provided = false
     if args[1] isa FigureAxis
         # plot(fig[1], ...)
-        (; f, a) = args[1]
+        (; f, idx) = args[1]
         args = Base.tail(args)
     elseif args[1] isa Figure
         # plot(fig, ...)
         f = args[1]
-        a = f(1)
+        idx = missing
         args = Base.tail(args)
     else
         # neither a figure nor an axis were given as first argument
-        handle ∈ gethandles() ? f = figure(handle) : f = Figure(handle)
-        a = f(1)
-        f.axes = [a]
+        if handle ∈ gethandles()
+            f = figure(handle)
+        else
+            f = Figure(handle)
+        end
+        idx = missing
     end
-    (f, a, args)
+    (f, idx, args)
 end
 
 function whichsettings(stheme, args...)
@@ -229,27 +289,6 @@ function whichplotline(ptheme, args...)
     ptheme != :none && pushfirst!(_plotline, parse_plotline(pthemes[ptheme]))  # insert theme given as argument
     (join(_plotline, " "), args)
 end
-
-"""
-   splot(...) -> Figure
-
-Similar to [plot](@ref), but creates a 3D plot.
-
-# Example:
-
-Plot an equation in the specified range:
-`splot(-1:0.1:1, -1:0.1:1, (x,y)->sin(x)*cos(y))`
-
-See also: [plot](@ref), [splot!](@ref).
-"""
-splot(args... ; kwargs...) = plot(args... ; kwargs..., is3d = true, handle = state.activefig)
-
-"""
-    splot!(...) -> Figure
-
-Similar to [splot](@ref), but adds a new surface to an existing plot.
-"""
-splot!(args... ; kwargs...) = plot!(args... ; kwargs..., is3d = true, handle = state.activefig)
 
 function animate(f::Figure, term = config.altterm)
     global config.alttoggle = true

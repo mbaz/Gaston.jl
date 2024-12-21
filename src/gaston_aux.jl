@@ -234,12 +234,11 @@ end
 
 function show(io::IO, a::Axis)
     p = length(a) == 1 ? "plot" : "plots"
-    print(io, "Gaston.Axis\n  length: $(length(a.plots)) $p")
+    println(io, "Gaston.Axis ($(a.is3d ? "3D" : "2D")) with $(length(a.plots)) $p")
 end
 
 function show(io::IO, p::Plot)
-    d = p.is3d ? "3d" : "2d"
-    print(io, "Gaston.Plot\n  $d\n  with plotline: \"$(p.plotline)\"")
+    println(io, "Gaston.Plot with plotline: \"$(p.plotline)\"")
 end
 
 function internal_show(io::IO, f::Figure)
@@ -295,16 +294,11 @@ function producefigure(f::Figure ; output::String = "", term = config.term)
     if term isa Symbol
         term = String(term)
     end
-    # determine if this is a multiplot
-    ismp = false
-    if (length(f) > 1 && !contains(term, "animate")) || !isempty(f.multiplot)
-        ismp = true
-    end
 
-    # auto-calculate multiplot layout if none given
-    # warning: here we're trying to be clever, there may be undiscovered edge cases
+    # auto-calculate multiplot layout if mp_auto is true
+    # note: here I'm trying to be clever, there may be undiscovered edge cases
     autolayout = ""
-    if ismp && isempty(f.multiplot)
+    if f.mp_auto
         if length(f) <= 2
             rows = 1
             cols = length(f)
@@ -312,8 +306,8 @@ function producefigure(f::Figure ; output::String = "", term = config.term)
             rows = 2
             cols = 2
         else
-            cols = 3
-            rows = ceil(Int, length(f)/3)
+            cols = ceil(Int, sqrt(length(f)))
+            rows = ceil(Int, length(f)/cols)
         end
         autolayout = " layout $rows, $cols "
     end
@@ -328,17 +322,19 @@ function producefigure(f::Figure ; output::String = "", term = config.term)
     output != "" && write(iob, "set output '$(output)'\n")
 
     # handle multiplot
-    ismp && write(iob, "set multiplot " * autolayout * f.multiplot * "\n")
+    f.is_mp && write(iob, "set multiplot " * autolayout * f.mp_settings * "\n")
     for axis in f.axes
-        if isempty(axis) && ismp
-            write(iob, "set multiplot next\n")
+        if isempty(axis)
+            if f.mp_auto
+                write(iob, "set multiplot next\n")
+            end
             continue
         else
             write(iob, axis.settings*"\n")
             write(iob, plotstring(axis)*"\n") # send plotline
         end
     end
-    ismp && write(iob, "unset multiplot\n")
+    f.is_mp && write(iob, "unset multiplot\n")
     output != "" && write(iob, "set output\n")
     term != config.term && write(iob, "set term pop\n")
     seekstart(iob)
@@ -361,7 +357,7 @@ function plotstring(a::Axis)
         push!(pstring, " '$(p.datafile)' " * p.plotline)
     end
     command = "plot "
-    a.plots[1].is3d && (command = "splot ")
+    a.is3d && (command = "splot ")
     command * join(pstring, ", ")
 end
 
