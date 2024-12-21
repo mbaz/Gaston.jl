@@ -1,16 +1,18 @@
 using Documenter, Gaston
 
+# Build docs.
 makedocs(sitename = "Gaston.jl",
+         build = "build/v2",
          pages = [
-                  "Home" => "index.md",
-                  "Introduction to plotting" => "introduction.md",
-                  "2-D plotting tutorial" => "2dplots.md",
-                  "3-D plotting tutorial" => "3dplots.md",
-                  "Extending Gaston" => "extending.md",
-                  "Managing multiple figures" => "figures.md",
-                  "Gallery" => ["2-D Plots" => "2d-gallery.md",
-                                "3-D Plots" => "3d-gallery.md"
-                                ],
-                  "Usage Notes and FAQ" => "faq.md",
-                 ]
+                  "Introduction" => "index.md",
+                  "Examples" => "examples.md",
+                  "Manual" => "plotguide.md",
+                  "Reference" => "api.md",
+                  ],
+         pagesonly = true,
+         format = Documenter.HTML(prettyurls = false), # set to true when deploying
+         authors = "Miguel Bazdresch and contributors",
 )
+
+# Make sure all gnuplot processes are closed.
+closeall()
