@@ -12,7 +12,7 @@ The terminal can be set by changing the value of `Gaston.config.term`; for examp
 ```julia
 Gaston.config.term = "pngcairo font ',10' size 700,400"
 ```
-To plot the terminals supported by gnuplot, run:
+To show the terminals supported by gnuplot, run:
 ```julia
 Gaston.terminals()
 ```
