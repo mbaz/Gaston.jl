@@ -174,6 +174,21 @@ end
 
 push!(f::FigureAxis, p::Plot) = push!(f.f.axes[f.idx], p)
 
+"""
+    push!(f1::Figure, f2::Figure)::Figure
+
+Inserts the first Axis of figure f2 into Figure f1.
+
+# Example
+```julia
+f1 = Figure()
+plot(sin)
+push!(f1, histogram(randn(100), bins = 10))
+"""
+function push!(f1::Figure, f2::Figure)::Figure
+    return push!(f1, f2.axes[1])
+end
+
 function set!(a::Axis, s::String)
     a.settings = s
     return a
