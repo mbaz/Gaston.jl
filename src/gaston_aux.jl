@@ -4,7 +4,11 @@
 
 # Auxiliary, non-exported functions are declared here.
 
-"Returns a new gnuplot process."
+"""
+    Gaston.gp_start()::Base.Process
+
+Returns a new gnuplot process.
+"""
 function gp_start()
     if state.enabled
         inp = Base.PipeEndpoint()
@@ -17,7 +21,11 @@ function gp_start()
     end
 end
 
-"End gnuplot process `process`"
+"""
+    Gaston.gp_quit(process::Base.Process)
+
+End gnuplot process `process`. Returns the exit code."
+"""
 function gp_quit(process::Base.Process)
     if state.enabled
         if process_running(process)
@@ -31,9 +39,18 @@ function gp_quit(process::Base.Process)
     end
 end
 
+"""
+    Gaston.gp_quit(f::Figure)
+
+End the gnuplot process associated with `f`. Returns the process exit code.
+"""
 gp_quit(f::Figure) = gp_quit(f.gp_proc)
 
-"Send string `message` to `process` and handle its response."
+"""
+    gp_send(process::Base.Process, message::String)
+
+Send string `message` to `process` and handle its response.
+"""
 function gp_send(process::Base.Process, message::String)
     if state.enabled
         if process_running(process)
@@ -68,10 +85,19 @@ function gp_send(process::Base.Process, message::String)
     end
 end
 
+"""
+    gp_send(f::Figure, message)
+
+Send string `message` to the gnuplot process associated with `f` and handle its response.
+"""
 gp_send(f::Figure, message) = gp_send(f.gp_proc, message)
 
-"Run an arbitrary gnuplot command and return gnuplot's stdout"
-function gp_exec(message::String)
+"""
+    gp_exec(message::AbstractString)
+
+Run an arbitrary gnuplot command and return gnuplot's stdout.
+"""
+function gp_exec(message::AbstractString)
     if state.enabled
         p = gp_start()
         (gpout, gperr) = gp_send(p, message)
@@ -83,33 +109,42 @@ function gp_exec(message::String)
 end
 
 """
-    save(term, output, [termopts,] [font,] [size,] [linewidth,] [background,] [handle]) -> nothing
+    save(f::Figure = figure(); filename = nothing, term = "pngcairo font ',7'")::Nothing
 
-Save active figure (or figure specified by `handle`) using the specified `term`. Optionally,
-the font, size, linewidth, and background may be specified as arguments.
+Save figure `f` using the specified terminal `term` and `filename`.
+
+If `filename` is not provided, the filename used is `"figure-handle.ext`, where
+`handle = f.handle` and `ext` is given by the first three characters of the
+current terminal.
 """
-function save(f::Figure ; output = nothing, term = "pngcairo font ',7'")
+function save(f::Figure = figure() ; filename = nothing, term = "pngcairo font ',7'")
     # determine file name
-    if isnothing(output)
+    if isnothing(filename)
         # determine extension
         ext = split(term)[1]
         if length(ext) > 2
             ext = ext[1:3]
         end
-        output = "figure-$(f.handle)."*ext
+        filename = "figure-$(f.handle)."*ext
     end
-    producefigure(f ; output, term)
+    producefigure(f ; filename, term)
     return nothing
 end
 
-save(; kwargs...) = save(figure() ; kwargs...)
+"""
+    save(handle; filename = nothing, term = "pngcairo font ',7'")::Nothing
 
+Save the figure with the given handle.
+"""
 function save(handle ; kwargs...)
     f = figure(handle)
     save(f::Figure ; kwargs...)
 end
 
-"Return a list of available gnuplot terminals"
+"""
+    Gaston.terminals()
+
+Return a list of available gnuplot terminals"""
 terminals() = print(gp_exec("set term"))
 
 "Enable or disable debug mode."
@@ -263,7 +298,7 @@ function internal_show(io::IO, f::Figure)
     if config.output == :echo
         @debug "Notebook plotting" config.term config.embedhtml
         tmpfile = tempname()
-        producefigure(f, output = tmpfile, term = config.term)
+        producefigure(f, filename = tmpfile, term = config.term)
         while !isfile(tmpfile) end  # avoid race condition with read in next line
         if config.embedhtml
             println(io, "<html><body>")
@@ -281,7 +316,7 @@ function internal_show(io::IO, f::Figure)
     return nothing
 end
 
-function producefigure(f::Figure ; output::String = "", term = config.term)
+function producefigure(f::Figure ; filename::String = "", term = config.term)
     iob = IOBuffer()
     # Determine which terminal to use. Precedence order is:
     # * `config.altterm` if `config.alttoggle` (highest)
@@ -294,6 +329,7 @@ function producefigure(f::Figure ; output::String = "", term = config.term)
     if term isa Symbol
         term = String(term)
     end
+    animterm = contains(term, "animate")  # this is an animation, not a multiplot
 
     # auto-calculate multiplot layout if mp_auto is true
     # note: here I'm trying to be clever, there may be undiscovered edge cases
@@ -319,10 +355,10 @@ function producefigure(f::Figure ; output::String = "", term = config.term)
     term != "" && write(iob, "set term $(term)\n")
 
     # if saving the plot
-    output != "" && write(iob, "set output '$(output)'\n")
+    filename != "" && write(iob, "set output '$(filename)'\n")
 
     # handle multiplot
-    (length(f.axes) > 1) && write(iob, "set multiplot " * autolayout * f.multiplot * "\n")
+    (length(f) > 1 && !animterm) && write(iob, "set multiplot " * autolayout * f.multiplot * "\n")
     for axis in f.axes
         if isempty(axis)
             if f.autolayout
@@ -334,8 +370,8 @@ function producefigure(f::Figure ; output::String = "", term = config.term)
             write(iob, plotstring(axis)*"\n") # send plotline
         end
     end
-    (length(f.axes) > 1) && write(iob, "unset multiplot\n")
-    output != "" && write(iob, "set output\n")
+    (length(f) > 1 && !animterm) && write(iob, "unset multiplot\n")
+    filename != "" && write(iob, "set output\n")
     term != config.term && write(iob, "set term pop\n")
     seekstart(iob)
     gp_send(f, String(read(iob)))

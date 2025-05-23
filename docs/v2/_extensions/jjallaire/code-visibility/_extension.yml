@@ -1,0 +1,6 @@
+title: Code Visibility
+author: fast.ai
+version: 1.0.0
+contributes:
+  filters:
+    - code-visibility.lua

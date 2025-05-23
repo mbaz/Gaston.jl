@@ -11,8 +11,8 @@ Type that stores the data needed to plot a curve.
 
 The constructor takes two arguments:
 
-* datafile: name (full path) of file where data to plot is stored.
-* plotline: a gnuplot plotline associated with the data.
+* `datafile`: name (full path) of file where data to plot is stored.
+* `plotline`: a gnuplot plotline associated with the data.
 """
 mutable struct Plot
     const datafile :: String
@@ -38,17 +38,17 @@ mutable struct Plot
 end
 
 """
-    Gaston.Axis(settings::String = "",
-                plots::Vector{Gaston.Plot} = Gaston.Plot[],
-                is3d::Bool = false)
+    Axis(settings::String           = "",
+         plots::Vector{Gaston.Plot} = Gaston.Plot[],
+         is3d::Bool                 = false)
 
 Type that stores the data required to create a 2-D or 3-D axis.
 
 The constructor takes the following arguments:
 
-* settings: stores the axis settings.
-* plots: a vector of Plot, one per curve.
-* is3d: determines if axis is generated with 'plot' or 'splot'.
+* `settings`: stores the axis settings.
+* `plots`: a vector of Plot, one per curve.
+* `is3d`: determines if axis is generated with `plot` or `splot`.
 """
 mutable struct Axis
     settings :: String         # axis settings
@@ -86,15 +86,15 @@ Axis3(s::Vector{T}, p::Vector{Plot}) where T <: Pair = Axis3(parse_settings(s), 
 abstract type AbstractFigure end
 
 """
-    Gaston.Figure
+    Figure
 
 Type that stores a figure. It has the following fields:
 
-* handle: the figure's unique identifier (it may be of any type).
-* gp_proc: the gnuplot process associated with the figure (type `Base.Process`).
-* axes: a vector of `Gaston.Axis`.
-* multiplot: a string with arguments to 'set multiplot'.
-* autolayout: `true` if the figure uses automatic layout (`Bool`).
+* `handle`: the figure's unique identifier (it may be of any type).
+* `gp_proc`: the gnuplot process associated with the figure (type `Base.Process`).
+* `axes`: a vector of `Gaston.Axis`.
+* `multiplot`: a string with arguments to `set multiplot`.
+* `autolayout`: `true` if Gaston should handle the figure's layout (`Bool`).
 """
 mutable struct Figure <: AbstractFigure
     handle
@@ -105,13 +105,21 @@ mutable struct Figure <: AbstractFigure
 end
 
 """
-    Gaston.Figure(h = nothing, autolayout = true, mp = "")::Gaston.Figure
+    Figure(h = nothing, autolayout = true, multiplot = "")::Figure
 
 Return an empty a figure with given handle. If `h === nothing`, automatically
 assign the next available numerical handle. A new gnuplot process is started
 and associated with the new figure, which becomes the active figure.
 
 If the handle provided already exists, an error is thrown.
+
+# Examples
+
+```{.julia}
+fig = Figure()   # new figure with next available numerical handle
+fig = Figure(5)  # new figure with handle 5 (if it was available)
+fig = Figure(multiplot = "'title 'test'") # new figure with multiplot settings
+```
 """
 function Figure(handle = nothing ; autolayout = true, multiplot = "")
     global state
@@ -125,6 +133,17 @@ function Figure(handle = nothing ; autolayout = true, multiplot = "")
     end
     @debug "Returning figure with handle: " handle
     return f
+end
+
+"""
+    (f::Figure)(index)::Gaston.Axis
+
+Return the axis stored at the specified index. If the axis does not exist, an
+empty axis is created.
+"""
+function (f::Figure)(idx)::Axis
+    ensure(f.axes, idx)
+    return f.axes[idx]
 end
 
 function finalize_figure(f::Figure)
@@ -227,16 +246,6 @@ end
 
 getindex(a::Axis, idx)::Plot = a.plots[idx]
 
-"""
-    (f::Figure)(index)::Axis
-
-Return the `Axis` at the specified index. If it does not exist, it is created.
-"""
-function (f::Figure)(idx)::Axis
-    ensure(f.axes, idx)
-    return f.axes[idx]
-end
-
 # Index into a Plot
 function (f::Figure)(idx1, idx2)::Plot
     return f.axes[idx1][idx2]
@@ -293,6 +302,8 @@ end
 
 Return specified figure (by handle or index) and make it the active
 figure.
+
+If no arguments are given, the current active figure is returned.
 """
 function figure(handle = state.activefig ; index = nothing)::Figure
     global state
@@ -317,7 +328,7 @@ end
 """
     Gaston.listfigures()
 
-List of all existing figures.
+Display a list of all existing figures.
 """
 function listfigures(io::IO = stdin)
     L = length(state.figures.figs)
@@ -353,28 +364,22 @@ function reset!(f::Figure)
 end
 
 """
-    closefigure(h = nothing)
+    closefigure(h = nothing)::Nothing
 
-Close figure with handle `h`. If no arguments are given, the
-active figure is closed. The most recent remaining figure (if
-any) is made active.
+Close figure with handle `h`. If no arguments are given, the active figure is
+closed. The most recent remaining figure (if any) is made active.
 
-Returns `nothing`.
+The associated gnuplot process is also terminated.
 
 # Examples
-```julia-repl
-julia> plot(sin, handle = :first);
 
-julia> plot(cos, handle = :second);
-
-julia> plot(tan, handle = :third);
-
-julia> closefigure()        # close figure with handle `:third`
-
-julia> closefigure(:first)  # close figure with handle `:first`
-
-julia> closefigure()        # close figure with handle `:second`
-
+```{.julia}
+plot(sin, handle = :first);
+plot(cos, handle = :second);
+plot(tan, handle = :third);
+closefigure()        # close figure with handle `:third`
+closefigure(:first)  # close figure with handle `:first`
+closefigure()        # close figure with handle `:second`
 ```
 """
 function closefigure(handle = nothing)
@@ -383,19 +388,19 @@ function closefigure(handle = nothing)
         error("Attempted to close figure with non-existing handle ", handle)
     end
     closefigure(figure(handle))
+    nothing
 end
 
 """
-    closefigure(fig::Figure)
+    closefigure(fig::Figure)::Nothing
 
-Closes the specified figure.
+Closes the specified figure. The associated gnuplot process is also terminated.
 
 # Example
-```julia-repl
-julia> p = plot(1:10);
 
-julia> closefigure(p)
-
+```{.julia}
+p = plot(1:10);
+closefigure(p)
 ```
 """
 function closefigure(fig::Figure)
@@ -404,14 +409,13 @@ function closefigure(fig::Figure)
     finalize(fig)
     deleteat!(state.figures.figs, getidx(fig))
     state.activefig = isempty(state.figures.figs) ? nothing : state.figures.figs[end].handle
+    nothing
 end
 
 """
-    closeall()
+    closeall()::Nothing
 
-Close all existing figures. Returns nothing.
-
-See also: [`closefigure`](@ref)
+Close all existing figures.
 """
 function closeall()
     while true
@@ -420,6 +424,7 @@ function closeall()
         end
         closefigure(state.figures.figs[end])
     end
+    nothing
 end
 
 """

@@ -18,7 +18,7 @@ export scatter,  stem,  bar,  barerror, histogram, imagesc
 export scatter!, stem!, bar!, barerror!
 
 # 3-D styled plots
-export surf,  scatter3,  wireframe,  wiresurf, surfcontour, contour,heatmap
+export surf,  scatter3,  wireframe,  wiresurf, surfcontour, contour, heatmap
 export surf!, scatter3!, wireframe!, wiresurf!
 
 # Saving and animations

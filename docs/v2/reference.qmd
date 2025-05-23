@@ -1,0 +1,291 @@
+---
+title: "API Reference"
+---
+
+TODO: add plotwithtable
+
+```{julia}
+#| echo: false
+#| output: false
+using Gaston
+using QuartoTools: Cell, MarkdownCell
+
+function quartodoc(title, doc)
+    docs = string(doc)
+    docs = replace(docs, "\n# Examples\n" => "\n**Examples**\n")
+    docs = replace(docs, "\n# Example\n" => "\n**Example**\n")
+    q = MarkdownCell("""
+        ::: {.callout-note icon=false title=$(title)}
+
+        $docs
+
+        :::
+
+        """)
+end
+```
+
+## Types and constructors
+
+```{julia}
+#| echo: false
+quartodoc("Figure", @doc Figure)
+```
+
+## Plot commands
+
+```{julia}
+#| echo: false
+quartodoc("plot", @doc plot)
+```
+
+```{julia}
+#| echo: false
+quartodoc("push!", @doc push!(::Figure, ::Figure))
+```
+
+```{julia}
+#| echo: false
+quartodoc("plot!", @doc plot!)
+```
+
+```{julia}
+#| echo: false
+quartodoc("splot", @doc splot)
+```
+
+```{julia}
+#| echo: false
+quartodoc("splot!", @doc splot!)
+```
+
+```{julia}
+#| echo: false
+quartodoc("@plot", @doc @plot)
+```
+
+```{julia}
+#| echo: false
+quartodoc("@plot!", @doc @plot!)
+```
+
+```{julia}
+#| echo: false
+quartodoc("@splot", @doc @splot)
+```
+
+```{julia}
+#| echo: false
+quartodoc("@splot!", @doc @splot!)
+```
+
+### Plotting with built-in themes
+
+These functions call `plot` behind the scenes, with settings and plotline taken
+from a built-in theme.
+
+```{julia}
+#| echo: false
+quartodoc("scatter", @doc scatter)
+```
+
+```{julia}
+#| echo: false
+quartodoc("scatter!", @doc scatter!)
+```
+
+```{julia}
+#| echo: false
+quartodoc("stem", @doc stem)
+```
+
+```{julia}
+#| echo: false
+quartodoc("stem!", @doc stem!)
+```
+
+```{julia}
+#| echo: false
+quartodoc("bar", @doc bar)
+```
+
+```{julia}
+#| echo: false
+quartodoc("bar!", @doc bar!)
+```
+
+```{julia}
+#| echo: false
+quartodoc("barerror", @doc barerror)
+```
+
+```{julia}
+#| echo: false
+quartodoc("barerror!", @doc barerror!)
+```
+
+```{julia}
+#| echo: false
+quartodoc("histogram", @doc histogram)
+```
+
+```{julia}
+#| echo: false
+quartodoc("imagesc", @doc imagesc)
+```
+
+```{julia}
+#| echo: false
+quartodoc("surf", @doc surf)
+```
+
+```{julia}
+#| echo: false
+quartodoc("surf!", @doc surf!)
+```
+
+```{julia}
+#| echo: false
+quartodoc("scatter3", @doc scatter3)
+```
+
+```{julia}
+#| echo: false
+quartodoc("scatter3", @doc scatter3!)
+```
+
+```{julia}
+#| echo: false
+quartodoc("wireframe", @doc wireframe)
+```
+
+```{julia}
+#| echo: false
+quartodoc("wireframe!", @doc wireframe!)
+```
+
+```{julia}
+#| echo: false
+quartodoc("wiresurf", @doc wiresurf)
+```
+
+```{julia}
+#| echo: false
+quartodoc("wiresurf!", @doc wiresurf!)
+```
+
+```{julia}
+#| echo: false
+quartodoc("surfcontour", @doc surfcontour)
+```
+
+```{julia}
+#| echo: false
+quartodoc("contour", @doc contour)
+```
+
+```{julia}
+#| echo: false
+quartodoc("heatmap", @doc heatmap)
+```
+
+## Recipes
+
+```{julia}
+#| echo: false
+quartodoc("Gaston.convert_args", @doc Gaston.convert_args)
+```
+
+```{julia}
+#| echo: false
+quartodoc("Gaston.convert_args3", @doc Gaston.convert_args3)
+```
+
+## Figure management
+
+```{julia}
+#| echo: false
+quartodoc("figure", @doc figure)
+```
+
+```{julia}
+#| echo: false
+quartodoc("closefigure", @doc closefigure)
+```
+
+```{julia}
+#| echo: false
+quartodoc("closeall", @doc closeall)
+```
+
+## Utility macros
+
+```{julia}
+#| echo: false
+quartodoc("@Q_str", @doc @Q_str)
+```
+
+```{julia}
+#| echo: false
+quartodoc("@gpkw", @doc @gpkw)
+```
+
+## Saving plots
+
+```{julia}
+#| echo: false
+quartodoc("save", @doc save)
+```
+
+## Animations
+
+```{julia}
+#| echo: false
+quartodoc("animate", @doc animate)
+```
+
+## Non-exported functions and types
+
+The following may be useful when extending or developing Gaston. These functions
+are not part of the official API and may be modified or removed in future versions.
+
+```{julia}
+#| echo: false
+quartodoc("Gaston.terminals", @doc Gaston.terminals)
+```
+
+```{julia}
+#| echo: false
+quartodoc("Gaston.listfigures", @doc Gaston.listfigures)
+```
+
+```{julia}
+#| echo: false
+quartodoc("Gaston.gp_start", @doc Gaston.gp_start)
+```
+
+```{julia}
+#| echo: false
+quartodoc("Gaston.gp_quit", @doc Gaston.gp_quit)
+```
+
+```{julia}
+#| echo: false
+quartodoc("Gaston.gp_send", @doc Gaston.gp_send)
+```
+
+```{julia}
+#| echo: false
+quartodoc("Gaston.gp_exec", @doc Gaston.gp_exec)
+```
+
+```{julia}
+#| echo: false
+quartodoc("Gaston.Plot", @doc Gaston.Plot)
+```
+
+```{julia}
+#| echo: false
+quartodoc("Gaston.Axis", @doc Gaston.Axis)
+```
+

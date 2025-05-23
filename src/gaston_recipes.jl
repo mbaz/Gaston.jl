@@ -8,34 +8,34 @@ convert_args() = throw(MethodError("Not implemented"))
 convert_args3() = throw(MethodError("Not implemented"))
 
 """
-    convert_args(...)
+    convert_args(args...)
 
 Convert values of specific types to data that gnuplot can plot.
 
-Users should add methods to this function for their own types. These
-methods must return a tuple of two sets of coordinates, `x` and `y`.
+Users should add methods to this function for their own types. The returned value
+must be one of the following types:
 
-# Example:
+* A `Gaston.Plot`, which describes a curve (i.e. it contains coordinates and a plotline).
+* A `Gaston.Axis`, which may contain multiple `Plot`s and axis settings.
+* A tuple with the following fields:
+  * `axes`: a vector of `Gaston.Axis`
+  * `multiplot`, a string to be passed to `set multiplot`
+  * `autolayout::Bool`, set to `true` if Gaston should control the axes layout.
 
-```
-julia> struct Data
-           x
-           y
-       end
+See the Gaston documentation for full details and examples.
 
-julia> data = Data(1:10, rand(10))
-julia> plot(data)
-ERROR: MethodError: no method matching ndims(::Data)
-```
-To plot `data::Data`, a method must be added to `convert_args`:
-```
-Gaston.convert_args(d::Data) = d.x, d.y
-```
-Now, `plot(data)` works as expected.
-
-See also: [`convert_args3`](@ref).
+To add a recipe for 3-D plotting, use `convert_args3`.
 """
 convert_args
+
+"""
+    convert_args3(args...)
+
+Convert values of specific types to data that gnuplot can plot using `splot`.
+
+See documentation for `convert_args` for more details.
+"""
+convert_args3
 
 # 2-D conversions
 
@@ -140,9 +140,35 @@ end
 
 ### Plot recipes
 
+"""
+    scatter(args...; kwargs...)::Figure
+
+Generate a scatter plot with built-in plotline theme `scatter`.
+
+See the `plot` documentation for more information on the arguments.
+"""
 scatter(args... ; kwargs...) = plot(args... ; kwargs..., ptheme = :scatter)
+
+"""
+    scatter!(args...; kwargs...)::Figure
+
+Insert a scatter plot. See the `scatter` documentation for more details.
+"""
 scatter!(args... ; kwargs...) = plot!(args... ; kwargs..., ptheme = :scatter)
 
+"""
+    stem(args...; onlyimpulses::Bool = false, color = "'blue'", kwargs...)::Figure
+
+Generate a stem plot with built-in plotline themes `impulses` and `stem`.
+
+This function takes the following keyword arguments:
+
+* `onlyimpulses`: if `true`, plot using only impulses and omit the dots.
+* `color`: specify line color to use. If not specified, the impulses and
+  the dots may be plotted with different colors.
+
+See the `plot` documentation for more information on the arguments.
+"""
 function stem(args... ; onlyimpulses = false, color = "'blue'", kwargs...)
     clr = color != "" ? "linecolor $(color)" : ""
     plot(args..., clr; kwargs..., ptheme = :impulses)
@@ -152,6 +178,11 @@ function stem(args... ; onlyimpulses = false, color = "'blue'", kwargs...)
     figure()
 end
 
+"""
+    stem!(args... ; onlyimpulses = false, color = "'blue'", kwargs...)::Figure
+
+Insert a stem plot. See the `stem` documentation for more details.
+"""
 function stem!(args... ; onlyimpulses = false, color = "'blue'", kwargs...)
     clr = color != "" ? "linecolor $(color)" : ""
     plot!(args..., clr; kwargs..., ptheme = :impulses)
@@ -161,22 +192,44 @@ function stem!(args... ; onlyimpulses = false, color = "'blue'", kwargs...)
 end
 
 """
-    bar([x,] y, [axes,] args...) -> Gaston.Figure
+    bar(args...; kwargs...)::Figure
 
-Generate a bar plot with axes configuration `axes`.
+Generate a bar plot with built-in settings theme `boxplot` and plotline theme `box`.
+See the `plot` documentation for more information on the arguments.
 """
 bar(args... ; kwargs...) = plot(args... ; kwargs..., stheme = :boxplot, ptheme = :box)
+
+"""
+    bar!(args...; kwargs...)::Figure
+
+Insert a bar plot. See the `bar` documentation for more details.
+"""
 bar!(args... ; kwargs...) = plot!(args... ; kwargs..., ptheme = :box)
 
+"""
+    barerror(args...; kwargs...)::Figure
+
+Generate a barerror plot with built-in settings theme `boxplot` and plotline theme
+`boxerror`. See the `plot` documentation for more information on the arguments.
+"""
 barerror(args... ; kwargs...) = plot(args... ; kwargs..., stheme = :boxplot, ptheme = :boxerror)
+
+"""
+    barerror!(args...; kwargs...)::Figure
+
+Insert a barerror plot. See the `barerror` documentation for more details.
+"""
 barerror!(args... ; kwargs...) = plot!(args... ; kwargs..., ptheme = :boxerror)
 
 ## Histograms
 """
-    histogram(data, [axes,] bins=10, mode = :none, args...) -> Gaston.Figure
+    histogram(args...,[bins = 10,] [mode = :pdf,] [edges = nothing,] [horizontal = false]; kwargs...)::Figure
 
-Plot a histogram of `data`. `bins` specifies the number of bins (default 10);
-the histogram area is normalized according to `mode` (default `:none`).
+Plot a histogram of the provided data, using `StatsBase.fit`. This function takes
+the following keyword arguments:
+
+* `bins` specifies the number of bins (default 10)
+* `mode` specifies how the histogram area is normalized (see `StatsBase.fit`)
 """
 function histogram(args... ;
                    edges                = nothing,
@@ -232,12 +285,14 @@ function histogram(args... ;
 end
 
 """
-    imagesc([x,] [y,] z, [axes,] args...) -> Gaston.Figure
+    imagesc(args...; kwargs...)::Figure
 
-Plot an image given by array `z`. If the array is a matrix, a grayscale image
-is assumed. If the array is three-dimensional, an rgbimage is assumed, with
-`z[1,:,:]` the red channel, `z[2,:,:]` the blue channel, and `z[3,:,:]` the
-blue channel.
+Plot an array as an image. If the array is a matrix, a grayscale image is
+assumed. If the given array `z` is three-dimensional, an rgbimage is assumed,
+with `z[1,:,:]` the red channel, `z[2,:,:]` the blue channel, and `z[3,:,:]`
+the blue channel.
+
+See the documentation to `plot` for more details.
 """
 function imagesc(args... ; kwargs...)
     rgb = false
@@ -257,14 +312,55 @@ end
 ### 3-D recipes
 
 ## Wireframes
+
+"""
+    wireframe(args...; kwargs...)::Figure
+
+Plot the provided data using a wireframe, using the settings theme `hidden3d`.
+
+See the `plot` documentation for more information on the arguments.
+"""
 wireframe(args... ; kwargs...) = splot(args... ; kwargs..., stheme = :hidden3d)
+
+"""
+    wireframe!(args...; kwargs...)::Figure
+
+Insert a wireframe plot. See the `wireframe` documentation for more details.
+"""
 wireframe!(args... ; kwargs...) = splot!(args... ; kwargs...)
 
 ## Surfaces
+
+"""
+    surf(args...; kwargs...)::Figure
+
+Plot the provided data as a surface, using the settings theme `hidden3d` and the
+plotline theme `pm3d`.
+
+See the `plot` documentation for more information on the arguments.
+"""
 surf(args... ; kwargs...) = splot(args... ; kwargs..., stheme = :hidden3d, ptheme = :pm3d)
+
+"""
+    surf!(args...; kwargs...)::Figure
+
+Insert a surface plot. See the `surf` documentation for more details.
+"""
 surf!(args... ; kwargs...) = splot!(args... ; kwargs..., ptheme = :pm3d)
 
 # Surface with contours on the base
+
+"""
+    surfcontour(args...; [labels::Bool = true,] kwargs...)::Figure
+
+Plot the provided data as a surface with contour lines at the base, using the
+settings theme `contourproj` and the plotline theme `labels`.
+
+If the keyword argument `labels` is `true`, then numerical labels are added to
+the contour lines.
+
+See the `plot` documentation for more information on the arguments.
+"""
 function surfcontour(args... ; labels = true, kwargs...)
     splot(args... ; kwargs..., stheme = :contourproj)
     if labels
@@ -274,22 +370,50 @@ function surfcontour(args... ; labels = true, kwargs...)
 end
 
 # surface with superimposed wireframe
+
+"""
+    wiresurf(args...; kwargs...)::Figure
+
+Plot the provided data as a surface with a superimposed wireframe, using the
+settings theme `wiresurf`.
+
+See the `plot` documentation for more information on the arguments.
+"""
 wiresurf(args... ; kwargs...) = splot(args... ; kwargs..., stheme = :wiresurf)
+
+"""
+    wiresurf!(args...; kwargs...)::Figure
+
+Insert a wiresurf plot. See the `wiresurf` documentation for more details.
+"""
 wiresurf!(args... ; kwargs...) = splot!(args... ; kwargs...)
 
 # 3D scatter plots
+
+"""
+    scatter3(args...; kwargs...)::Figure
+
+Generate a scatter plot of the provided data, using the settings theme `scatter3` and the
+plotline theme `scatter`.
+
+See the `plot` documentation for more information on the arguments.
+"""
 scatter3(args... ; kwargs...) = splot(args... ; kwargs..., stheme = :scatter3, ptheme = :scatter)
+
+"""
+    scatter3!(args...; kwargs...)::Figure
+
+Insert a scatter plot. See the `scatter3` documentation for more details.
+"""
 scatter3!(args... ; kwargs...) = splot!(args... ; kwargs..., ptheme = :scatter)
 
 """
-    contour([x,] [y,] z::Matrix, labels = true, [axes,] args...) -> Gaston.Figure
+    contour(args...; [labels::Bool = true,] kwargs...)::Figure
 
-Plot the contour lines given by the surface `z`. If `labels = false`, no labels
-are included in the plot.
+Plot the provided data using contour lines, with settings themes `countour` and `labels`.
 
-    contour(x, y, f::Function, args...) -> Gaston.Figure
-
-Plot the contours of the surface `f.(x,y)`.
+If the keyword argument `labels` is `true`, then the contour lines are labeled.
+See the documentation to `plot` for more details.
 """
 function contour(args... ; labels = true, kwargs...)
     splot(args... ; kwargs..., stheme = :contour)
@@ -300,8 +424,11 @@ function contour(args... ; labels = true, kwargs...)
 end
 
 """
-    heatmap(x, y, z::Matrix, [axes,] args...)
+    heatmap(args...; kwargs...)
 
-Plot the heatmap of the surface specified by `z`.
+Plot the data provided as a heatmap, using the settings theme `heatmap` and the
+plotline theme `pm3d`.
+
+See the documentation to `plot` for more details.
 """
 heatmap(args... ; kwargs...) = splot(args... ; kwargs..., stheme = :heatmap, ptheme = :pm3d)

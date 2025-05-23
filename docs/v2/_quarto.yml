@@ -1,0 +1,33 @@
+project:
+  type: website
+
+website:
+  title: "Gaston.jl"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Introduction
+      - href: examples.qmd
+        text: Examples
+      - href: manual.qmd
+        text: Manual
+      - href: reference.qmd
+        text: API Reference
+    tools:
+      - icon: github
+        href: https://github.com/mbaz/Gaston.jl
+
+format:
+  html:
+    theme:
+      - minty
+    css: styles.css
+    toc: true
+    embed-resources: true
+
+engines: ['julia']
+
+filters:
+  - code-visibility
+
+

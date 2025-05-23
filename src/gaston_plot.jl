@@ -3,33 +3,37 @@
 ## This file is distributed under the 2-clause BSD License.
 
 """
-    plot(...) -> Gaston.Figure
+    plot([f::Figure,] [indexed figure,], [settings...,] data..., [plotline...,] [kwargs...])::Figure
 
-Plot the coordinates provided in the arguments.
+Plot the provided data, returning a figure.
 
 Arguments (in order from left to right):
-* `f::Figure` (optional). If a figure `f` is given as argument, the plot will be
-  created in the first axis of `f`.
-* `a::Axis` (optional), usually provided as an indexed figure (for example `f[3]`).
-  The plot will be created in `a`.
-* Plot settings (optional, default ""). Settings may be provided as a string
-  (for example, "set view 30,60") or as a list of options in brackets (for example,
-  `{view = (30,60)}`, which requires using the `@gp` macro.
+* `f::Figure` (optional). If a figure `f` is given as argument, the figure is reset
+  (all previous axes are removed), and the new plot is created in the first axis of `f`.
+* An indexed figure (e.g. `f[3]`) (optional). The axis at the given index is cleared
+  (or created if it does not exist), and the plot is added to it.
+* Axis settings (optional, default `""`). See documentation for details on how to
+  specify these settings.
 * The data to be plotted. Data may be provided as vectors, ranges, matrices,
-  functions, etcetera.
-* A "plotline" (optional, default "") specifiying the plot formatting. This may
-  be a string or a list of options in brackets.
+  functions, etcetera (see documentation).
+* A plotline (optional, default `""`) specifiying the plot formatting. See
+  documentation for details on how to specify these settings.
+
+The figure to use for plotting may also be specified using the keyword argument
+`handle`.  Other keyword arguments are passed to `convert_args`, documented
+under [Recipes](reference.qmd#recipes).
 
 # Examples
 
-* `plot(1:10) # The simplest plot`
-* `@gp plot({title = "'test'"}, 1:10)  # Configure the axes`
-* `@gp plot({title = "'test'"}, 1:10, "w p")  # plot points only`
-* `plot(sin)  # plot the sine function from -10 to 10`
-* `plot(0:0.01:1, sin) # plot the sine function from 0 to 1`
+```{.julia}
+plot(1:10) # A simple plot
+plot("set title 'test'}, 1:10)  # Configure the axes
+plot("set title 'test'}, 1:10, "w p")  # Configure the axes and plotline
+plot(sin)  # plot the sine function from -10 to 10
+plot(0:0.01:1, sin) # plot the sine function at the given time instants
+```
 
-See also [plot!](@ref), [splot](@ref).
-
+See also `plot!` and `splot`.
 """
 function plot(args... ;
               handle           = state.activefig,
@@ -98,7 +102,6 @@ function plot(args... ;
         end
     elseif po isa NamedTuple
         f.axes = po.axes
-        f.mp_settings = po.mp_settings * settings
         f.multiplot = po.multiplot
         f.autolayout = po.autolayout
     end
@@ -107,16 +110,28 @@ function plot(args... ;
 end
 
 """
-    plot!(...) -> Figure
+    plot(f1::Figure, f2::Figure, ... ; kwargs...)::Figure
 
-Similar to `plot`, but adds a new curve to an existing axis.
+Return a new figure whose axes come from the figures provided in the arguments.
+"""
+plot #TODO
 
-# Example
+"""
+    plot!(...)::Figure
 
-```plot(1:10)        # plot a curve
-   plot!((1:10.^2))  # add a second curve```
+Similar to `plot`, but adds a new curve to an axis. If the axis does not exist, it
+is created. However, `plot!` does not support specification of the axis settings.
 
-See also [plot](@ref).
+# Examples
+
+```{.julia}
+plot(1:10)        # plot a curve
+plot!((1:10.^2))  # add a second curve
+f = plot(sin)     # store new plot in f
+plot!(f, cos)     # add second curve to plot
+```
+
+See documentation to `plot` for more details.
 """
 function plot!(args... ; splot = false, handle = state.activefig, ptheme = :none, kwargs...)::Figure
     # determine figure and axis to use
@@ -171,23 +186,26 @@ function plot!(args... ; splot = false, handle = state.activefig, ptheme = :none
 end
 
 """
-   splot(...) -> Figure
+    splot(...)::Figure
 
-Similar to [plot](@ref), but creates a 3D plot.
+Similar to plot, but creates a 3D plot.
 
-# Example:
+# Example
 
-Plot an equation in the specified range:
-`splot(-1:0.1:1, -1:0.1:1, (x,y)->sin(x)*cos(y))`
+```{.julia}
+splot(-1:0.1:1, -1:0.1:1, (x,y)->sin(x)*cos(y)) # Plot an equation in the specified range
+```
 
-See also: [plot](@ref), [splot!](@ref).
+See documentation to `plot` for more details.
 """
 splot(args... ; kwargs...) = plot(args... ; splot = true, handle = state.activefig, kwargs...)
 
 """
     splot!(...) -> Figure
 
-Similar to [splot](@ref), but adds a new surface to an existing plot.
+Similar to `splot`, but adds a new surface to an existing plot.
+
+See documentation to `plot!` for more details.
 """
 splot!(args... ; kwargs...) = plot!(args... ; splot = true, handle = state.activefig, kwargs...)
 
@@ -203,8 +221,11 @@ function DataTable(vs::Vector{String})
     DataTable(iob)
 end
 
-"""Create and generate a table
-   splot = true -> 3d is assumed"""
+"""
+    plotwithtable(settings, args... ; splot = true)
+
+Create and generate a table. 3D is assumend, so `splot` default to `true`.
+"""
 function plotwithtable(settings::String, args... ; splot = true)
     if applicable(convert_args3, args...)
         po = convert_args3(args...)
@@ -227,12 +248,14 @@ function plotwithtable(settings::String, args... ; splot = true)
 end
 
 """
-    Return a figure and an index into its axes.
+    whichfigaxis(handle, args...)
 
-    Provided arguments may be:
-    * f::Figure. Returns (f, missing, remaining args)
-    * f::FigureAxis. Returns (f, index, true, remaining args)
-    * Else, returns (f, missing, remaining args)
+Return a figure and an index into its axes.
+
+Provided arguments may be:
+* f::Figure. Returns (f, missing, remaining args)
+* f::FigureAxis. Returns (f, index, true, remaining args)
+* Else, returns (f, missing, remaining args)
 """
 function whichfigaxis(handle, args...)
     index_provided = false
@@ -257,6 +280,11 @@ function whichfigaxis(handle, args...)
     (f, idx, args)
 end
 
+"""
+    whichsettings(stheme, args...)
+
+Return a settings string.
+"""
 function whichsettings(stheme, args...)
     _settings = String[]
     stheme != :none && push!(_settings, parse_settings(sthemes[stheme]))  # insert theme given as argument
@@ -274,6 +302,11 @@ function whichsettings(stheme, args...)
     (join(_settings, "\n"), args)
 end
 
+"""
+    whichplotline(stheme, args...)
+
+Return a plotline string.
+"""
 function whichplotline(ptheme, args...)
     _plotline = String[]
     while true
@@ -290,6 +323,18 @@ function whichplotline(ptheme, args...)
     (join(_plotline, " "), args)
 end
 
+"""
+    animate(f::Figure, term = config.altterm)
+
+Render an animated plot in notebooks such as Pluto and Jupyter.
+
+This function is meant to be used to render an animation within a notebook environment.
+Normally, all plots are rendered in a terminal such as `png`. However, rendering an
+animation requires switching to `gif`, `webp` or other terminal that supports animations.
+Changing the global terminal configuration wil cause all other plots in the notebook to
+be re-rendered with the wrong terminal. This function allows changing the terminal
+on a plot-by-plot basis, without changing the global terminal configuration.
+"""
 function animate(f::Figure, term = config.altterm)
     global config.alttoggle = true
     global config.altterm = term
