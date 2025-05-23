@@ -152,20 +152,20 @@ end
     p = @gpkw Plot(1:10, {with="lines"})
     @test p.plotline == "with lines"
     # test that an existing f.multiplot is not overwritten
-    f1 = MultiFigure("title '1'")
+    f1 = Figure(multiplot = "title '1'")
     plot(1:10)
-    @test f1.mp_settings == ""
-    f2 = MultiFigure("title '1'")
+    @test f1.multiplot == ""
+    f2 = Figure(multiplot = "title '1'")
     plot(f2, 1:10)
-    @test f2.mp_settings == ""
-    f3 = MultiFigure("title '1'")
+    @test f2.multiplot == ""
+    f3 = Figure(multiplot = "title '1'")
     plot(f3[1], 1:10)
-    @test f3.mp_settings == "title '1'"
-    f4 = MultiFigure("title '1'")
+    @test f3.multiplot == "title '1'"
+    f4 = Figure(multiplot = "title '1'")
     plot(f4[2], 1:10)
-    @test f4.mp_settings == "title '1'"
-    f5 = MultiFigure()
-    @test f5.mp_settings == ""
+    @test f4.multiplot == "title '1'"
+    f5 = Figure()
+    @test f5.multiplot == ""
     closeall()
 end
 
@@ -223,7 +223,7 @@ end
     f = Figure(π)
     @test f.handle == π
     @test f.gp_proc isa Base.Process
-    @test f.mp_settings == ""
+    @test f.multiplot == ""
     @test f.axes == Axis[]
     @test isempty(f)
     @test length(f) == 0
