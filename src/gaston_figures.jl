@@ -158,18 +158,19 @@ end
 push!(f::FigureAxis, p::Plot) = push!(f.f.axes[f.idx], p)
 
 """
-    push!(f1::Figure, f2::Figure)::Figure
+    push!(f1::Figure, f2::Figure; index = 1)::Figure
 
-Inserts the first Axis of figure f2 into Figure f1.
+Inserts the Axis of figure f2 at the given index into Figure f1.
 
 # Example
 ```julia
-f1 = Figure()
-plot(sin)
-push!(f1, histogram(randn(100), bins = 10))
+f1 = plot(sin)
+f2 = Figure()
+histogram(randn(100), bins = 10)  # plots on f2
+push!(f1, f2)  # insert the histogram as second axis of f1
 """
-function push!(f1::Figure, f2::Figure)::Figure
-    push!(f1.axes, f2.axes[1])
+function push!(f1::Figure, f2::Figure; index = 1)::Figure
+    push!(f1.axes, f2(index))
     return f1
 end
 
