@@ -1,94 +1,122 @@
-```@meta
-Author = "Miguel Bazdresch"
-```
+# Introduction
 
-# Gaston.jl
+[Gnuplot](http://www.gnuplot.info/) is a venerable (but actively
+developed), very powerful and fast program for plotting.
+[Julia](https://julialang.org) is a very powerful language for numerical
+computing.  [Gaston](https://github.com/mbaz/Gaston.jl) is a package for
+plotting Julia data and functions using gnuplot.
 
-Gaston (source code [here](https://github.com/mbaz/Gaston.jl)) is a Julia package for plotting. It provides an interface to [gnuplot](http://www.gnuplot.info), a mature, powerful, and actively developed plotting package available on all major platforms.
+The following diagram illustrates how Gaston works. On the left there is a
+gnuplot script; the equivalent Gaston function call is on the right.
 
-Gaston emphasizes easy and fast plotting on the screen, notebook or IDE. Knowledge of gnuplot is not required, but some familiarity is beneficial. Gaston also exposes the full power of gnuplot, for more expert users.
+![comparison](assets/comparison.png)
 
-```@example t2
-using Gaston, SpecialFunctions
-set(reset=true) # hide
-set(termopts="size 550,325 font 'Consolas,11'") # hide
-x = y = 0:0.075:10
-surf(x, y, (x,y) -> besselj0(y)*x^2, with = "pm3d",
-     Axes(view = (45, 45),
-          pm3d = "lighting primary 0.5 specular 0.4",
-          key = :off)
-     )
-```
+The data to plot is in green color. In gnuplot, the data can be provided
+inline as a _data block_ (as in this example), or it can be provided in a
+separate file. Gaston can plot data stored in arrays (`x` and `y` in this
+example). Gaston also supports recipes to plot arbitrary Julia types.
 
-(Image inspired by [What's new in gnuplot 5.2?](https://lwn.net/Articles/723818/))
+The lines in red specify the _axes settings_, affecting things like the
+presence of a grid, the title, the legend box, tics positions/labels, etc.
+Finally, in blue color, the _plot settings_ or _plotline_ specify the
+properties of one specific curve within the axes (for example, the line
+color, thickness and style, which marker to use, etc.)
 
-## Gaston features
+There is a close correspondence between gnuplot and Gaston commands; in
+fact, the main purpose of Gaston is to translate the Julia code on the
+right to the gnuplot commands on the left. Gaston has two main features:
 
-* Plot using graphical windows, and keeping multiple plots active at a time, with mouse interaction. A browser is not required to show plots.
-* Plot also directly to the REPL, using text (ASCII) or [sixels](https://en.wikipedia.org/wiki/Sixel).
-* Plot in Jupyter, Juno or VS Code.
-* "Recipes" to generate common 2-D and 3-D plots, such as stem plots, histograms, images, surfaces, contour and heatmaps.
-* Easy definition of custom plotting commands for specific types, or with specific defaults.
-* Save plots to multiple formats, including pdf, png and svg.
-* Color palettes from [ColorSchemes.jl](https://github.com/JuliaGraphics/ColorSchemes.jl).
-* Export plots for integration into Latex documents.
-* A simple interface to almost the full power of gnuplot, for users who have more experience with it.
-* Fast first plot: load package, plot, and save to pdf in less than six seconds. Subsequent plots take a few hundreds of milliseconds.
-* A simple interface to manage multiple plots, using commands such as `figure()`, `closeall()`, etc.
+* It provides convenient, flexible syntax for plotting, along with common
+  2-D and 3-D plot styles.
+* It provides a simple mechanism to add user-defined recipes for plotting
+  arbitrary Julia types.
 
-### Gaston and Gnuplot.jl: two philosophies
+Other features are:
 
-[Gnuplot.jl](https://github.com/gcalderone/Gnuplot.jl) is another front-end for gnuplot, with comparable capabilities to Gaston. An example serves to illustrate the differences in how the two packages approach the interface problem. Consider [this example plot](https://gcalderone.github.io/Gnuplot.jl/v1.3.0/basic/#Multiple-datasets,-logarithmic-axis,-labels-and-colors,-etc.-1):
+* Support for plotting in separate GUI windows, in the terminal (with text
+  or [sixels](https://en.wikipedia.org/wiki/Sixel)), in VS Code, or in
+  notebooks (such as Jupyter and Pluto).
+* Handling multiple co-existing interactive GUI plot windows.
+* Support for (user-defined) themes.
+* Convenient commands for common types of plots (like histograms, contour
+  plots, surface plots, heatmaps, etcetera).
+* Convenient syntax for creating multiplots and animations.
+* Saving plots to multiple formats, including pdf, png and svg.
+* Integrated color palettes from
+  [ColorSchemes.jl](https://github.com/JuliaGraphics/ColorSchemes.jl).
 
-```julia
-x = 1:0.1:10
-@gp    "set grid" "set key left" "set logscale y"
-@gp :- "set title 'Plot title'" "set label 'X label'" "set xrange [0:*]"
-@gp :- x x.^0.5 "w l tit 'Pow 0.5' dt 2 lw 2 lc rgb 'red'"
-@gp :- x x      "w l tit 'Pow 1'   dt 1 lw 3 lc rgb 'blue'"
-@gp :- x x.^2   "w l tit 'Pow 2'   dt 3 lw 2 lc rgb 'purple'"
-```
+## Learning gnuplot
 
-This shows that Gnuplot.jl essentially allows one to write gnuplot commands directly in Julia. The same plot in Gaston would be:
+This documentation assumes at least a basic understanding of gnuplot. Some
+pointers to get started with gnuplot are:
+* The [official documentation](http://www.gnuplot.info/documentation.html).
+* The [official list of tutorials](http://www.gnuplot.info/help.html).
+* [Plotting data](http://www.gnuplotting.org/plotting-data/) article on
+  [gnuplotting.org](http://www.gnuplotting.org/).
+* [A blog post about Gaston by Julia
+  Frank](https://juliaifrank.com/gnuplot-with-julia-for-beautiful-graphics/).
+* Stackoverflow has a [gnuplot
+  tag](https://stackoverflow.com/questions/tagged/gnuplot) with answers to
+  more than 6,500 questions.
 
-```@example t2
-x = 1:0.1:10
-plot(x, x.^0.5,
-     w = "l",
-     legend = "'Pow 0.5'",
-     dt = 2,
-     lw = 2,
-     lc = :red,
-     Axes(grid = :on,
-          key = "left",
-          axis = "semilogy"))
-plot!(x, x,
-      w = :l,
-      leg = :Pow_1,
-      dt = 1,
-      lw = 3,
-      lc = :blue)
-plot!(x, x.^2,
-      curveconf = "w l tit 'Pow 2' dt 3 lw 2 lc 'purple'")
-```
-
-In summary, Gaston offers a function-based interface, and gnuplot commands can be specified in a few different ways, with convenient notation, such as the optional use of "legend" instead of gnuplot's "title", symbols to avoid typing quote marks (") all the time, and others that are described later in this document.
+The following are interesting plot galleries:
+* [Official gnuplot demo
+  gallery](http://www.gnuplot.info/screenshots/index.html#demos).
+* [Wikimedia commons
+  gallery](https://commons.wikimedia.org/wiki/Category:Gnuplot_diagrams).
+* [Nice collection of volumetric
+  plots](https://ayapin-film.sakura.ne.jp/Gnuplot/pm3d.html).
 
 ## Installation
 
-Gaston requires Julia version 1.3.0 or above, and requires Gnuplot version 5.0 or above (version 5.2.8 is recommended). You should install gnuplot on your system prior to using Gaston. On Linux, it is highly recommended that you select a version with support for Qt: on Debian and Ubuntu, you will need `gnuplot-qt`.
+Gaston v2.x requires Julia version 1.8.0 or above (Gaston v1.x supports
+Julia 1.6 and above), and has been tested with gnuplot versions 5 and 6.
+You should manually install gnuplot on your system prior to using Gaston.
+On Linux, it is highly recommended that you select a version with Qt
+support: on Debian and Ubuntu, you will need `gnuplot-qt`. On Arch and its
+derivatives, a simple `pacman -S gnuplot` suffices.  Gnuplot also supports
+Windows and Mac.
 
 To install Gaston from the Julia REPL, run
-
 ```julia
 julia> ]add Gaston
 ```
+Typing `]` switches the Julia REPL to the package manager, and the `add`
+command installs the package. To exit the package manager, hit the backspace
+key.
+Load Gaston into your Julia session with
+```julia
+using Gaston
+```
 
-Typing `]` switches the Julia REPL to the package manager, and the `add` command installs the package. To exit the package manager, hit the backspace key.
+!!! note "Specifying the location of gnuplot"
+    The location of the gnuplot executable can be specified with the environmental variable
+    `JULIA_GNUPLOT_EXE`. If gnuplot is in the system's path, setting this variable is not
+    necessary.
 
-## Gnuplot configuration
+## Support
 
-Gaston respects user configuration settings in gnuplot's startup file. Left un-configured, gnuplot's plots are less than attractive. The following minimum configuration is suggested (and was used to generate the plots in this document):
+Here are some ideas on what to do if you need help with Gaston:
+
+* Post a question in [Julia's discuss forum](https://discourse.julialang.org/tag/plotting)
+  in the "plotting" category.
+* Chat with the author (@mbaz) on [Julia's Zulip chat forum](https://julialang.zulipchat.com/),
+  in the "plotting" or "helpdesk" channels.
+* Bug reports, suggestions and pull requests are welcome at
+  [Gaston's github page](https://github.com/mbaz/Gaston.jl).
+
+## Contributing
+
+Contributions are welcome! Examples of things you can do are bug reports,
+improvements to the documentation, new examples and tutorials, and new features or
+suggestions.
+
+## Gnuplot startup file
+
+Gnuplot reads and executes a startup file, if it exists, before every plot.
+Since an un-configured gnuplot produces plots that are less than attractive,
+the following minimum configuration is suggested (and was used to generate the
+plots in this document):
 
     set linetype 1 lc rgb "blue" pt 3
     set linetype 2 lc rgb "red" pt 4
@@ -104,51 +132,13 @@ Gaston respects user configuration settings in gnuplot's startup file. Left un-c
     set auto fix
     set offsets graph .05, graph .05, graph .05, graph .05
 
-The configuration file is `~/.gnuplot` in Unix-like systems, and `%APPDATA%\GNUPLOT.INI` in Windows.
+The configuration file is `~/.gnuplot` on Unix-like systems, and
+`%APPDATA%\GNUPLOT.INI` on Windows.
 
 ## Next steps
 
-Load Gaston into your Julia session with
-
-```julia
-using Gaston
-```
-
-The [Introduction to plotting](@ref) has more information about basic use and configuration.
-
-There is a [2-D plotting tutorial](@ref twodeetut) and a [3-D plotting tutorial](@ref threedeetut).
-
-The [Extending Gaston](@ref) section explains how to extend Gaston by creating your own "recipes", both for specific kinds of plots, and for plotting data of specific types.
-
-There is a section on  [Managing multiple figures](@ref) and all related commands.
-
-The [2-D Gallery](@ref twodeegal) and [3-D Gallery](@ref threedeegal) show many plotting examples.
-
-The [Usage notes and FAQ](@ref) section includes additional usage examples and answers frequent questions.
-
-## Gnuplot resources
-
-These websites have more information on gnuplot and how to use it:
-
-* [Official website](http://www.gnuplot.info/)
-* [Official demo gallery](http://gnuplot.sourceforge.net/demo_5.2/)
-* [PDF documentation for 5.2](http://www.gnuplot.info/docs_5.2/Gnuplot_5.2.pdf)
-* [A good blog on gnuplot](http://www.gnuplotting.org/)
-
-## Running tests
-
-Gaston includes an extensive test suite, which can executed with:
-
-```julia
-julia> ]test Gaston
-```
-
-All tests should pass (but a few may be skipped).
-
-## Support
-
-Please post support questions to [Julia's discuss forum](https://discourse.julialang.org/tag/plotting).
-
-## Contributing
-
-Bug reports, suggestions and pull requests are welcome at [Gaston's github page](https://github.com/mbaz/Gaston.jl)
+* See many plot examples in the [Examples](@ref) section.
+* Learn all the details about how to plot with Gaston in the [Manual](@ref).
+* See the full [API Reference](@ref).
+* Run the [interactive Pluto notebooks](https://github.com/mbaz/Gaston.jl/tree/master/notebooks),
+  with examples and tutorials.

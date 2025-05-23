@@ -12,7 +12,7 @@ The terminal can be set by changing the value of `Gaston.config.term`; for examp
 ```julia
 Gaston.config.term = "pngcairo font ',10' size 700,400"
 ```
-The terminals supported by gnuplot can be listed by running:
+To show the terminals supported by gnuplot, run:
 ```julia
 Gaston.terminals()
 ```
@@ -101,7 +101,7 @@ Data to be plotted can be provided as vectors and/or matrices. Gaston converts t
 format compatible with gnuplot. Three cases are supported:
 * All data arguments are vectors.
 * The first two arguments are vectors of length `n` and `m`, and the third argument is a matrix
-of size `n x m`; further arguments are optional.
+  of size `n x m`; further arguments are optional.
 * All provided arguments are matrices of size `n x m`.
 
 #### Functions
@@ -155,34 +155,36 @@ labels:
 ```julia
 plot(:notics, :labels, "set title 'Example'", (-1, 1), sin)
 ```
-Themes are also used to provide common plot types (illustrated in the [Themes](@ref) section). These
-specialized plot commands and the themes they use are:
+Themes are also used to provide common plot types (illustrated in the [Themes](@ref) section). The
+following are the specialized plot commands and the themes they use:
 
 | Commands | Settings theme | Plotline theme |
 |----------|----------------|----------------|
 | `scatter`, `scatter!` | `:scatter`, `:scatter3` | `:scatter` |
-| `stem`, `stem!` | None | `:stem`, `:impulses` |
+| `stem`, `stem!` | None | `:stem`, `:impulses` (optional) |
 | `bar`, `bar!` | `:boxplot` | `:box` |
 | `barerror`, `barerror!` | `:boxerror` | `:box` |
 | `histogram` | `:histplot` | `:box`, `:horhist` (1-D); `:image`  (2-D) |
 | `imagesc` | `:imagesc` | `:image`, `:rgbimage` |
-| `surf`, `surf!` |
-| `contour` |
-| `surfcontour` |
-| `wireframe`, `wireframe!` |
-| `wiresurf`, `wiresurf!` |
-| `heatmap` | 
+| `surf`, `surf!` | `:hidden3d` | `:pm3d` |
+| `contour` | `:contour` | `:labels` (optional) |
+| `surfcontour` | `:contourproj` | `:labels` (optional) |
+| `wireframe`, `wireframe!` | `:hidden3d` | None |
+| `wiresurf`, `wiresurf!` | `:wiresurf` | None |
+| `heatmap` | `:heatmap` | `:pm3d` |
 
 !!! note "Plotline themes"
     Plotline themes must be handled with care: gnuplot requires plotline options
     to be specified in a certain order, may not be repeated, and some combinations are invalid.
     It is very easy to create erroneous plotlines.
 
-!!! note "Gaston lacks a parser"
+!!! note "Gaston is not a gnuplot parser"
     Gaston does not validate that the settings and plotline given to gnuplot are valid. When
     gnuplot returns an error or warning, it is echoed to the terminal.
 
 ## Multiplot
+
+
 
 ## Managing multiple figures
 
@@ -195,17 +197,16 @@ multiple windows.
 ```
 Figure()
 ```
-Creates a new, empty figure. All figures are of type `Gaston.Figure`. Gaston keeps an internal
-pointer to the figure, so that its not removed by the garbage collector.
+Creates a new, empty figure. All figures are of type `Gaston.Figure`. Gaston keeps internal
+references to all figures, to prevent them from being garbage collected.
 
-When creating a figure intended for multiplot, a setting string can be included, with the
-`multiplot` keyword.
+When creating a figure intended for multiplot, a `multiplot` argument can be provided:
 ```
 Figure(multiplot = "title 'A Multiplot'")
 ```
 
-When a figure is created, it becomes active, meaning that subsequent plot
-commands will go to this figure. Of course, it is possible to keep figures in different variables:
+When a figure is created, it becomes the active figure, meaning that subsequent plot
+commands will go to this figure by default. It is possible to keep figures in different variables:
 ```
 fig1 = Figure()
 fig2 = Figure()
@@ -221,11 +222,10 @@ Figure("density") # figure with handle "density"
 Figure(:volume)   # figure with handle :volume
 Figure(33)        # figure with handle 33
 ```
-Handles can be of any type. If not specified, handles are integers assigned in increasing order
-starting from 1.
+Handles can be of any type. All figures have a handle. By default, handles are
+integers in increasing order starting from 1.
 
-To plot in a specific figure, specify its handle using the keyword
-argument `handle`:
+The keyword argument `handle` allows specifying the destination of a `plot` command:
 ```
 plot(..., handle = :volume)
 plot!(..., handle = 33)
@@ -268,4 +268,116 @@ where the arguments are:
 
 ## Interacting with gnuplot
 
+## Defining new plot types and recipes
 
+There are several ways to extend Gaston to create new plot types or to plot
+arbitrary types. One is to define a new function that returns a
+`Gaston.Figure`. The rest involve extending `Gaston.convert_args` in various
+ways.
+
+### Functions that return a `Gaston.Figure`
+
+The first way to extend Gaston to handle arbitrary types is to define a new
+function (and optionally new themes) that returns a `Gaston.Figure`.
+
+The recommended way to proceed is to:
+0. Define new themes if necessary, by adding key-value pairs to `Gaston.sthemes` and/or
+   `Gaston.pthemes`.
+2. Process the function arguments as required.
+1. Create a new figure inside the function, using either `Figure` or `MultiFigure`.
+3. Use `plot` to add new axes and curves to the figure, possibly using the new themes.
+4. Return the figure.
+
+### Adding new methods to `Gaston.convert_args`
+
+The function `Gaston.convert_args` is used to convert arbitrary types to something that
+gnuplot understands: basically, iterables of numbers, strings or dates. This function
+is called with all data and all keyword arguments given to the `plot` command.
+
+For 3-D plot commands such as `splot`, the function `convert_args3` should be used instead.
+Note that these functions are not exported.
+
+Both `plot` and `plot!`call `convert_args` behind
+the scenes, while both `splot` and `splot!` call `convert_args3`.
+
+There are three kinds of recipes:
+* Recipes that return a single curve (`x`, `y`, and a plotline).
+* Recipes that return a whole axis (settings and curve(s)).
+* Recipes that generate a multiplot (mulitplot settings and an array of axes).
+
+#### Recipes that return a single curve
+
+This kind of recipe returns a `Plot` object, which includes data along with a
+plotline specification. The following example illustrates the process:
+
+```julia
+import Gaston: convert_args, Plot
+
+# add method to convert_args
+function convert_args(d::Data1, args... ; pl = "", kwargs...)
+    x = 1:length(data.samples)
+    y = data.samples
+    Plot(x, y, pl)  # return a Plot
+end
+
+plot(data)   # plot
+plot!(data)  # also works
+```
+
+#### Recipes that return a new axis
+
+A recipe may also return an entire `Axis` object, with its own settings and
+curves. The following example illustrates returning an axis with two curves.
+
+```julia
+import Gaston: convert_args, Plot, Axis
+
+struct Data2 end
+
+function convert_args(x::Data2, args... ; kwargs...)
+    x = range(0, 1, 100)
+    p1 = Plot(x, cos.(4x), "dt '-' lc 'red' t 'cosine'")
+    p2 = Plot(x, sin.(5x), "dt '.' lc 'blue' t 'sine'")
+    Axis("set grid\nset title 'Full axis recipe'", [p1, p2])  ## return an Axis
+end
+
+plot(Data2())
+```
+
+#### Recipes to generate multiplots
+
+Finally, a recipe can also generate a full multiplot, with multiple axes. In this case, the
+recipe must return a `NamedTuple` with the following fields:
+* `axes`, a vector of `Axis`.
+* `mp_settings`, a string with gnuplot's multiplot settings.
+* `is_mp`, a boolean, `true` if the length of `axes` is larger than 1.
+* `mp_auto`, a boolean to turn on automatic layout.
+
+Here's an example, creating a figure with four axes and automatic layout.
+
+```julia
+import Gaston: Plot, Axis, Axis3, convert_args
+closeall() # hide
+
+struct MyType end
+
+function convert_args(x::MyType)
+    t1 = range(0, 1, 40)
+    t2 = range(-5, 5, 50)
+    z = Gaston.meshgrid(t2, t2, (x,y) -> cos(x)*cos(y))
+    @gpkw a1 = Axis({title = Q"First Axis"}, [Plot(1:10, rand(10))])
+    @gpkw a2 = Axis({title = Q"Trig"}, [Plot(t1, sin.(5t1), {lc = Q"black"}),
+                                        Plot(t1, cos.(5t1), {w = "p", pt = 16})])
+    @gpkw a3 = Axis3({title = Q"Surface", tics = false, palette = (:matter, :reverse)},
+                     [Plot(t2, t2, z, {w = "pm3d"})])
+    @gpkw a4 = Axis({tics, title = false, title = Q"Last Axis"},
+                    [Plot(1:10, 1:10, rand(10,10), "w image")])
+    # return named tuple with four axes
+    (axes = [a1, a2, a3, a4],
+     mp_settings = "title 'A Four-Axes Recipe' layout 2,2",
+     is_mp = true,
+     mp_auto = false)
+end
+
+plot(MyType())
+```

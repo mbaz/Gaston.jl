@@ -1,6 +1,6 @@
 # Examples
 
-The plots below have been rendered in a png terminal with the following configuration:
+The plots below have been rendered in a `png` terminal with the following configuration:
 ```julia
 Gaston.config.term = "pngcairo font ',10' size 640,480"
 ```
@@ -27,7 +27,8 @@ Now, let us add a grid and some annotations:
 @plot {grid, title = Q"{/:Bold A sine wave}", xlabel = Q"Time", ylabel = Q"Volts"} x y
 ```
 Here we have used `@plot` instead of `plot`, which allows us to specify the plot settings
-as a list of keyword arguments. These arguments can be stored in a "theme" using `@gpkw`:
+as a list of keyword arguments. These arguments can be stored in a "theme" using the
+`@gpkw` macro:
 ```julia
 settings = @gpkw {grid, title = Q"{/:Bold A sine wave}", xlabel = Q"Time", ylabel = Q"Volts"}
 ```
@@ -42,15 +43,15 @@ settings = @gpkw {grid, title = Q"A sine wave", xlabel = Q"Time", ylabel = Q"Vol
 Parameters that affect how the curve is plotted are specified *after* the data. These
 can also be stored and reused, so that
 ```julia
-plotline = @gpkw {with = "lp", lc = Q"sea-green", pt = :fcircle, ps = 2}
+plotline = @gpkw {with = "lp", lc = Q"sea-green", pt = :fcircle, ps = 1.5}
 @plot settings x y plotline
 ```
 would produce the same plot. Settings and plotline parameters can also be specified as strings;
 see the [Manual](@ref) for all the details. Gaston also has a number of built-in [Themes](@ref).
 
-Use `plot!` or `@plot!` to plot a second curve:
+A `plot` command can only generate a single curve. Use `plot!` or `@plot!` to append a curve:
 ```@example 2dt
-plotline = @gpkw {with = "lp", lc = Q"sea-green", pt = :fcircle, ps = 2} # hide
+plotline = @gpkw {with = "lp", lc = Q"sea-green", pt = :fcircle, ps = 1.5} # hide
 @plot(settings,
       {title = Q"Two sinusoids", key = "columns 1", key = "box outside right top"},
       x, y,
@@ -67,7 +68,7 @@ specified.
 In the examples above, the data given to `plot` is stored in vectors. Functions can be plotted
 directly, with a given range and number of samples, as follows:
 ```@example 2dt
-g(x) = exp(-abs(x/5))*cos(x)
+g(x) = exp(-abs(x/5))*cos(x)  # function to plot
 tt = "set title 'g = x -> exp(-abs(x/5))*cos(x))'"
 plot(tt, (-10, 10, 200), g) # plot from x = -10 to 10, using 200 samples
 ```
@@ -76,14 +77,21 @@ Ranges can be specified in the following alternative ways:
 plot(g)            # 100 samples, from -10 to 9.99
 plot((a, b), g)    # 100 samples, from a to b
 plot((a, b, c), g) # c samples, from a to b
-plot(x, g)         # plot g.(x)
+plot(x, g)         # g.(x)
 ```
 
 #### Multiplots
 
-To plot multiple sets of axes in a single figure, we use indexing into the figure as follows:
+A convenient, automatic method to create multiplot figures is provided. First, use the helper
+function `MultiFigure`, providing the arguments to `set multiplot`:
+
+```julia
+f = MultiFigure("title 'Auto Layout'")
+```
+Then, add plots by indexing into the figure:
 ```@example 2dt
-f = plot(x, y) # f is of type Gaston.Figure
+f = MultiFigure("title 'Auto Layout'") # hide
+plot(f[1], x, y)
 plot(f[2], x, sinc.(10x))
 ```
 It is possible to have empty "slots":
@@ -95,15 +103,13 @@ Add another plot to a subplot using indexing:
 ```@example 2dt
 plot!(f[2], x, 0.3randn(length(x)))
 ```
-To gain full control of gnuplot's multiplot options, instantiate a
-new `Gaston.Figure` with the string keyword argument `multiplot`; the string is passed to
-gnuplot's `set multiplot`:
+
+To get full control of the layout, pass the argument `autolayout = false` to `MultiFigure`:
 ```@example 2dt
-closeall() # hide
-f = Figure(multiplot = "title 'Arbitrary multiplot layout demo'")
+f = MultiFigure("title 'Arbitrary multiplot layout demo'", autolayout = false)
 x = randn(100)
 y = randn(100)
-@plot({margins = (0.1, 0.65, 0.1, 0.65)},
+@plot(f[1], {margins = (0.1, 0.65, 0.1, 0.65)},
       x, y,
       "w p pt '+' lc 'dark-green'")
 @gpkw histogram(f[2],
@@ -118,26 +124,14 @@ y = randn(100)
 Note that margins can be specified as a tuple. The macro `@gpkw` allows us to use keyword
 settings in the `histogram` plot command (described below).
 
-The figure's `multiplot` field can be modified *post-hoc*:
-```julia
-f.multiplot = "title 'New title' layout 2,2"
-```
-!!! info
-    Gaston takes care of the multiplot layout automatically **only** if the figure's `multiplot`
-    setting is an empty string (this is the default value). If it's not empty, then the user
-    is in charge of handling the layout.
-
-!!! info
-    Gaston never clears a figure's `multiplot` setting. If re-using a figure for subsequent
-    plots, this setting must be adjusted manually.
-
 ## 3-D Plots
 Plotting in 3-D is similar to 2-D, except that `splot` (and `@splot`, `splot!`, `@splot!`) are used
 instead of `plot`. This example shows how to plot the surface defined by function `s`:
 ```@example 2dt
+closefigure(f)  # hide
 x = y = -15:0.2:15
 s = (x,y) -> @. sin(sqrt(x*x+y*y))/sqrt(x*x+y*y)
-@splot("set title 'Sombrero'\nset hidden3d", {palette = :cool}, x, y, s, "w pm3d")
+@splot "set title 'Sombrero'" "set hidden3d" {palette = :cool} x y s "w pm3d"
 ```
 The palette `cool` is defined in [ColorSchemes](https://github.com/JuliaGraphics/ColorSchemes.jl).
 
@@ -153,24 +147,16 @@ terminals, however, the plot is rendered as an animation.
 Note that gnuplot will output a message to `STDERR` indicating how many frames
 were recorded; this message is purely informative and not actually an error.
 
-A difficulty arises when mixing plot formats in a notbook (say, `png` and
-`gif`): the terminal is specified in the configuration variable `Gaston.config.term`.
-However, some notebook programs (such as Pluto) execute cells in arbitrary
-order. This means that changing the terminal in one cell may affect other
-cells.
-
-To solve this problem, Gaston provides a way to ignore the global terminal
-configuration when rendering a plot. A figure `f` can be rendered with a given
-terminal by calling `animate(f, term)`. The default value of `term` is stored
-in `Gaston.config.altterm` and defaults to `gif animate loop 0`.
-
 The following examples illustrate how to create and display animations, in this case with a
 background image:
 ```@example 2dt
-f = Figure()  # new, empty figure
-frames = 75
+frames = 75 # number of animation frames
+# new, empty figure
+f = Figure()
+# create a background curve that is shown in all frames
 x_bckgnd = range(-1, 1, 200)  # x values for the background image
-bckgnd = Plot(x_bckgnd, sin.(2π*2*x_bckgnd), "lc 'black'")  # background image
+bckgnd = Gaston.Plot(x_bckgnd, sin.(2π*2*x_bckgnd), "lc 'black'")  # background curve
+# generate all frames
 x = range(-1, 1, frames)
 for i in 1:frames
     plot(f[i], x[i], sin(2π*2*x[i]), "w p lc 'orange' pt 7 ps 7") # first plot the function...
@@ -183,6 +169,19 @@ end
 save(f, output = "2DAnim.webp", term = "webp animate loop 0 size 640,480")
 ```
 ![An animation](2DAnim.webp)
+
+A difficulty arises when mixing plot formats in a notbook (say, `png` and
+`gif`): the terminal is specified in the configuration variable `Gaston.config.term`.
+However, some notebook programs (such as Pluto) execute cells in arbitrary
+order. This means that changing the terminal in one cell may affect other
+cells.
+
+To solve this problem, Gaston provides a way to ignore the global terminal
+configuration when rendering a plot. A figure `f` can be rendered with a given
+terminal by calling `animate(f, term)`. The default value of `term` is stored
+in `Gaston.config.altterm` and defaults to `gif animate loop 0`. Examples are
+provided in these [interactive Pluto
+notebooks](https://github.com/mbaz/Gaston.jl/tree/master/notebooks).
 
 ## Themes
 
@@ -342,13 +341,13 @@ histogram(th, x, y, nbins = 50, mode = :pdf)
 |`imagesc` | `:imagesc` | `:image`, `:rgbimage` |
 
 Arrays may be plotted as images using `imagesc`. Note that, in contrast to other plotting packages,
-the first row is plotted at the top.
+the first data row is plotted horizontally and at the top.
 ```@example 2dt
 X = [0 1 2 3;
      0 3 2 1;
      0 2 2 0;
      3 0 0 0]
-imagesc("unset xtics\nunset ytics", X)
+imagesc("unset xtics", "unset ytics", X)
 ```
 To display the image as grayscale, use the `gray` palette.
 ```@example 2dt
@@ -380,7 +379,7 @@ f1(x,y) = sin(sqrt(x*x+y*y))/sqrt(x*x+y*y)
 th = @gpkw {title = Q"Sombrero Wireframe", palette = :matter}
 @gpkw wireframe(th, (-15, 15, 30), f1)
 ```
-Solid surfaces can be plot with `surf`:
+Solid surfaces are plotted with `surf`:
 ```@example 2dt
 th = @gpkw {title = Q"Sombrero Surface", palette = :matter}
 @gpkw surf(th, (-15, 15, 200), f1)
@@ -415,7 +414,8 @@ surfcontour("set title 'Surface With Projected Contours'", (-5, 5, 40), f2, "lc 
 ```
 The same plot without contour labels:
 ```@example 2dt
-surfcontour("set title 'Surface With Contours, No Labels'", (-5, 5, 40), f2, "lc 'orange'", labels = false)
+surfcontour("set title 'Surface With Contours, No Labels'",
+            (-5, 5, 40), f2, "lc 'orange'", labels = false)
 ```
 
 #### Heatmap plots
@@ -473,7 +473,8 @@ splot("""unset zeroaxis
          set tics border
          set xyplane at -5 
          set view 65,35
-         set border 4095""",
+         set border 4095
+         set xtics offset 0, -0.5""",
          x, y, z, "w l lc 'black' lw 1.5")
 ```
 
@@ -486,16 +487,16 @@ y = 0:30
 u1data = [exp(-(x-0.5*(y-15))^2) for x in x, y in y]
 Zf = fill(0.0, length(x))
 f = Figure()
-Gaston.set!(f(1), """set zrange [0:2]
+Gaston.set!(f(1), """set zrange [0:1.5]
                set tics out
                set ytics border
                set xyplane at 0
-               set view 45,5
-               set zrange [0:3]
-               set xlabel 'ξ' offset -0,-2
-               set ylabel 't'
-               set zlabel '|u|'
-               set border 21""")
+               set view 45,17
+               set xlabel 'ξ'
+               set ylabel 't' offset -2.5
+               set zlabel '|u|' offset -0.85
+               set border 21
+               set size 1, 1.3""")
 for i in reverse(eachindex(y))
     Y = fill(y[i], length(x))
     Z = u1data[:,i]
@@ -504,37 +505,276 @@ end
 f
 ```
 
-## Plot recipes
+#### Line color from palette
 
-There are two ways to extend Gaston to plot arbitrary types. The first is to define a new
-function that takes the required type, and returns a `Gaston.Figure`. For example, we may wish to plot
-complex data as two subplots, with the magnitude and phase of the data. This can be done as follows:
 ```@example 2dt
-function myplot(data::Vector{<:Complex}; kwargs...)
-                    x = 1:length(data)
-                    y1 = abs2.(data)
-                    y2 = angle.(data)
-                    Gaston.sthemes[:myplot1] = @gpkw {grid, ylabel = Q"Magnitude"}
-                    Gaston.sthemes[:myplot2] = @gpkw {grid, ylabel = Q"Angle"}
-                    Gaston.pthemes[:myplot1] = @gpkw {w = "lp"}
-                    Gaston.pthemes[:myplot2] = @gpkw {w = "p", lc = "'black'"}
-                    f = Figure(multiplot = "layout 2,1")
-                    plot(f[1], x, y1, stheme = :myplot1, ptheme = :myplot1)
-                    plot(f[2], x, y2, stheme = :myplot2, ptheme = :myplot2)
-                    return f
-                end
-t = range(0, 1, 20)
-myplot(exp.(t) .* cis.(2*pi*7.3*t))
+x = -2π:0.05:2π
+@plot {palette = :ice} x sin.(3x) x "w l notitle lw 3 lc palette"
 ```
-The use of themes allows the user to modify the default properties of the plot, by modifying the
-themes (such as `Gaston.sthemes[:myplot1]`) instead of having to re-define `myplot`.
 
-The second way to plot an arbitrary type is to define a new method of `Gaston.convert_args` for that
-type (or `Gaston.convert_args3` for 3-D plots). Here's an example:
+#### Variable marker size and color
 
 ```@example 2dt
-using Gaston: PlotObject, TimeSeries, TSBundle
+x = 0:0.1:6π
+splot("unset colorbox",
+      x, cos.(x), sin.(x), x./10,
+      "w p", "ps variable", "pt 7", "lc palette")
+```
+
+#### Filled curve in 3D
+
+```@example 2dt
+x = 0.:0.05:3;
+y = 0.:0.05:3;
+z = @. sin(x) * exp(-(x+y))
+@gpkw splot(:labels, {style = "fill transparent solid 0.3", xyplane = "at 0", grid, lt = :Set1_5},
+            x, y, z, z.*0, z,
+            "w zerror t 'Data'")
+splot!(x.*0, y, z, "w l lw 3")
+splot!(x, y.*0, z, "w l lw 3")
+```
+
+Here, `Set1_5` is a color scheme from [ColorSchemes.jl](https://github.com/JuliaGraphics/ColorSchemes.jl).
+
+#### Spheres
+
+##### Wireframe
+
+```@example 2dt
+Θ = range(0, 2π, length = 100)
+Φ = range(0, π, length = 20)
+r = 0.8
+x = [r*cos(θ)*sin(ϕ) for θ in Θ, ϕ in Φ]
+y = [r*sin(θ)*sin(ϕ) for θ in Θ, ϕ in Φ]
+z = [r*cos(ϕ)        for θ in Θ, ϕ in Φ]
+@gpkw splot({view = "equal xyz", pm3d = "depthorder", hidden3d},
+            x, y, z,
+            {w = "l", lc = Q"turquoise"})
+```
+
+##### Surface
+
+```@example 2dt
+Θ = range(0, 2π, length = 100)
+Φ = range(0, π, length = 100)
+r = 0.8
+x = [r*cos(θ)*sin(ϕ) for θ in Θ, ϕ in Φ]
+y = [r*sin(θ)*sin(ϕ) for θ in Θ, ϕ in Φ]
+z = [r*cos(ϕ)        for θ in Θ, ϕ in Φ]
+@splot({style = "fill transparent solid 1",
+        palette = :summer,
+        view = "equal xyz",
+        pm3d = "depthorder"},
+       x, y, z,
+       "w pm3d")
+```
+
+#### Torus
+
+See more torus examples in the included Pluto notebook.
+
+```@example 2dt
+U  = range(-π,π, length = 50)
+V = range(-π,π, length = 100)
+r = 0.5
+x = [1+cos(u)+r*cos(u)*cos(v) for u in U, v in V]
+y = [r*sin(v)                 for u in U, v in V]
+z = [sin(u)+r*sin(u)*cos(v)   for u in U, v in V]
+settings = """set object rectangle from screen 0,0 to screen 1,1 behind fillcolor 'black' fillstyle solid noborder
+              set pm3d depthorder
+              set style fill transparent solid 0.5
+              set pm3d lighting primary 0.05 specular 0.2
+              set view 108,2
+              unset border
+              set xyplane 0
+              unset tics
+              unset colorbox"""
+@splot(settings, {palette = :cool}, x, y, z, "w pm3d")
+```
+
+#### 3D Tubes
+
+##### Wireframe
+
+```@example 2dt
+U = range(0, 10π, length = 80)
+V = range(0, 2π, length = 10)
+x = [(1-0.1*cos(v))*cos(u)     for u in U, v in V]
+y = [(1-0.1*cos(v))*sin(u)     for u in U, v in V]
+z = [0.2*(sin(v) + u/1.7 - 10) for u in U, v in V]
+settings = @gpkw {pm3d = "depthorder",
+                  style = "fill transparent solid 1",
+                  view = "equal xyz",
+                  xyplane = -0.05,
+                  palette = :ice,
+                  xrange = (-1.2, 1.2),
+                  yrange = (-1.2, 1.2),
+                  colorbox = false,
+                  hidden3d,
+                  view = (70, 79)}
+@splot(settings, x, y, z, "w l lc 'turquoise'")
+```
+
+##### Surface
+
+```@example 2dt
+@splot(settings, x, y, z, "w pm3d")
+```
+
+#### Dates
+
+```@example 2dt
+using Dates
+
+dates = Date(2018, 1, 1):Day(1):Date(2019, 12, 31)
+ta = rand(length(dates))
+timefmt = "%Y-%m-%d" ## hour:minute:seconds are also available
+pfmt = "%Y-%m-%d"
+rot_xtics = -35
+vals = 0.5*ta
+tempo = string.(dates)
+xmin1 = "2018-02-01"
+xmax1 = "2019-04-01"
+
+@gpkw settings = {xdata = "time",
+                  timefmt = "'$(timefmt)'",
+                  grid,
+                  format = "x '$(pfmt)'",
+                  xtics = "rotate by $(rot_xtics)",
+                  tmargin = "at screen 0.96",
+                  bmargin = "at screen 0.15",
+                  lmargin = "at screen 0.1",
+                  rmargin = "at screen 0.96",
+                  xrange = "['$(xmin1)':'$(xmax1)']",
+                  yrange = (-0.25, 0.75)}
+plot(settings, tempo, vals, "u 1:2 w l t 'series'")
+```
+
+[Source](https://lazarusa.github.io/gnuplot-examples/examples/2d/lines/dates) for this example.
+
+#### Strings
+
+```@example 2dt
+x = 10*rand(10)
+y = 10*rand(10)
+w = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
+plot(x, y, w, "w labels")
+```
+
+## Defining new plot types and recipes
+
+The following examples illustrate how to extend Gaston to create new types of plots and
+to seamlessly plot arbitrary data types.
+
+### Functions that return a `Gaston.Figure`
+
+This example shows how to create a new type of plot: plotting complex data as
+two subplots, with the magnitude and phase of the data. The example also
+defines new themes.
+
+```@example 2dt
+# define new type
+struct ComplexData{T <: Complex}
+    samples :: Vector{T}
+end
+
+# define new themes
+Gaston.sthemes[:myplot1] = @gpkw {grid, ylabel = Q"Magnitude"}
+Gaston.sthemes[:myplot2] = @gpkw {grid, ylabel = Q"Angle"}
+Gaston.pthemes[:myplot1] = @gpkw {w = "lp"}
+Gaston.pthemes[:myplot2] = @gpkw {w = "p", lc = "'black'"}
+
+# define new function
+function myplot(data::ComplexData; kwargs...)::Figure
+                # convert data to a format gnuplot understands
+                x = 1:length(data.samples)
+                y1 = abs2.(data.samples)
+                y2 = angle.(data.samples)
+                # create a new multifigure with fixed layout (two rows, one col)
+                f = MultiFigure("layout 2,1", autolayout = false)
+                # add two plots to f
+                plot(f[1], x, y1, stheme = :myplot1, ptheme = :myplot1)
+                plot(f[2], x, y2, stheme = :myplot2, ptheme = :myplot2)
+                return f
+end
+
+# plot example: complex damped sinusoid
+t = range(0, 1, 20)
+y = ComplexData(exp.(-t) .* cis.(2*pi*7.3*t))
+myplot(y)  # plot
+```
+
+The use of themes allows the user to modify the default properties of
+the plot, by modifying the themes (such as `Gaston.sthemes[:myplot1]`) instead
+of having to re-define `myplot`. Of course, similar functionality can be
+achieved with the use of keyword arguments.
+
+### Recipes: Adding new methods to `Gaston.convert_args`
+
+The following example shows how to extend `Gaston.convert_args` to plot a
+custom type `Data1`. This simple example returns a `Gaston.Plot` object
+(essentially a curve), which contains data and a plotline.
+
+
+```@example 2dt
+using Gaston: Plot
 import Gaston: convert_args
+
+# define custom type
+struct Data1
+    samples
+end
+
+# add method to convert_args
+function convert_args(d::Data1, args... ; pl = "", kwargs...)
+    x = 1:length(data.samples)
+    y = data.samples
+    Plot(x, y, pl)
+end
+
+# create some data
+data = Data1(rand(20))
+
+# plot
+plot("set title 'Simple data conversion recipe'", data, "w lp pt 7 lc 'olive'")
+```
+
+Note that this kind of recipe will also seamlessly work with `plot!`, which
+adds the curve to the current axis.
+
+A recipe may also return an entire `Axis` object, with its own settings and
+curves. The following example returns an axis with two curves.
+
+```@example 2dt
+using Gaston: Plot, Axis
+
+struct Data2 end
+
+function convert_args(x::Data2, args... ; kwargs...)
+    x = range(0, 1, 100)
+    p1 = Plot(x, cos.(4x), "dt '-' lc 'red' t 'cosine'")
+    p2 = Plot(x, sin.(5x), "dt '.' lc 'blue' t 'sine'")
+    Axis("set grid\nset title 'Full axis recipe'", [p1, p2])
+end
+
+plot(Data2())
+```
+
+Note that the axis returned by a recipe can be inserted directly into a multiplot:
+
+```@example 2dt
+f = MultiFigure("title 'Recipe example'")
+plot(f[1], randn(100), "w p")
+plot(f[2], Data2())
+```
+
+Finally, a recipe can also generate a full multiplot, with multiple axes, as
+illustrated in the example below:
+
+```@example 2dt
+using Gaston: Plot, Axis, Axis3
+import Gaston: convert_args
+closeall() # hide
 
 struct MyType end
 
@@ -542,30 +782,19 @@ function convert_args(x::MyType)
     t1 = range(0, 1, 40)
     t2 = range(-5, 5, 50)
     z = Gaston.meshgrid(t2, t2, (x,y) -> cos(x)*cos(y))
-    @gpkw PlotObject(
-        TSBundle(
-            TimeSeries(1:10, rand(10)),
-            settings = {title = Q"First Axis"}
-        ),
-        TSBundle(
-            TimeSeries(t1, sin.(5t1), pl = {lc = Q"black"}),
-            TimeSeries(t1, cos.(5t1), pl = {w = "p", pt = 16}),
-            settings = {title = Q"Trig"}
-        ),
-        TSBundle(
-            TimeSeries(t2, t2, z, pl = {w = "pm3d"}, is3d = true),
-            settings = {title = Q"3D",
-                        tics = false,
-                        palette = (:matter, :reverse)}
-        ),
-        TSBundle(
-            TimeSeries(1:10, 1:10, rand(10,10), pl = "w image"),
-            settings = {tics, title = false}
-        ),
-        mp_settings = "title 'A Four-Axes Recipe' layout 2,2"
-    )
+    @gpkw a1 = Axis({title = Q"First Axis"}, [Plot(1:10, rand(10))])
+    @gpkw a2 = Axis({title = Q"Trig"}, [Plot(t1, sin.(5t1), {lc = Q"black"}),
+                                        Plot(t1, cos.(5t1), {w = "p", pt = 16})])
+    @gpkw a3 = Axis3({title = Q"Surface", tics = false, palette = (:matter, :reverse)},
+                     [Plot(t2, t2, z, {w = "pm3d"})])
+    @gpkw a4 = Axis({tics, title = false, title = Q"Last Axis"},
+                    [Plot(1:10, 1:10, rand(10,10), "w image")])
+    # return named tuple with four axes
+    (axes = [a1, a2, a3, a4],
+     mp_settings = "title 'A Four-Axes Recipe' layout 2,2",
+     is_mp = true,
+     mp_auto = false)
 end
 
-figure().multiplot = "" # hide
 plot(MyType())
 ```
