@@ -5,16 +5,18 @@
 # Code related to figures.
 
 """
-    Plot(datafile, plotline)
+    Plot(datafile::String, plotline::String)
 
-Type to store the data needed to plot a curve.
+Type that stores the data needed to plot a curve.
 
-* datafile: name (full path) of file where data to plot is stored
-* plotline: a gnuplot plotline associated with the data
+The constructor takes two arguments:
+
+* datafile: name (full path) of file where data to plot is stored.
+* plotline: a gnuplot plotline associated with the data.
 """
 mutable struct Plot
     const datafile :: String
-    plotline :: String
+    plotline       :: String
 
     function Plot(args...)
         if isempty(args) || all(i -> isa(i, Union{String, Vector{<:Pair}}), args)
@@ -36,13 +38,17 @@ mutable struct Plot
 end
 
 """
-    Gaston.Axis(settings, plots, is3d)
+    Gaston.Axis(settings::String = "",
+                plots::Vector{Gaston.Plot} = Gaston.Plot[],
+                is3d::Bool = false)
 
-Type that stores all information required to create a 2-D or 3-D axis.
+Type that stores the data required to create a 2-D or 3-D axis.
 
-* settings: stores the axis settings
-* plots: a vector of Plot, one per curve
-* is3d: determines if axis is generated with 'plot' or 'splot'
+The constructor takes the following arguments:
+
+* settings: stores the axis settings.
+* plots: a vector of Plot, one per curve.
+* is3d: determines if axis is generated with 'plot' or 'splot'.
 """
 mutable struct Axis
     settings :: String         # axis settings
@@ -86,8 +92,8 @@ Type that stores a figure. It has the following fields:
 
 * handle: the figure's unique identifier (it may be of any type).
 * gp_proc: the gnuplot process associated with the figure (type `Base.Process`).
-* axes: a vector that stores `Axis`.
-* multiplot: a string that is used with 'set multiplot'.
+* axes: a vector of `Gaston.Axis`.
+* multiplot: a string with arguments to 'set multiplot'.
 * autolayout: `true` if the figure uses automatic layout (`Bool`).
 """
 mutable struct Figure <: AbstractFigure
@@ -101,10 +107,11 @@ end
 """
     Gaston.Figure(h = nothing, autolayout = true, mp = "")::Gaston.Figure
 
-Returns an empty a figure with given handle. If `h === nothing`, automatically
+Return an empty a figure with given handle. If `h === nothing`, automatically
 assign the next available numerical handle. A new gnuplot process is started
-and associated with the new figure, which becomes the active figure, and is
-stored in Gaston's internal state.
+and associated with the new figure, which becomes the active figure.
+
+If the handle provided already exists, an error is thrown.
 """
 function Figure(handle = nothing ; autolayout = true, multiplot = "")
     global state
@@ -123,39 +130,28 @@ end
 function finalize_figure(f::Figure)
     #@async @info "Finalizing figure with handle $(f.handle)."
     for i in eachindex(f.axes)
-        empty!(f.axes[i])
+        empty!(f(i))
     end
     @async gp_quit(f)
 end
 
-"""
-    When indexing a figure, a FigureAxis is returned. It contains the figure
-    itself along with the index.
-"""
-struct FigureAxis
-    f   :: Figure
-    idx :: Int
-end
+# functions to push stuff into figures/axis/plots
 
 function push!(a::Axis, p::Plot)
     push!(a.plots, p)
     return a
 end
 
-# push an axis into a figure
 function push!(f::Figure, a::Axis)
     push!(f.axes, a)
     return f
 end
 
-# push a plot into an axis in a figure
 function push!(f::Figure, p::Plot, index = 1)
-    a = f[index].a
+    a = f(index).a
     push!(a, p)
     return f
 end
-
-push!(f::FigureAxis, p::Plot) = push!(f.f.axes[f.idx], p)
 
 """
     push!(f1::Figure, f2::Figure; index = 1)::Figure
@@ -168,6 +164,7 @@ f1 = plot(sin)
 f2 = Figure()
 histogram(randn(100), bins = 10)  # plots on f2
 push!(f1, f2)  # insert the histogram as second axis of f1
+```
 """
 function push!(f1::Figure, f2::Figure; index = 1)::Figure
     push!(f1.axes, f2(index))
@@ -195,8 +192,33 @@ end
 # `f[] = p`     # Replace `f.axes[1].plots[1]` with `p`.
 
 """
-    Allows indexing a Figure. If the indexed axis does not exists, create it.
-    Returns the Figure and the provided index.
+    Gaston.FigureAxis
+
+When indexing a figure, a FigureAxis is returned. It contains the figure
+itself along with the index.
+
+This is required because `plot(figure[index])` modifies the axis at
+`figure.axis[index]`, but it must return `figure`.
+"""
+struct FigureAxis
+    f   :: Figure
+    idx :: Int
+end
+
+"""
+    getindex(f::Figure, index)::Gaston.FigureAxis
+
+Return `Gaston.FigureAxis(f, index)`. If the axis at the specified index
+does not exist, one is created.
+
+To obtain (or create) an axis, use `f(index)`.
+
+# Example
+```julia
+f1 = Figure()
+plot(f1[3], sin) # Figure f1 contains three axes: the first two are empty,
+                 # and the third one contains a sine wave.
+```
 """
 function getindex(f::Figure, idx)::FigureAxis
     ensure(f.axes, idx)
@@ -205,15 +227,22 @@ end
 
 getindex(a::Axis, idx)::Plot = a.plots[idx]
 
+"""
+    (f::Figure)(index)::Axis
+
+Return the `Axis` at the specified index. If it does not exist, it is created.
+"""
 function (f::Figure)(idx)::Axis
     ensure(f.axes, idx)
     return f.axes[idx]
 end
 
+# Index into a Plot
 function (f::Figure)(idx1, idx2)::Plot
     return f.axes[idx1][idx2]
 end
 
+# Replace an axis
 function setindex!(f::Figure, a::Axis, idx)
     ensure(f.axes, idx)
     f.axes[idx] = a
@@ -231,12 +260,13 @@ function setindex!(f::Figure, p::Plot, idx...)
     f[axisidx].a[plotidx] = p
 end
 
+# Replace a plot in an axis.
 function setindex!(a::Axis, p::Plot, idx)
     a.plots[idx] = p
     return a
 end
 
-###
+# utility functions
 
 isempty(f::Figure) = all(isempty(a) for a in f.axes)
 isempty(a::Axis) = isempty(a.plots)
@@ -258,7 +288,11 @@ function ensure(v::Vector{T}, idx) where T <: Union{Axis, Plot}
     end
 end
 
-""" Return specified figure (by handle or index) and set it to active.
+"""
+    figure(handle = <active figure handle> ; index = nothing)::Figure
+
+Return specified figure (by handle or index) and make it the active
+figure.
 """
 function figure(handle = state.activefig ; index = nothing)::Figure
     global state
@@ -281,7 +315,7 @@ function figure(handle = state.activefig ; index = nothing)::Figure
 end
 
 """
-    listfigures()
+    Gaston.listfigures()
 
 List of all existing figures.
 """
@@ -309,8 +343,8 @@ end
 """
     reset!(f::Figure)
 
-    Reset figure f to its initial state, without restarting its associated
-    gnuplot process.
+Reset figure `f` to its initial state, without restarting its associated
+gnuplot process.
 """
 function reset!(f::Figure)
     f.axes = Axis[]
@@ -389,7 +423,7 @@ function closeall()
 end
 
 """
-    Gaston.nexthandle() -> Int
+    Gaston.nexthandle()::Int
 
 Return the next available handle (smallest not-yet-used positive integer).
 """
@@ -407,13 +441,17 @@ function nexthandle()
 end
 
 """
-    Gaston.gethandles() -> Vector::Any
+    Gaston.gethandles()::Vector{Any}
 
-Return a vector will all handles in `Gaston.state.figures`
+Return a vector with the handles of all existing figures.
 """
 gethandles() = [figure.handle for figure in state.figures.figs]
 
-"""Return the index of given figure """
+"""
+    Gaston.getidx(fig::Figure)
+
+Return the index (in Gaston's internal state) of given figure
+"""
 function getidx(fig::Figure)
     h = fig.handle
     idx = 1
