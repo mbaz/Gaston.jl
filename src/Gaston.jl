@@ -11,7 +11,7 @@ export plot, plot!, splot, splot!
 export figure, closefigure, closeall
 
 # Types
-export Figure, MultiFigure
+export Figure
 
 # 2-D styled plots
 export scatter,  stem,  bar,  barerror, histogram, imagesc

@@ -82,59 +82,42 @@ abstract type AbstractFigure end
 """
     Gaston.Figure
 
-Type that stores a figure.
+Type that stores a figure. It has the following fields:
+
+* handle: the figure's unique identifier (it may be of any type).
+* gp_proc: the gnuplot process associated with the figure (type `Base.Process`).
+* axes: a vector that stores `Axis`.
+* multiplot: a string that is used with 'set multiplot'.
+* autolayout: `true` if the figure uses automatic layout (`Bool`).
 """
 mutable struct Figure <: AbstractFigure
     handle
-    gp_proc     :: Base.Process
-    axes        :: Vector{Axis}
-    is_mp       :: Bool
-    mp_auto     :: Bool
-    mp_settings :: String
+    gp_proc    :: Base.Process
+    axes       :: Vector{Axis}
+    multiplot  :: String
+    autolayout :: Bool
 end
 
 """
-    Gaston.Figure(h = nothing) -> figure::Gaston.Figure
+    Gaston.Figure(h = nothing, autolayout = true, mp = "")::Gaston.Figure
 
-Construct a figure with given handle. If `h === nothing`, automatically
-assign the next available numerical handle. A new gnuplot process is
-started and associated with the new figure, which becomes the active
-figure, and is stored in Gaston's internal state.
-
-    Gaston.Figure(handle, multiplot = m::String) -> figure::Gaston.Figure
-
-Construct a figure with multiplot configuration `m`. The default value is `false`,
-which disables multiplot.
-
-Examples:
-
-    f = Figure(multiplot = "") # activates multiplot
-    f = Figure(multiplot = "layout 3, 1")
-    f = Figure(multiplot = "title 'Title' font Sans,12")
-
+Returns an empty a figure with given handle. If `h === nothing`, automatically
+assign the next available numerical handle. A new gnuplot process is started
+and associated with the new figure, which becomes the active figure, and is
+stored in Gaston's internal state.
 """
-function Figure(handle = nothing ; is_mp = false, mp_auto = false, mp_settings = "")
+function Figure(handle = nothing ; autolayout = true, multiplot = "")
     global state
     handle === nothing && (handle = nexthandle())
     if handle ∈ gethandles()
         error("Figure with given handle already exists. Handle: ", handle)
     else
-        fig = finalizer(finalize_figure, Figure(handle,
-                                                gp_start(),
-                                                Axis[],
-                                                is_mp,
-                                                mp_auto,
-                                                mp_settings)
-                       )
-        push!(state.figures.figs, fig)
+        f = finalizer(finalize_figure, Figure(handle, gp_start(), Axis[], multiplot, autolayout))
+        push!(state.figures.figs, f)
         state.activefig = handle
     end
     @debug "Returning figure with handle: " handle
-    return fig
-end
-
-function MultiFigure(settings = "", args... ; autolayout = true)
-    Figure(args... ; is_mp = true, mp_auto = autolayout, mp_settings = settings)
+    return f
 end
 
 function finalize_figure(f::Figure)
@@ -186,7 +169,8 @@ plot(sin)
 push!(f1, histogram(randn(100), bins = 10))
 """
 function push!(f1::Figure, f2::Figure)::Figure
-    return push!(f1, f2.axes[1])
+    push!(f1.axes, f2.axes[1])
+    return f1
 end
 
 function set!(a::Axis, s::String)
@@ -199,6 +183,16 @@ function set!(a::Axis, s::Vector{<:Pair})
     return a
 end
 
+## Indexing into figures/axes
+# It is possible to set/get plots and axes using indexing.
+# Important: accessing a non-assigned location in a figure will create that location (like in Makie).
+# Notation, assuming `f::Figure`, `a::Axis`, and `p::Plot`.
+# `f[3]`        # `f.axes[3]`, creating it (and `f[1]` and `f[2]` as well) if necessary
+# `f[3] = a`    # `f.axes[3] = a`, setting `f[1]` and `f[2]` to `Axis()` if necessary
+# `f[i,j] = p`  # Replace `f.axes[i].plots[j]` with `p`. `f.axes[i]` will be created if necessary.
+# `f[i] = p`    # Replace `f.axes[1].plots[i]` with `p`.
+# `f[] = p`     # Replace `f.axes[1].plots[1]` with `p`.
+
 """
     Allows indexing a Figure. If the indexed axis does not exists, create it.
     Returns the Figure and the provided index.
@@ -210,9 +204,6 @@ end
 
 getindex(a::Axis, idx)::Plot = a.plots[idx]
 
-# () notation for indexing a figure.
-# f(1) returns f.axes[1]
-# f(2, 3) returns f.axes[2][3]
 function (f::Figure)(idx)::Axis
     ensure(f.axes, idx)
     return f.axes[idx]
@@ -322,20 +313,9 @@ end
 """
 function reset!(f::Figure)
     f.axes = Axis[]
-    f.is_mp = false
-    f.mp_settings = ""
-    f.mp_auto = true
+    f.multiplot = ""
+    f.autolayout = true
 end
-
-## Indexing into figures/axes
-# It is possible to set/get plots and axes using indexing.
-# Important: accessing a non-assigned location in a figure will create that location (like in Makie).
-# Notation, assuming `f::Figure`, `a::Axis`, and `p::Plot`.
-# `f[3]`        # `f.axes[3]`, creating it (and `f[1]` and `f[2]` as well) if necessary
-# `f[3] = a`    # `f.axes[3] = a`, setting `f[1]` and `f[2]` to `Axis()` if necessary
-# `f[i,j] = p`  # Replace `f.axes[i].plots[j]` with `p`. `f.axes[i]` will be created if necessary.
-# `f[i] = p`    # Replace `f.axes[1].plots[i]` with `p`.
-# `f[] = p`     # Replace `f.axes[1].plots[1]` with `p`.
 
 """
     closefigure(h = nothing)

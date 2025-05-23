@@ -99,8 +99,8 @@ function plot(args... ;
     elseif po isa NamedTuple
         f.axes = po.axes
         f.mp_settings = po.mp_settings * settings
-        f.is_mp = po.is_mp
-        f.mp_auto = po.mp_auto
+        f.multiplot = po.multiplot
+        f.autolayout = po.autolayout
     end
 
     return f

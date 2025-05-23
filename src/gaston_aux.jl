@@ -298,7 +298,7 @@ function producefigure(f::Figure ; output::String = "", term = config.term)
     # auto-calculate multiplot layout if mp_auto is true
     # note: here I'm trying to be clever, there may be undiscovered edge cases
     autolayout = ""
-    if f.mp_auto
+    if f.autolayout
         if length(f) <= 2
             rows = 1
             cols = length(f)
@@ -322,10 +322,10 @@ function producefigure(f::Figure ; output::String = "", term = config.term)
     output != "" && write(iob, "set output '$(output)'\n")
 
     # handle multiplot
-    f.is_mp && write(iob, "set multiplot " * autolayout * f.mp_settings * "\n")
+    (length(f.axes) > 1) && write(iob, "set multiplot " * autolayout * f.multiplot * "\n")
     for axis in f.axes
         if isempty(axis)
-            if f.mp_auto
+            if f.autolayout
                 write(iob, "set multiplot next\n")
             end
             continue
@@ -334,7 +334,7 @@ function producefigure(f::Figure ; output::String = "", term = config.term)
             write(iob, plotstring(axis)*"\n") # send plotline
         end
     end
-    f.is_mp && write(iob, "unset multiplot\n")
+    (length(f.axes) > 1) && write(iob, "unset multiplot\n")
     output != "" && write(iob, "set output\n")
     term != config.term && write(iob, "set term pop\n")
     seekstart(iob)
