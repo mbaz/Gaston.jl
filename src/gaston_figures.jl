@@ -83,8 +83,6 @@ Axis3(s::Vector{T}, p::Vector{Plot}) where T <: Pair = Axis3(parse_settings(s), 
 
 # Figures
 
-abstract type AbstractFigure end
-
 """
     Figure
 

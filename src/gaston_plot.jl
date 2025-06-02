@@ -93,6 +93,13 @@ function plot(args... ;
         else
             f.axes[idx] = Axis(settings, po)
         end
+    elseif po isa PlotRecipe
+        ensure(f.axes, idx)
+        if splot
+            f.axes[idx] = Axis3(settings, Plot(po.data..., join((plotline, po.plotline), " ")))
+        else
+            f.axes[idx] = Axis(settings, Plot(po.data..., join((plotline, po.plotline), " ")))
+        end
     elseif po isa Axis
         po.settings = po.settings * "\n" * settings
         if isempty(f)
@@ -100,7 +107,23 @@ function plot(args... ;
         else
             f.axes[idx] = po
         end
-    elseif po isa NamedTuple
+    elseif po isa AxisRecipe
+        ps = Plot[]
+        for p in po.plots
+            #push!(ps, Plot(p.data..., p.plotline))
+            push!(ps, Plot(p.data..., join((plotline, p.plotline), " ")))
+        end
+        if splot
+            a = Axis3(po.settings*"\n"*settings, ps)
+        else
+            a = Axis(po.settings*"\n"*settings, ps)
+        end
+        if isempty(f)
+            push!(f, a)
+        else
+            f.axes[idx] = a
+        end
+    elseif po isa FigureRecipe
         f.axes = po.axes
         f.multiplot = po.multiplot
         f.autolayout = po.autolayout

@@ -27,6 +27,9 @@ format:
 
 engines: ['julia']
 
+execute:
+  daemon: 600
+
 filters:
   - code-visibility
 

@@ -30,71 +30,6 @@ macro Q_str(s)
     "'$s'"
 end
 
-function pushorreplace!(v, pair)
-    pf = pair.first
-    for i in eachindex(v)
-        if v[i].first == pf
-            # replace
-            v[i] = pair
-            return
-        end
-    end
-    # insert
-    push!(v, pair)
-end
-
-function expand(d...)
-    dd = Pair[]
-    for (k,v) in d
-        if v isa Vector{Pair}
-            for (k1,v1) in v
-                push!(dd, k1 => v1)
-            end
-        else
-            push!(dd, k => v)
-        end
-    end
-    return dd
-end
-
-function prockey(key)
-    if @capture(key, a_ = b_)
-        return :($(string(a)) => $b)
-    elseif @capture(key, g_...)
-        return :("theme" => $g)
-    elseif @capture(key, a_)
-        return :($(string(a)) => true)
-    end
-end
-
-function procopts(d)
-    if @capture(d, {xs__})
-        return :($(expand)($(map(prockey, xs)...)))
-    elseif @capture(d, f_(xs__))
-        return :($f($(map(procopts, xs)...)))
-    else
-        return d
-    end
-end
-
-"""
-    @gpkw
-
-Convert a variable number of keyword arguments to a vector of pairs of strings.
-
-# Example
-
-```julia
-julia> @gpkw {title = Q"Example", grid = true}
-2-element Vector{Pair}:
- "title" => "'Example'"
-  "grid" => true
-```
-"""
-macro gpkw(ex)
-    esc(postwalk(procopts, ex))
-end
-
 """
     @plot args...
 
@@ -116,8 +51,13 @@ In this example, `grid = true` is converted to `set grid`. To disable a
 setting, use (for example) `grid = false` (converted to `unset grid`).
 """
 macro plot(ex...)
-    args = (esc(procopts(v)) for v in ex)
-    :( plot($(args...)) )
+    args = []
+    kwargs = Pair{Symbol,Any}[]
+    for el in ex
+        Meta.isexpr(el, :(=)) ? push!(kwargs, Pair(el.args...)) : push!(args, el)
+    end
+    args2 = (esc(procopts(v)) for v in args)
+    :( plot($(args2...) ; $kwargs...) )
 end
 
 """
@@ -126,8 +66,13 @@ end
 Alternative Convenient syntax for `plot!`. See the documentation for `@plot`.
 """
 macro plot!(ex...)
-    args = (esc(procopts(v)) for v in ex)
-    :( plot!($(args...)) )
+    args = []
+    kwargs = Pair{Symbol,Any}[]
+    for el in ex
+        Meta.isexpr(el, :(=)) ? push!(kwargs, Pair(el.args...)) : push!(args, el)
+    end
+    args2 = (esc(procopts(v)) for v in args)
+    :( plot!($(args2...) ; $kwargs...) )
 end
 
 """
@@ -136,8 +81,13 @@ end
 Alternative Convenient syntax for `splot`. See the documentation for `@plot`.
 """
 macro splot(ex...)
-    args = (esc(procopts(v)) for v in ex)
-:( splot($(args...)) )
+    args = []
+    kwargs = Pair{Symbol,Any}[]
+    for el in ex
+        Meta.isexpr(el, :(=)) ? push!(kwargs, Pair(el.args...)) : push!(args, el)
+    end
+    args2 = (esc(procopts(v)) for v in args)
+    :( splot($(args2...) ; $kwargs...) )
 end
 
 """
@@ -146,6 +96,11 @@ end
 Alternative Convenient syntax for `splot!`. See the documentation for `@plot`.
 """
 macro splot!(ex...)
-    args = (esc(procopts(v)) for v in ex)
-    :( splot!($(args...)) )
+    args = []
+    kwargs = Pair{Symbol,Any}[]
+    for el in ex
+        Meta.isexpr(el, :(=)) ? push!(kwargs, Pair(el.args...)) : push!(args, el)
+    end
+    args2 = (esc(procopts(v)) for v in args)
+    :( splot!($(args2...) ; $kwargs...) )
 end

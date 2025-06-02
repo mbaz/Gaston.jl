@@ -5,7 +5,7 @@
 module Gaston
 
 # Basic commands
-export @Q_str, @gpkw
+export @Q_str#, @gpkw
 export @plot, @plot!, @splot, @splot!
 export plot, plot!, splot, splot!
 export figure, closefigure, closeall
@@ -27,7 +27,16 @@ export save, animate
 # New methods are added to these functions
 import Base: show, showable, getindex, isempty, push!, setindex!, length
 
+# Methods for recipes
+using GastonRecipes
+import GastonRecipes: PlotRecipe, AxisRecipe, FigureRecipe, AbstractFigure,
+                      convert_args, convert_args3,
+                      @gpkw, expand, prockey, procopts
+export @gpkw
+
 # Methods from other packages
+#using MacroTools: postwalk, @capture
+
 using Base: keys
 
 using StatsBase: fit, Histogram, normalize
@@ -35,8 +44,6 @@ using StatsBase: fit, Histogram, normalize
 using DelimitedFiles: writedlm
 
 using ColorSchemes: colorschemes, get
-
-using MacroTools: postwalk, @capture
 
 using PrecompileTools
 

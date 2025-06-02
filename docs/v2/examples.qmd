@@ -895,7 +895,7 @@ plot(f[2], Data2())
 Finally, a recipe can also generate a full multiplot, with multiple axes, as
 illustrated in the example below:
 
-```{julia}
+```{.julia}
 using Gaston
 import Gaston: convert_args, Plot, Axis, Axis3
 closeall() #| hide_line

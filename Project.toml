@@ -5,14 +5,16 @@ version = "2.0.0-rc1"
 [deps]
 ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
+GastonRecipes = "39356fd2-1f9e-4efe-8abf-5745c7d9f608"
 MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
 PrecompileTools = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
+GastonRecipes = "0"
 ColorSchemes = "3.9"
 DelimitedFiles = "1"
-MacroTools = "0.5"
+MacroTools = "0.5.16"
 PrecompileTools = "1"
 StatsBase = "0"
 Test = "0"

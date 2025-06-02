@@ -22,7 +22,7 @@ function writedata(file, args... ; append=false)
     append && (mode = "a")
     nl = "\n"
     iob = IOBuffer()
-    # Case 1: all args are 1-D
+    # Case 1: all args are 1-D: mx1 mx1 mx1...
     if all(ndims.(args) .== 1)
         if minimum(length.(args)) == maximum(length.(args))
             d = hcat(args...)

@@ -4,9 +4,6 @@
 
 # Recipes: argument conversion and specialized plot commands
 
-convert_args() = throw(MethodError("Not implemented"))
-convert_args3() = throw(MethodError("Not implemented"))
-
 """
     convert_args(args...)
 
@@ -112,10 +109,10 @@ function convert_args3(x::R1, y::R2, z::R3, args... ; pl = "", kwargs...) where 
     Plot([x], [y], [z], args..., pl)
 end
 
-function convert_args3(a::Matrix{<:Real}; pl = "", kwargs...)
+function convert_args3(a::Matrix{<:Real} ; pl = "", kwargs...)
     x = axes(a, 2)
     y = axes(a, 1)
-    Plot(x, y, a, args..., pl)
+    Plot(x, y, a, pl)
 end
 
 function convert_args3(x::AbstractVector{<:Real}, y::AbstractVector{<:Real}, f::F, args... ; pl = "", kwargs...) where {F <: Function}

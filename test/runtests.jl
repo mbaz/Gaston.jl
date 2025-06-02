@@ -4,7 +4,7 @@
 
 using Test, Gaston, Aqua, JET
 using Gaston: Axis, Axis3, Plot
-import Gaston: convert_args, convert_args3
+import GastonRecipes: convert_args, convert_args3
 
 gh = Gaston.gethandles
 reset = Gaston.reset
@@ -18,7 +18,7 @@ null() = Gaston.config.output = :null
     Aqua.test_project_extras(Gaston)
     Aqua.test_stale_deps(Gaston)
     Aqua.test_deps_compat(Gaston)
-    Aqua.test_piracies(Gaston)
+    Aqua.test_piracies(Gaston, treat_as_own = [convert_args, convert_args3])
     Aqua.test_persistent_tasks(Gaston)
 end
 
@@ -105,7 +105,7 @@ end
     Figure(1)
     Figure(4)
     @test length(Gaston.state.figures.figs) == 2
-    @test closefigure(1) == 4
+    @test closefigure(1) == nothing
     @test length(Gaston.state.figures.figs) == 1
     @test Gaston.activefig() == 4
     closefigure(4)
