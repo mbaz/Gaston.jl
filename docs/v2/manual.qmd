@@ -2,7 +2,7 @@
 title: "Manual"
 ---
 
-TODO: keyword arguments
+TODO: keyword arguments, Datatable
 
 This manual covers all aspects of using Gaston.
 
@@ -154,6 +154,8 @@ format, which can then be plotted. See an example in [contour lines on
 heatmap](examples.qmd#contour-lines-on-heatmap). The (non-exported) function
 `Gaston.plotwithtable` returns a `Gaston.DataTable` storing the table. All plot
 commands accept this type.
+
+(add constructors here)
 
 ### Simple themes
 

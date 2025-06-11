@@ -236,10 +236,37 @@ struct DataTable
     data :: IOBuffer
 end
 
-function DataTable(vs::Vector{String})
+"Create a DataTable from a vector of strings"
+function DataTable(vs::Vector{<:AbstractString}...)
     iob = IOBuffer()
-    for l in vs
+    for block in vs
+        for l in block
+            write(iob, l*"\n")
+        end
+        write(iob, "\n")
+    end
+    DataTable(iob)
+end
+
+"Create a DataTable from a tuple of strings"
+function DataTable(ts::T) where T <: Tuple
+    iob = IOBuffer()
+    for l in ts
         write(iob, l*"\n")
+    end
+    DataTable(iob)
+end
+
+"Create a DataTable from matrices. Each matrix is a datablock, which are separated by spaces."
+function DataTable(args::Matrix...)
+    length(args)
+    iob = IOBuffer()
+    for m in args
+        for r in eachrow(m)
+            write(iob, join(r, " "))
+            write(iob, "\n")
+        end
+        write(iob, "\n")
     end
     DataTable(iob)
 end
@@ -247,7 +274,7 @@ end
 """
     plotwithtable(settings, args... ; splot = true)
 
-Create and generate a table. 3D is assumend, so `splot` default to `true`.
+Create and generate a table. 3D is assumed, so `splot` defaults to `true`.
 """
 function plotwithtable(settings::String, args... ; splot = true)
     if applicable(convert_args3, args...)

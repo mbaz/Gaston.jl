@@ -460,32 +460,39 @@ function parse_settings(s::Vector{<:Pair})::String
         elseif key ∈ ("pal", "palette")
             # palette; code inspired by @gcalderone's Gnuplot.jl
             rev = false
-            if v isa Tuple{Symbol, Symbol}
+            if v isa Tuple
                 if v[2] == :reverse
                     rev = true
-                    v = v[1]
                 end
+                v = v[1]
             end
-            if v isa Symbol
-                if haskey(Palette_cache, (v, rev))
-                    push!(settings, Palette_cache[(v, rev)])
-                else
-                    cm = colorschemes[v]
-                    colors = String[]
-                    if rev
-                        r = range(1, 0, length(cm))
+            if v isa ColorScheme || v isa Symbol
+                if v isa Symbol
+                    if haskey(Palette_cache, (v, rev))
+                        push!(settings, Palette_cache[(v, rev)])
+                        continue
                     else
-                        r = range(0, 1, length(cm))
+                        cm = colorschemes[v]
                     end
-                    for i in 1:length(cm)
-                        c = get(cm, r[i])
-                        push!(colors, "$i $(c.r) $(c.g) $(c.b)")
-                    end
-                    cols = join(colors, ", ")
-                    pal = "set palette defined (" * cols * ")\nset palette maxcolors $(length(cm))"
-                    push!(Palette_cache, ((v, rev) => pal))
-                    push!(settings, pal)
+                else
+                    cm = v
                 end
+                colors = String[]
+                if rev
+                    r = range(1, 0, length(cm))
+                else
+                    r = range(0, 1, length(cm))
+                end
+                for i in 1:length(cm)
+                    c = get(cm, r[i])
+                    push!(colors, "$i $(c.r) $(c.g) $(c.b)")
+                end
+                cols = join(colors, ", ")
+                pal = "set palette defined (" * cols * ")\nset palette maxcolors $(length(cm))"
+                if v isa Symbol
+                    push!(Palette_cache, ((v, rev) => pal))
+                end
+                push!(settings, pal)
             else
                 push!(settings, "set palette $v")
             end
@@ -519,9 +526,9 @@ function parse_settings(s::Vector{<:Pair})::String
         elseif key == "margins" && v isa Tuple
             # margin definitions using at screen: left, right, bottom top
             push!(settings, """set lmargin at screen $(v[1])
-                               set rmargin at screen $(v[2])
-                               set bmargin at screen $(v[3])
-                               set tmargin at screen $(v[4])""")
+                  set rmargin at screen $(v[2])
+                  set bmargin at screen $(v[3])
+                  set tmargin at screen $(v[4])""")
         else
             push!(settings, "set $key $v")
         end
@@ -589,4 +596,4 @@ pointtypes = (dot      = 0,
               ftriandn = 11,
               edmd     = 12,
               fdmd     = 13,
-            )
+             )

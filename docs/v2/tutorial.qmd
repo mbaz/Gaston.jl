@@ -335,6 +335,105 @@ The finished plot looks like this:
 
 A similar workflow can be used with other gnuplot terminals, such as `tikz`, `epslatex`, etc.
 
+## Gnuplot datasets and tables
+
+Some kinds of plots require a way to specify exactly what points to plot in a
+specific format (instead of relying on Gaston to format the data the right
+way). This can be accomplished with `Gaston.Datatable`, which wraps `IOBuffer`.
+The contents of `Datatable` are provided to gnuplot without any further
+processing.
+
+One example is drawing contour lines on a heatmap (taken from [this gnuplot
+blog post]
+(https://gnuplot-tricks.blogspot.com/2009/07/maps-contour-plots-with-labels.html).
+The function `Gaston.plotwithtable` returns a `Gaston.DataTable`, which can be
+used as an argument to `plot`.
+
+```{julia}
+# define function to plot
+x = y = range(-5, 5, 100)
+f4(x,y) = sin(1.3*x)*cos(0.9*y)+cos(.8*x)*sin(1.9*y)+cos(y*.2*x)
+
+# obtain function contours using 'plot with table'
+settings = """set contour base
+              set cntrparam level incremental -3, 0.5, 3
+              unset surface"""
+contours = Gaston.plotwithtable(settings, x, y, f4)
+
+# calculate meshgrid for heatmap plot
+z = Gaston.meshgrid(x, y, f4)
+
+# plot heatmap and contours
+plot("""unset key
+        unset colorbox
+        set palette rgbformulae 33,13,10""",
+        x, y, z, "with image")
+plot!(contours, "w l lw 1.5 lc 'slategray'")
+```
+
+Another example is drawing a polygon, where the data provided to gnuplot are the
+coordinates of the vertices of each face, and faces are separated by newlines. The
+following example (adapted from the demos in gnuplot's official site) draws an
+icosahedron using the plotline "with polygon".
+
+```{julia}
+# The icosahedron has twelve vertices, given by these coordinates
+phi = (1 + sqrt(5)) / 2
+ico = ( ( 0,    1,    phi), #1
+        ( 0,    1,   -phi), #2
+        ( 0,   -1,    phi), #3
+        ( 0,   -1,   -phi), #4
+        ( 1,    phi,  0),   #5
+        ( 1,   -phi,  0),   #6
+        (-1,    phi,  0),   #7
+        (-1,   -phi,  0),   #8
+        ( phi,  0,    1),   #9
+        (-phi,  0,    1),   #10
+        ( phi,  0,   -1),   #11
+        (-phi,  0,   -1)    #12
+)
+# plot settings
+s = """unset border
+       unset key
+       set view equal xyz
+       unset xtics
+       unset ytics
+       unset ztics
+       set pm3d depthorder
+       set pm3d interpolate 1,1 flush begin noftriangles border linecolor rgb "black"  linewidth 2.000 dashtype solid corners2color mean
+       set title "Faces of an icosahedron drawn as 20 individual objects"
+       set style fill transparent solid 0.8
+       set view 69, 33
+    """
+# write the vertices that make up each face is a Datatable
+faces = Gaston.DataTable(stack([ico[i] for i in (1, 5, 7)], dims=1),
+    stack([ico[i] for i in (1, 7, 10)], dims=1),
+    stack([ico[i] for i in (1, 10, 3)], dims=1),
+    stack([ico[i] for i in (1, 3, 9)], dims=1),
+    stack([ico[i] for i in (1, 9, 5)], dims=1),
+    stack([ico[i] for i in (2, 5, 11)], dims=1),
+    stack([ico[i] for i in (2, 11, 4)], dims=1),
+    stack([ico[i] for i in (2, 4, 12)], dims=1),
+    stack([ico[i] for i in (2, 12, 7)], dims=1),
+    stack([ico[i] for i in (2, 7, 5)], dims=1),
+    stack([ico[i] for i in (8, 3, 10)], dims=1),
+    stack([ico[i] for i in (8, 10, 12)], dims=1),
+    stack([ico[i] for i in (8, 12, 4)], dims=1),
+    stack([ico[i] for i in (8, 4, 6)], dims=1),
+    stack([ico[i] for i in (8, 6, 3)], dims=1),
+    stack([ico[i] for i in (7, 12, 10)], dims=1),
+    stack([ico[i] for i in (6, 4, 11)], dims=1),
+    stack([ico[i] for i in (5, 9, 11)], dims=1),
+    stack([ico[i] for i in (9, 6, 11)], dims=1),
+    stack([ico[i] for i in (9, 3, 6)], dims=1))
+# plotline
+wp = "with polygons fc rgb 'gray'"
+# splot is used since the icosahedron is 3-D
+splot(s, faces, wp)
+```
+
+Gaston provides a few `Datatable` constructors, described in the [Manual](manual.qmd#plot-with-table).
+
 ## Animations
 
 Animations require using a terminal that support them; the `gif` or `webp`
@@ -557,6 +656,7 @@ img = testimage("lake_gray");
 ii = channelview(img)[1,:,:].*255;
 @gpkw imagesc({palette = :gray}, ii)
 ```
+
 An RGB image is a plot of a 3-D array, where  `[1,;,:]`
 is the red channel, `[2,:,:]` is the green channel, and
 `[3,:,:]` is the blue channels.
