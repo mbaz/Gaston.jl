@@ -2,7 +2,7 @@
 title: "Manual"
 ---
 
-TODO: keyword arguments, Datatable
+TODO: keyword arguments, Datatable, list of included convenience themes
 
 This manual covers all aspects of using Gaston.
 
@@ -10,9 +10,9 @@ This manual covers all aspects of using Gaston.
 
 ### The terminal
 
-By default, gnuplot chooses an appropriate terminal: `qt` or `wxt` on Linux, `windows` on Windows,
-and `aqua` on MacOS.
-The terminal can be set by changing the value of `Gaston.config.term`; for example:
+By default, gnuplot chooses an appropriate terminal: `qt` or `wxt` on Linux,
+`windows` on Windows, and `aqua` on MacOS.  The terminal can be set by changing
+the value of `Gaston.config.term`; for example:
 
 ```julia
 Gaston.config.term = "pngcairo font ',10' size 700,400";
@@ -43,8 +43,8 @@ curve to the same plot. 3-D plots are created with `splot` and `splot!`. `plot`
 returns a value of type `Figure`, which contains a vector of `Axis` (each
 containing one or more `Plot`s, or curves.
 
-A `plot` command takes three different kinds of arguments: settings, data, and plotline, in that
-order.
+A `plot` command takes three different kinds of arguments: settings, data, and
+plotline, in that order.
 
 ```julia
 plot([settings...], data..., [plotline...])
@@ -74,10 +74,10 @@ plot("set grid
      "with linespoints lc 'green'")
 ```
 
-* One string per setting
+* Multiple strings
 
 ```julia
-plot("set grid", "unset key", "set title 'A Sinusoid'",
+plot("set grid", "unset key \n set title 'A Sinusoid'",
      x, y,
      "with linespoints", "lc 'green'")
 ```
@@ -121,6 +121,57 @@ example above. The `@Q_str` string macro can help reduce the number of quotes ne
 ```
 
 This macro turns `"abc"` into `"'abc'"`.
+
+#### Keyword parsing
+
+Some `@plot` (or `@gpkw`) keyword arguments are parsed by Gaston, providing syntax that may be more
+convenient than gnuplot's. The following list is for keywords that specify axis settings:
+
+* For any keyword argument, `{arg}` or `{arg = true}` is parsed to `set arg`, while `{arg = false}` is parsed to `unset arg`.
+* For `xtics`, `ytics`, `ztics` or `tics`:
+  * `{tics = R}` where `R` is an `AbstractRange` is parsed as `set tics $(first(R)), $(step(R)), $(last(R))`.
+  * `{tics = T}` where `T` is a `Tuple` is parsed as `set tics $T`.
+  * `{tics = NT}` where `NT` is a `NamedTuple` is parsed as in this example:
+    `{tics = (labels = ("one", "two"), positions = (0, 2))}` is equivalent to `set tics ('one' 0, 'two' 2, )`
+* For `xrange`, `yrange`, `zrange`, `cbrange`:
+  * `{xrange = R}` where `R` is a vector or tuple is parsed as `set xrange [$R[1]:$R[2]]`
+  * If `R` contains an `Inf`, then it is replaced with `*`.
+* If the keyword is `ranges`, then all four ranges listed above are set.
+* For `palette`, if the value is a symbol, then the corresponding color scheme from `ColorSchemes.jl` is converted to gnuplot's format. If a tuple of two symbols is provided and the second one is `:reverse`, then the order of the palette is reversed.
+* For `{view = V}`, if `V` is a `Tuple`, then it is parsed as `set view $V[1], $V[2]`.
+* For `{linetype = S}` where `S` is a `Symbol`, then the corresponding color scheme is converted to a set of line types, one per color in the scheme.
+* For `{margins = T}` where `T` is a `Tuple` is parsed as in this example:
+  `{margins = (1, 2, 3, 4)}` is equivalent to `set lmargin at screen 1`, `set rmargin at screen 2`, `set bmargin at screen 3`, `set tmargin at screen 4`.
+
+The following list is for keywords that specify plotline elements:
+
+* `plotstyle` is equivalent to `with`.
+* `markersize` and `ms` are equivalent to `pointsize`.
+* `legend` is equivalent to `title`.
+* `marker` is equivalent `pointtype`.
+
+In addition, `marker`, `pointtype` and `pt` accept symbolic names for the
+marker types, according to the following table:
+
+| name | gnuplot pointtype |
+|------|-------------------|
+| :dot      | 0 |
+| :⋅        | 0 |
+| :+        | 1 |
+| :plus     | 1 |
+| :x        | 2 |
+| :*        | 3 |
+| :star     | 3 |
+| :esquare  | 4 |
+| :fsquare  | 5 |
+| :ecircle  | 6 |
+| :fcircle  | 7 |
+| :etrianup | 8 |
+| :ftrianup | 9 |
+| :etriandn | 10 |
+| :ftriandn | 11 |
+| :edmd     | 12 |
+| :fdmd     | 13 |
 
 ### Data
 

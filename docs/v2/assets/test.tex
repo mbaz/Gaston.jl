@@ -1,0 +1,130 @@
+% GNUPLOT: LaTeX picture with Postscript
+\begingroup
+  \makeatletter
+  \providecommand\color[2][]{%
+    \GenericError{(gnuplot) \space\space\space\@spaces}{%
+      Package color not loaded in conjunction with
+      terminal option `colourtext'%
+    }{See the gnuplot documentation for explanation.%
+    }{Either use 'blacktext' in gnuplot or load the package
+      color.sty in LaTeX.}%
+    \renewcommand\color[2][]{}%
+  }%
+  \providecommand\includegraphics[2][]{%
+    \GenericError{(gnuplot) \space\space\space\@spaces}{%
+      Package graphicx or graphics not loaded%
+    }{See the gnuplot documentation for explanation.%
+    }{The gnuplot epslatex terminal needs graphicx.sty or graphics.sty.}%
+    \renewcommand\includegraphics[2][]{}%
+  }%
+  \providecommand\rotatebox[2]{#2}%
+  \@ifundefined{ifGPcolor}{%
+    \newif\ifGPcolor
+    \GPcolortrue
+  }{}%
+  \@ifundefined{ifGPblacktext}{%
+    \newif\ifGPblacktext
+    \GPblacktexttrue
+  }{}%
+  % define a \g@addto@macro without @ in the name:
+  \let\gplgaddtomacro\g@addto@macro
+  % define empty templates for all commands taking text:
+  \gdef\gplbacktext{}%
+  \gdef\gplfronttext{}%
+  \makeatother
+  \ifGPblacktext
+    % no textcolor at all
+    \def\colorrgb#1{}%
+    \def\colorgray#1{}%
+  \else
+    % gray or color?
+    \ifGPcolor
+      \def\colorrgb#1{\color[rgb]{#1}}%
+      \def\colorgray#1{\color[gray]{#1}}%
+      \expandafter\def\csname LTw\endcsname{\color{white}}%
+      \expandafter\def\csname LTb\endcsname{\color{black}}%
+      \expandafter\def\csname LTa\endcsname{\color{black}}%
+      \expandafter\def\csname LT0\endcsname{\color[rgb]{1,0,0}}%
+      \expandafter\def\csname LT1\endcsname{\color[rgb]{0,1,0}}%
+      \expandafter\def\csname LT2\endcsname{\color[rgb]{0,0,1}}%
+      \expandafter\def\csname LT3\endcsname{\color[rgb]{1,0,1}}%
+      \expandafter\def\csname LT4\endcsname{\color[rgb]{0,1,1}}%
+      \expandafter\def\csname LT5\endcsname{\color[rgb]{1,1,0}}%
+      \expandafter\def\csname LT6\endcsname{\color[rgb]{0,0,0}}%
+      \expandafter\def\csname LT7\endcsname{\color[rgb]{1,0.3,0}}%
+      \expandafter\def\csname LT8\endcsname{\color[rgb]{0.5,0.5,0.5}}%
+    \else
+      % gray
+      \def\colorrgb#1{\color{black}}%
+      \def\colorgray#1{\color[gray]{#1}}%
+      \expandafter\def\csname LTw\endcsname{\color{white}}%
+      \expandafter\def\csname LTb\endcsname{\color{black}}%
+      \expandafter\def\csname LTa\endcsname{\color{black}}%
+      \expandafter\def\csname LT0\endcsname{\color{black}}%
+      \expandafter\def\csname LT1\endcsname{\color{black}}%
+      \expandafter\def\csname LT2\endcsname{\color{black}}%
+      \expandafter\def\csname LT3\endcsname{\color{black}}%
+      \expandafter\def\csname LT4\endcsname{\color{black}}%
+      \expandafter\def\csname LT5\endcsname{\color{black}}%
+      \expandafter\def\csname LT6\endcsname{\color{black}}%
+      \expandafter\def\csname LT7\endcsname{\color{black}}%
+      \expandafter\def\csname LT8\endcsname{\color{black}}%
+    \fi
+  \fi
+    \setlength{\unitlength}{0.0500bp}%
+    \ifx\gptboxheight\undefined%
+      \newlength{\gptboxheight}%
+      \newlength{\gptboxwidth}%
+      \newsavebox{\gptboxtext}%
+    \fi%
+    \setlength{\fboxrule}{0.5pt}%
+    \setlength{\fboxsep}{1pt}%
+    \definecolor{tbcol}{rgb}{1,1,1}%
+\begin{picture}(7200.00,4740.00)%
+    \gplgaddtomacro\gplbacktext{%
+    }%
+    \gplgaddtomacro\gplfronttext{%
+      \csname LTb\endcsname%%
+      \put(1512,3921){\makebox(0,0)[r]{\strut{}n=0}}%
+      \csname LTb\endcsname%%
+      \put(1512,3716){\makebox(0,0)[r]{\strut{}n=1}}%
+      \csname LTb\endcsname%%
+      \put(2937,3921){\makebox(0,0)[r]{\strut{}n=2}}%
+      \csname LTb\endcsname%%
+      \put(2937,3716){\makebox(0,0)[r]{\strut{}n=3}}%
+      \csname LTb\endcsname%%
+      \put(4363,3921){\makebox(0,0)[r]{\strut{}sin(x)}}%
+      \csname LTb\endcsname%%
+      \put(616,409){\makebox(0,0)[r]{\strut{}$-1.5$}}%
+      \csname LTb\endcsname%%
+      \put(616,1025){\makebox(0,0)[r]{\strut{}$-1$}}%
+      \csname LTb\endcsname%%
+      \put(616,1641){\makebox(0,0)[r]{\strut{}$-0.5$}}%
+      \csname LTb\endcsname%%
+      \put(616,2257){\makebox(0,0)[r]{\strut{}$0$}}%
+      \csname LTb\endcsname%%
+      \put(616,2873){\makebox(0,0)[r]{\strut{}$0.5$}}%
+      \csname LTb\endcsname%%
+      \put(616,3489){\makebox(0,0)[r]{\strut{}$1$}}%
+      \csname LTb\endcsname%%
+      \put(616,4105){\makebox(0,0)[r]{\strut{}$1.5$}}%
+      \csname LTb\endcsname%%
+      \put(1257,204){\makebox(0,0){\strut{}$-\pi$}}%
+      \csname LTb\endcsname%%
+      \put(2521,204){\makebox(0,0){\strut{}$-\pi/2$}}%
+      \csname LTb\endcsname%%
+      \put(3786,204){\makebox(0,0){\strut{}0}}%
+      \csname LTb\endcsname%%
+      \put(5050,204){\makebox(0,0){\strut{}$\pi/2$}}%
+      \csname LTb\endcsname%%
+      \put(6314,204){\makebox(0,0){\strut{}$\pi$}}%
+      \csname LTb\endcsname%%
+      \put(4519,1148){\makebox(0,0){\strut{}\begin{minipage}[c]{\textwidth}\begin{equation*}\sin(x) = \sum_0^{+\infty} \frac{(-1)^n}{(2n + 1)!} x^{2n+1}\end{equation*} \end{minipage}}}%
+      \csname LTb\endcsname%%
+      \put(3785,4412){\makebox(0,0){\strut{}Polynomial approximation of sin(x)}}%
+    }%
+    \gplbacktext
+    \put(0,0){\includegraphics[width={360.00bp},height={237.00bp}]{test}}%
+    \gplfronttext
+  \end{picture}%
+\endgroup

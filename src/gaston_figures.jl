@@ -5,14 +5,14 @@
 # Code related to figures.
 
 """
-    Plot(datafile::String, plotline::String)
+    Gaston.Plot(datafile::String, plotline::String)
 
 Type that stores the data needed to plot a curve.
 
-The constructor takes two arguments:
+    Gaston.Plot(args..., plotline = "")
 
-* `datafile`: name (full path) of file where data to plot is stored.
-* `plotline`: a gnuplot plotline associated with the data.
+Construct a new Plot. The curve data (for instance, `x` and `y` coordinates) are
+provided first. The curve plotline is the last argument.
 """
 mutable struct Plot
     const datafile :: String

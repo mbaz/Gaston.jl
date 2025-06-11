@@ -4,23 +4,15 @@ title: "Examples"
 
 TODO: glowing curves
 
-Load Gaston with:
 ```{julia}
+#| echo: false
+#| output: false
 using Gaston
-```
-The plots below have been rendered in a `png` terminal with the following configuration:
-```{julia}
 Gaston.config.term = "pngcairo font ',10' size 640,480"
-```
-We need to specify that the plot examples below will be rendered to a document and not
-a GUI window:
-```{julia}
 Gaston.config.output = :echo
 ```
-In addition, gnuplot's start up file is as
-[described in the Introduction](index.qmd#gnuplot-startup-file).
 
-## Other examples
+## Examples
 
 ### [3-D Euler spiral (Clothoid)](https://en.wikipedia.org/wiki/Euler_spiral)
 
@@ -83,7 +75,28 @@ splot("unset colorbox",
       "w p", "ps variable", "pt 7", "lc palette")
 ```
 
-### Filled curve in 3D
+### Filled curves
+
+#### Filled transparent curves in 2-D
+
+```{julia}
+pois(λ, k) = (λ^k)*exp(-λ)/factorial(k)
+s = "set style fill transparent solid 0.4 noborder \nset title 'Poisson PMF'"
+plot(s, 0:15, k -> pois(4, k), "w filledcu x1 lc 'cyan' t 'λ = 4'")
+plot!(0:15, k -> pois(6, k), "w filledcu x1 lc 'blue' t 'λ = 6'")
+plot!(0:15, k -> pois(8, k), "w filledcu x1 lc 'pink' t 'λ = 8'")
+```
+
+#### Fill between two curves
+
+```{julia}
+x = range(-10, 10, 100)
+y1 = sin.(x) .- 0.5
+y2 = sin.(x) .+ 0.5
+plot(x, y1, y2, "w filledcu lc 'turquoise'")
+```
+
+#### Filled curve in 3-D
 
 ```{julia}
 x = 0.:0.05:3;

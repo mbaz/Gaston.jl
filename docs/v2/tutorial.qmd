@@ -2,28 +2,41 @@
 title: "Tutorial"
 ---
 
-TODO:  polygons, glowing curves
+TODO: add axes to a plot without indexing (push!)
+      plot(f1, f2) (still not implemented)
+
+If you have not installed Gaston yet, then run the following commands in the Julia REPL:
+
+```{.julia}
+import Pkg.add
+Pkg.add("Gaston")
+```
 
 Load Gaston with:
 ```{julia}
-#| echo: false
+#| output: false
 using Gaston
 ```
+
 The plots below have been rendered in a `png` terminal with the following configuration:
+
 ```{julia}
-#| echo: false
+#| output: false
 Gaston.config.term = "pngcairo font ',10' size 640,480"
 ```
+
 We need to specify that the plot examples below will be rendered to a document and not
 a GUI window:
+
 ```{julia}
-#| echo: false
+#| output: false
 Gaston.config.output = :echo
 ```
-In addition, gnuplot's start up file is as
+
+In addition, gnuplot's startup file is as
 [described in the Introduction](index.qmd#gnuplot-startup-file).
 
-## 2-D Plots
+## Getting started
 
 Let's start with a simple sine wave plot:
 
@@ -47,21 +60,36 @@ In addition, we have used the `Q` string macro to avoid typing single quotes; `Q
 converted to `"'Time'"`.
 
 Now let us change the line color and markers:
+
 ```{julia}
 @plot settings x y {with = "lp", lc = Q"sea-green", pt = :ecircle, pn = -16, ps = 1.5}
 ```
+
 Parameters that affect how the curve is plotted are specified *after* the data. These
 can also be stored and reused, so that
+
 ```{julia}
 #| output: false
 plotline = @gpkw {with = "lp", lc = Q"sea-green", pt = :ecircle, pn = -16, ps = 1.5}
 @plot settings x y plotline
 ```
-would produce the exact same plot. Settings and plotline parameters can also be specified as strings;
-see the [Manual](manual.qmd) for all the details. Gaston also has a number of built-in
-[themes](tutorial.qmd#themes), showcased below.
+
+would produce the exact same plot. Settings and plotline parameters can also be
+specified as strings; see the [Manual](manual.qmd#settings-and-plotlines) for
+all the details. Gaston also has a number of built-in [plot
+styles](tutorial.qmd#included-plot-styles), showcased below.
+
+One of the keyword arguments used above is a little peculiar: `pt = :ecircle`.
+Gnuplot wants point types to be specified as integers, so `:ecircle` (stands
+for "empty circle") should not be valid. The explanation is that Gaston parses
+some keyword arguments to provide a more comfortable syntax. In this case,
+Gaston converts point types specified as symbols according to the table
+[provided here](manual.qmd#keyword-parsing). It is easier to remember that an
+empty circle is specified as `:ecircle` (or a full square as `:fsquare`) than
+as "6" (or "5").
 
 A `plot` command can only generate a single curve. Use `plot!` or `@plot!` to append a curve:
+
 ```{julia}
 @plot(settings,
       {title = Q"Two sinusoids", key = "columns 1", key = "box outside right top"},
@@ -70,18 +98,18 @@ A `plot` command can only generate a single curve. Use `plot!` or `@plot!` to ap
 y2 = cos.(2*pi*10*x)
 @plot! x y2 {dashtype = Q".-.", lw = 2, lc = Q"orchid", title = Q"cos"}
 ```
-Here we see how multiple settings and plotline arguments can be combined.  Note
-that new settings cannot be declared in `plot!` commands; only the plotline for
-the new curve can be specified.
 
-#### Plotting functions
+Here we see how multiple settings and plotline arguments can be combined.  Note
+that any axis settings used in `plot!` are ignored.
+
+## Plotting functions
 
 In the examples above, the data given to `plot` is stored in vectors. Functions
 can be plotted directly, with a given range and number of samples, as follows:
 ```{julia}
 g(x) = exp(-abs(x/5))*cos(x)  # function to plot
 tt = "set title 'g = x -> exp(-abs(x/5))*cos(x))'"
-plot(tt, (-10, 10, 200), g) # plot from x = -10 to 10, using 200 samples
+plot(tt, (-10, 10, 200), g) # plot of g from x = -10 to 10, using 200 samples
 ```
 Ranges can be specified in the following alternative ways:
 ```julia
@@ -91,14 +119,14 @@ plot((a, b, c), g) # c samples, from a to b
 plot(x, g)         # g.(x)
 ```
 
-#### A note on side effects
+## A note on side effects
 
 Plot commands return a value of type `Gaston.Figure`. When values of this type
 are displayed, Julia's display system calls gnuplot behind the scenes to
 generate the actual plot. Plots are never generated as side effects the way they
 are, for example, in Matlab.
 
-This means that, for example, the following code does not display any figures:
+This means that, for example, the following code does not display any plots:
 
 ```{.julia}
 i = 1
@@ -108,10 +136,10 @@ while (i < 10)
 end
 ```
 
-nor will this code:
+Calling the function `g` below does not produce any plots either:
 
 ```{.julia}
-function f(x, y)
+function g(x, y)
     plot(x, y)
     println("Done.")
 end
@@ -127,11 +155,13 @@ while (i < 10)
 end
 ```
 
-Of course, values of type `Figure` can also be stored in variables and manipulated as any other
+## Variables that store plots
+
+Naturally, values of type `Figure` can be stored in variables and manipulated as any other
 Julia value:
 
 ```{.julia}
-function f(x, y)
+function g(x, y)
     f = plot(x, y)
     println("Done.")
     return f
@@ -152,10 +182,10 @@ and the figure `f` can be made active with:
 figure(f)
 ```
 
-A new figure can be instantiated with the `Figure` constructor, as in `f =
+A new empty figure can be instantiated with the `Figure` constructor, as in `f =
 Figure()`. The new figure is automatically made the active figure.
 
-#### Multiplots
+## Multiplots
 
 A convenient, automatic method to create multiplot figures is provided. First, instantiate
 a new figure like this:
@@ -164,11 +194,12 @@ a new figure like this:
 f = Figure(multiplot = "title 'Auto Layout'");
 ```
 When a figure contains more than one axis, it is rendered using `set multiplot`. The `multiplot`
-argument provides additional configuration. The figure `f` will be rendered using
+keyword argument provides a flexible way to specify additional settings specific to multiplots.
+The figure `f` will be rendered by gnuplot using
 
     set multiplot title 'Auto Layout'
 
-Then, add axes by indexing into the figure:
+Axes can be added by indexing into the figure:
 ```{julia}
 plot(f[1], x, y)           # plot x vs y in the first axis
 plot(f[2], x, sinc.(10x))  # plot sinc(10x) in the second axis
@@ -181,7 +212,7 @@ Note that Gaston tries to keep a square figure aspect ratio as more and more axe
 
 Add another curve to an axis using indexing:
 ```{julia}
-plot!(f[2], x, 0.3randn(length(x)))
+plot!(f[2], x, 0.3randn(length(x)))  # add noise curve to second axis
 ```
 
 To get full control of the layout, pass the argument `autolayout = false` to `Figure`:
@@ -201,9 +232,21 @@ y = randn(100)
                 x,
                 {lc = Q"dark-green"}, nbins = 10)
 ```
-Note that margins can be specified as a tuple.
 
-Let us close all figures created so far with
+Note that the `margins` keyword followed by a tuple is parsed as ([see
+here](manual.qmd#keyword-parsing)):
+
+```julia
+"""set lmargin at screen 0.7
+   set rmargin at screen 0.95
+   set bmargin at screen 0.1
+   set tmargin at screen 0.65
+"""
+```
+
+## Closing figures
+
+We can close all figures created so far with
 ```{julia}
 closeall()
 ```
@@ -225,19 +268,19 @@ s = (x,y) -> @. sin(sqrt(x*x+y*y))/sqrt(x*x+y*y)
 ```
 
 The palette `cool` is defined in
-[ColorSchemes](https://github.com/JuliaGraphics/ColorSchemes.jl). Any
-colorscheme from that package can be used simply by prepending its name with
-`:`.
+[ColorSchemes](https://github.com/JuliaGraphics/ColorSchemes.jl). Together with
+the `palette` keywork, any color scheme from that package can be used simply by
+prepending its name with `:`.
 
 ## Plotting in text terminals
 
 It is often convenient to generate plots directly in the terminal. Gnuplot supports a few
 different ways to do this:
 
-* `sixelgd` uses [sixels](https://en.wikipedia.org/wiki/Sixel)) to generate plots almost
+* `sixelgd` uses [sixels](https://en.wikipedia.org/wiki/Sixel) to generate plots almost
   identical to those produced by regular GUI terms:
   ![sixel](assets/sixelgd.png)
-* `block` uses Unicode characters to draw a plot on the terminal:
+* `block` uses Unicode characters to draw a plot in the terminal:
   ![block](assets/block.png)
 
 Note that, in all cases, Gaston must be configured for terminal output with
@@ -261,17 +304,17 @@ w = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "te
 plot(x, y, w, "w labels")
 ```
 
-Julia's `Date` type can be plotted by converting it to strings, and using gnuplot's date support:
+Julia's `Date` type can be plotted by converting it to strings, and using
+gnuplot's date support.  The following example is inspired in
+(this)[https://lazarusa.github.io/gnuplot-examples/examples/2d/lines/dates].
 
 ```{julia}
 using Dates
 
 dates = Date(2018, 1, 1):Day(1):Date(2019, 12, 31)
-ta = rand(length(dates))
-timefmt = "%Y-%m-%d" ## hour:minute:seconds are also available
+ta = 0.5*rand(length(dates))
+timefmt = "%Y-%m-%d"
 pfmt = "%Y-%m-%d"
-rot_xtics = -35
-vals = 0.5*ta
 tempo = string.(dates) # convert dates to strings
 xmin1 = "2018-02-01"
 xmax1 = "2019-04-01"
@@ -280,20 +323,30 @@ xmax1 = "2019-04-01"
                   timefmt = "'$(timefmt)'",
                   grid,
                   format = "x '$(pfmt)'",
-                  xtics = "rotate by $(rot_xtics)",
-                  tmargin = "at screen 0.96",
-                  bmargin = "at screen 0.15",
-                  lmargin = "at screen 0.1",
-                  rmargin = "at screen 0.96",
+                  xtics = "rotate by -35",
                   xrange = "['$(xmin1)':'$(xmax1)']",
                   yrange = (-0.25, 0.75)}
-plot(settings, tempo, vals, "u 1:2 w l t 'series'")
+plot(settings, tempo, ta, "u 1:2 w l t 'Activity per day'")
 ```
 
 ## Plotting using Latex
 
+Gnuplot provides a few different ways to interface with Latex. This example
+shows how to do it using the `cairolatex` terminal. The process is as follows:
+first, generate a plot and save it using `term = cairolatex`. This generates
+two files: the plot without any text, tics, or markings, in pdf format, and a
+`.tex` file that can be included in a Latex document. This file will add text
+to the pdf image using Latex, resulting in a plot that integrates well with the
+rest of the document.
+
+First, generate the plot. Note that the Latex string `equation` is added as a label
+to the plot, causing Latex to render it.
+
 ```{.julia}
-s = @gpkw({ title = Q"Polynomial approximation of sin(x)",
+equation = raw"""\begin{minipage}[c]{\textwidth}\begin{equation*}""" *
+           raw"""\sin(x) = \sum_0^{+\infty} \frac{(-1)^n}{(2n + 1)!} x^{2n+1}""" * 
+           raw"""\end{equation*} \end{minipage}"""
+s = @gpkw { title = Q"Polynomial approximation of sin(x)",
             style = "fill transparent solid 0.6 noborder",
             xtics = (positions = [-pi, -pi/2, 0, pi/2, pi],
                      labels = [raw"$-\pi$", raw"$-\pi/2$", "0", raw"$\pi/2$", raw"$\pi$"]),
@@ -302,7 +355,7 @@ s = @gpkw({ title = Q"Polynomial approximation of sin(x)",
             key = "box opaque left horiz",
             linetype = :YlOrBr_7,
             grid = "front",
-            label = "at graph 0.62,0.2 front center '$latex'" })
+            label = "at graph 0.62,0.2 front center '$equation'" }
 x = range(-2pi, 2pi, 1000)
 y = sin.(x)
 @plot s x y x "w filledcurve t 'n=0' lt 1"
@@ -324,16 +377,17 @@ generate a final pdf plot by compiling the following script with `pdflatex`:
 
 \begin{document}
 \begin{figure}
-\input{test.tex}
+    \input{test.tex}
 \end{figure}
 \end{document}
 ```
 
 The finished plot looks like this:
 
-![cairolatex](assets/cairolatex.png)
+![](assets/cairolatex.png)
 
-A similar workflow can be used with other gnuplot terminals, such as `tikz`, `epslatex`, etc.
+Other gnuplot terminals, such as `tikz`, `epslatex`, etc, can be used with similar workflows. This
+example is inspired in [this code](https://gcalderone.github.io/Gnuplot.jl/stable/terminals/#The-cairolatex-terminal).
 
 ## Gnuplot datasets and tables
 
@@ -344,15 +398,14 @@ The contents of `Datatable` are provided to gnuplot without any further
 processing.
 
 One example is drawing contour lines on a heatmap (taken from [this gnuplot
-blog post]
-(https://gnuplot-tricks.blogspot.com/2009/07/maps-contour-plots-with-labels.html).
+blog post](https://gnuplot-tricks.blogspot.com/2009/07/maps-contour-plots-with-labels.html)).
 The function `Gaston.plotwithtable` returns a `Gaston.DataTable`, which can be
 used as an argument to `plot`.
 
 ```{julia}
 # define function to plot
 x = y = range(-5, 5, 100)
-f4(x,y) = sin(1.3*x)*cos(0.9*y)+cos(.8*x)*sin(1.9*y)+cos(y*.2*x)
+f4(x,y) = sin(1.3x) * cos(0.9y) + cos(0.8x) * sin(1.9y) + cos(0.2x*y)
 
 # obtain function contours using 'plot with table'
 settings = """set contour base
@@ -371,10 +424,11 @@ plot("""unset key
 plot!(contours, "w l lw 1.5 lc 'slategray'")
 ```
 
-Another example is drawing a polygon, where the data provided to gnuplot are the
-coordinates of the vertices of each face, and faces are separated by newlines. The
-following example (adapted from the demos in gnuplot's official site) draws an
-icosahedron using the plotline "with polygon".
+Another example is drawing polygons or polytopes, where the data provided to
+gnuplot are the coordinates of the vertices of each face, and faces are
+separated by newlines. The following example (adapted from the demos in
+gnuplot's official site) draws an icosahedron using the plotline `with
+polygon`.
 
 ```{julia}
 # The icosahedron has twelve vertices, given by these coordinates
@@ -400,12 +454,12 @@ s = """unset border
        unset ytics
        unset ztics
        set pm3d depthorder
-       set pm3d interpolate 1,1 flush begin noftriangles border linecolor rgb "black"  linewidth 2.000 dashtype solid corners2color mean
-       set title "Faces of an icosahedron drawn as 20 individual objects"
+       set pm3d interpolate 1,1 flush begin noftriangles border linecolor rgb "black" linewidth 2 dashtype solid corners2color mean
+       set title "An icosahedron drawn as 20 individual faces"
        set style fill transparent solid 0.8
        set view 69, 33
     """
-# write the vertices that make up each face is a Datatable
+# write the vertices that make up each face in a Datatable
 faces = Gaston.DataTable(stack([ico[i] for i in (1, 5, 7)], dims=1),
     stack([ico[i] for i in (1, 7, 10)], dims=1),
     stack([ico[i] for i in (1, 10, 3)], dims=1),
@@ -441,26 +495,30 @@ terminals are the most popular ones (make sure your notebook supports the
 `image/webp` MIME type before using it).
 
 Creating an animation is similar to multiplotting: multiple axes are drawn on
-the same figure. When using the `animate` option of the `gif` or `webp`
-terminals, however, the plot is rendered as an animation.
+the same figure. When the gnuplot terminal contains the `animate` option,
+however, the plot is rendered as an animation.
 
 Note that gnuplot will output a message to `STDERR` indicating how many frames
 were recorded; this message is purely informative and not actually an error.
 
 The following examples illustrate how to create and display animations, in this case with a
 background image:
+
 ```{julia}
 frames = 75 # number of animation frames
 # new, empty figure
 f = Figure()
 # create a background curve that is shown in all frames
 x_bckgnd = range(-1, 1, 200)  # x values for the background image
-bckgnd = Gaston.Plot(x_bckgnd, sin.(2π*2*x_bckgnd), "lc 'black'")  # background curve
+y_bckgnd = sin.(2π*2*x_bckgnd)
+bckgnd = Gaston.Plot(x_bckgnd, y_bckgnd, "lc 'black'")  # background curve
 # generate all frames
 x = range(-1, 1, frames)
 for i in 1:frames
-    plot(f[i], x[i], sin(2π*2*x[i]), "w p lc 'orange' pt 7 ps 7") # first plot the function...
-    push!(f(i), bckgnd)  # ... then add the background
+    # first plot the function...
+    plot(f[i], x[i], sin(2π*2*x[i]), "w p lc 'orange' pt 7 ps 7")
+    # ... then add the background
+    push!(f(i), bckgnd)
 end
 for i in frames:-1:1  # in reverse
     plot(f[2frames-i+1], x[i], sin(2π*2*x[i]), "w p lc 'orange' pt 7 ps 7")
@@ -470,8 +528,17 @@ save(f, filename = "2DAnim.webp", term = "webp animate loop 0 size 640,480")
 ```
 ![](2DAnim.webp)
 
+First,  an empty figure `f` is created with `Figure()`. Then,
+[`Gaston.Plot`](reference.qmd) is used to create an object, `bckgnd`, which
+contains a curve (a black sine wave) and which can be inserted into an axis.
+Every loop iteration, a new axis is inserted into `f` with `plot(f[i], ...)`
+with a curve consisting of an orange circle somewhere along the sine wave.
+Then, the background curve is inserted into the same axis with `push!(f(i),
+bckgnd)`. Finally, the plot is saved in a format that supports animation
+(`webp` in this case).
+
 A difficulty arises when mixing plot formats in a notbook (say, `png` and
-`gif`): the terminal is specified in the configuration variable `Gaston.config.term`.
+`webp`): the terminal is specified in the configuration variable `Gaston.config.term`.
 However, some notebook programs (such as Pluto) execute cells in arbitrary
 order. This means that changing the terminal in one cell may affect other
 cells.
@@ -485,40 +552,73 @@ notebooks](https://github.com/mbaz/Gaston.jl/tree/master/notebooks).
 
 ## Themes
 
+Gaston supports _themes_, which are pre-configured plot styles. There are two
+kinds of themes: _settings themes_, which specify gnuplot `set` commands, and
+_plotline themes_, which specify how a particular curve is displayed (color,
+thickness, etc.) Settings themes are stored in the dictionary `Gaston.sthemes`,
+and plotline themes are stored in `Gaston.pthemes`. The themes in these
+dictionaries can be modified, and new themes can be stored in them. Built-in
+themes used to create common plot styles (such as `scatter` and `stem`) are
+described in [the next section](tutorial.qmd#included-plot-styles).
+
+Gaston also includes a few settings themes that conveniently define common
+configurations:
+
+| theme | purpose |
+|-------|---------|
+| `:notics` | Remove all tics from the plot. |
+| `:labels` | Label axes using `x`, `y`, and `z` (for `splot`) |
+| `:unitranges` | Set `x`, `y`, and `z` ranges to `[-1:1]` |
+| `:nocb` | Disable the colorbox |
+
+This example shows how to use these themes:
+
+```{julia}
+plot(:notics, :labels, "set grid", sin)
+```
+
+## Included plot styles
+
 Gaston includes several themes for common plot styles. The easiest way to use
 them is through the specialized plot commands described below. For more
-details, see the [Manual](@ref).
+details, see the [manual](manual.qmd#simple-themes).
 
-Themes are divided into _settings themes_, which specify gnuplot `set` commands,
-and _plotline themes_, which specify how a particular curve is displayed
-(color, thickness, etc.) Settings themes are stored in the dictionary
-`Gaston.sthemes`, and plotline themes are stored in `Gaston.pthemes`. The
-themed commands described below use combinations of these themes to create a
-specific type of plot.
+The themed commands described below use combinations of these themes to create
+a specific type of plot.
 
-In gnuplot, plotlines (as in `plot with lines`) are especially difficult to
-theme, because repeated options are errors, and options given in the wrong
-order may also cause errors. As an example, consider using `scatter` to plot
-some points; we want to use `pointtype` number 4:
+Note that, in gnuplot, plotlines (as in `with lines linecolor 'green'`) are
+especially difficult to theme, because repeated options (and options given in
+the wrong order) are errors. As an example of this difficulty, consider using
+`scatter` to plot some points; we want to use `pointtype` number 4:
+
 ```julia
 scatter(rand(10), rand(10), "pointtype = 4")
 ```
+
 This command causes an error because the plotline theme `:scatter` already
-specifies the pointtype! To plot a scatter plot using the desired point type,
+specifies the point type! To plot a scatter plot using the desired point type,
 use plain `plot` with the appropriate settings, create your own theme, or
 modify the built-in theme. Here is an example where the theme is modified.
 First find out how the theme is set up:
+
 ```{julia}
 Gaston.pthemes[:scatter]
 ```
+
 Then, modify the entry for the pointtype:
+
 ```{julia}
 Gaston.pthemes[:scatter][2] = "pointtype" => 4
 scatter("set title 'Scatter plot with modified theme", rand(10), rand(10), "lc 'dark-green'")
 ```
-Note how the linecolor was specified without causing an error, since it is not included in the theme.
 
-#### Scatter plots
+Note how the line color was specified without causing an error, since it is not
+included in the theme.
+
+The following subsections cover all included plot styles, along with the list
+of built-in themes they rely on, as well as some examples.
+
+### Scatter plots
 
 | command | settings theme | plotline theme |
 |:--------|:---------------|:---------------|
@@ -543,7 +643,7 @@ A 3-D scatter plot (the default settings theme (`:scatter3`) draws all the borde
 scatter3("set title 'A 3-D scatter plot", randn(10), randn(10), randn(10))
 ```
 
-#### Stem plots
+### Stem plots
 
 | command | settings theme | plotline theme |
 |:--------|:---------------|:---------------|
@@ -565,7 +665,7 @@ The circular marks can be omitted with the `onlyimpulses` keyword argument:
 stem("set title 'Stem plot with onlyimpulses'", g, onlyimpulses = true)
 ```
 
-#### Bar plots
+### Bar plots
 
 | command | settings theme | plotline theme |
 |:--------|:---------------|:---------------|
@@ -585,13 +685,14 @@ Error bars are handled by `barerror`; there is also `barerror!`.
 barerror("set title 'Error bars plot'", 1:10, rand(10), 0.1*rand(10).+0.1, "lc 'sandybrown'")
 ```
 
-#### Histograms
+### Histograms
 
 | command | settings theme | plotline theme |
 |:--------|:---------------|:---------------|
 |`histogram` | `:histplot` | `:box`, `:horhist` (1-D); `:image`  (2-D) |
 
 The `histogram` function takes these optional keyword arguments:
+
 * `nbins`: specifies the number of bins. Defaults to 10.
 * `mode::Symbol`: Controls histogram normalization mode; passed to
   [`StatsBase.normalize`](https://juliastats.org/StatsBase.jl/stable/empirical/#LinearAlgebra.normalize).
@@ -600,6 +701,7 @@ The `histogram` function takes these optional keyword arguments:
   precedence over `nbins`. Defaults to `nothing`.
 * `horizontal::Bool`: if `true`, the histogram is drawn horizontally. Defaults
   to `false`.
+
 `histogram` uses the settings theme `:histplot`, and plotline themes `:box` or `:horhist`.
 2-D histograms are supported, by passing two datasets.
 
@@ -634,7 +736,7 @@ th = @gpkw {palette = :matter, colorbox = false, title = Q"2-D histogram",
 histogram(th, x, y, nbins = 50, mode = :pdf)
 ```
 
-#### Images
+### Images
 
 | command | settings theme | plotline theme |
 |:--------|:---------------|:---------------|
@@ -665,7 +767,7 @@ img = testimage("lake_color")
 @gpkw imagesc({size = "square", autoscale = "fix"}, channelview(img).*255)
 ```
 
-#### Surfaces
+### Surfaces
 
 | command | settings theme | plotline theme |
 |:--------|:---------------|:---------------|
@@ -678,21 +780,21 @@ are not plotted.
 ```{julia}
 f1(x,y) = sin(sqrt(x*x+y*y))/sqrt(x*x+y*y)
 th = @gpkw {title = Q"Sombrero Wireframe", palette = :matter}
-@gpkw wireframe(th, (-15, 15, 30), f1)
+wireframe(th, (-15, 15, 30), f1)
 ```
 Solid surfaces are plotted with `surf`:
 ```{julia}
 th = @gpkw {title = Q"Sombrero Surface", palette = :matter}
-@gpkw surf(th, (-15, 15, 200), f1)
+surf(th, (-15, 15, 200), f1)
 ```
 When plotting a function and a single range (such as `(-15, 15, 200)` above) is given, it is used for
 both `x` and `y` coordinates. Two ranges may be given as well to control the `x` and `y` ranges
 separately:
 ```{julia}
-@gpkw surf(th, (-15, 15, 200), (-25, 5, 200), f1)
+surf(th, (-15, 15, 200), (-25, 5, 200), f1)
 ```
 
-#### Contour plots
+### Contour plots
 
 | command | settings theme | plotline theme |
 |:--------|:---------------|:---------------|
@@ -719,7 +821,7 @@ surfcontour("set title 'Surface With Contours, No Labels'",
             (-5, 5, 40), f2, "lc 'orange'", labels = false)
 ```
 
-#### Heatmap plots
+### Heatmap plots
 
 | command | settings theme | plotline theme |
 |:--------|:---------------|:---------------|
@@ -729,34 +831,3 @@ surfcontour("set title 'Surface With Contours, No Labels'",
 theme = @gpkw {palette = :matter, title = Q"Heatmap"}
 heatmap(theme, :notics, :nocb, :labels, (-10, 10, 70), f2)
 ```
-
-##### Contour lines on heatmap
-
-It is possible to include contour lines in a heatmap plot. The following example is
-taken from [this gnuplot blog post]
-(https://gnuplot-tricks.blogspot.com/2009/07/maps-contour-plots-with-labels.html).
-The function `Gaston.plotwithtable` returns a `Gaston.DataTable`, which wraps
-`IOBuffer`. It can be used as an argument to `plot`.
-```{julia}
-# define function to plot
-x = y = range(-5, 5, 100)
-f4(x,y) = sin(1.3*x)*cos(0.9*y)+cos(.8*x)*sin(1.9*y)+cos(y*.2*x)
-
-# obtain function contours using 'plot with table'
-settings = """set contour base
-              set cntrparam level incremental -3, 0.5, 3
-              unset surface"""
-contours = Gaston.plotwithtable(settings, x, y, f4)
-
-# calculate meshgrid for heatmap plot
-z = Gaston.meshgrid(x, y, f4)
-
-# plot heatmap and contours
-plot("""unset key
-        unset colorbox
-        set palette rgbformulae 33,13,10""",
-        x, y, z, "with image")
-plot!(contours, "w l lw 1.5 lc 'slategray'")
-```
-
-
