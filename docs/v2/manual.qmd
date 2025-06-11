@@ -2,6 +2,8 @@
 title: "Manual"
 ---
 
+TODO: keyword arguments
+
 This manual covers all aspects of using Gaston.
 
 ## Gaston Settings

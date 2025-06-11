@@ -1,20 +1,23 @@
 ---
-title: "Examples"
+title: "Tutorial"
 ---
 
-TODO: glowing curves
+TODO:  polygons, glowing curves
 
 Load Gaston with:
 ```{julia}
+#| echo: false
 using Gaston
 ```
 The plots below have been rendered in a `png` terminal with the following configuration:
 ```{julia}
+#| echo: false
 Gaston.config.term = "pngcairo font ',10' size 640,480"
 ```
 We need to specify that the plot examples below will be rendered to a document and not
 a GUI window:
 ```{julia}
+#| echo: false
 Gaston.config.output = :echo
 ```
 In addition, gnuplot's start up file is as
@@ -37,23 +40,26 @@ Here we have used `@plot` instead of `plot`, which allows us to specify the plot
 as a list of keyword arguments. These arguments can be stored in a "theme" using the
 `@gpkw` macro:
 ```{julia}
-settings = @gpkw {grid, title = Q"{/:Bold A sine wave}", xlabel = Q"Time", ylabel = Q"Volts"};
+#| output: false
+settings = @gpkw {grid, title = Q"{/:Bold A sine wave}", xlabel = Q"Time", ylabel = Q"Volts"}
 ```
 In addition, we have used the `Q` string macro to avoid typing single quotes; `Q"Time"` is
 converted to `"'Time'"`.
 
 Now let us change the line color and markers:
 ```{julia}
-@plot settings x y {with = "lp", lc = Q"sea-green", pt = :fcircle, ps = 1.5}
+@plot settings x y {with = "lp", lc = Q"sea-green", pt = :ecircle, pn = -16, ps = 1.5}
 ```
 Parameters that affect how the curve is plotted are specified *after* the data. These
 can also be stored and reused, so that
 ```{julia}
-plotline = @gpkw {with = "lp", lc = Q"sea-green", pt = :fcircle, ps = 1.5}
+#| output: false
+plotline = @gpkw {with = "lp", lc = Q"sea-green", pt = :ecircle, pn = -16, ps = 1.5}
 @plot settings x y plotline
 ```
-would produce the same plot. Settings and plotline parameters can also be specified as strings;
-see the [Manual](@ref) for all the details. Gaston also has a number of built-in [Themes](@ref).
+would produce the exact same plot. Settings and plotline parameters can also be specified as strings;
+see the [Manual](manual.qmd) for all the details. Gaston also has a number of built-in
+[themes](tutorial.qmd#themes), showcased below.
 
 A `plot` command can only generate a single curve. Use `plot!` or `@plot!` to append a curve:
 ```{julia}
@@ -62,16 +68,16 @@ A `plot` command can only generate a single curve. Use `plot!` or `@plot!` to ap
       x, y,
       plotline, {title = "'sin'"})
 y2 = cos.(2*pi*10*x)
-@plot! x y2 {dashtype = Q".-.", title = Q"cos"}
+@plot! x y2 {dashtype = Q".-.", lw = 2, lc = Q"orchid", title = Q"cos"}
 ```
-Here we see how multiple settings and plotline arguments can be combined. 
-Note that new settings cannot be declared in `plot!` commands; only the plotline for the new curve can be
-specified.
+Here we see how multiple settings and plotline arguments can be combined.  Note
+that new settings cannot be declared in `plot!` commands; only the plotline for
+the new curve can be specified.
 
 #### Plotting functions
 
-In the examples above, the data given to `plot` is stored in vectors. Functions can be plotted
-directly, with a given range and number of samples, as follows:
+In the examples above, the data given to `plot` is stored in vectors. Functions
+can be plotted directly, with a given range and number of samples, as follows:
 ```{julia}
 g(x) = exp(-abs(x/5))*cos(x)  # function to plot
 tt = "set title 'g = x -> exp(-abs(x/5))*cos(x))'"
@@ -79,11 +85,75 @@ plot(tt, (-10, 10, 200), g) # plot from x = -10 to 10, using 200 samples
 ```
 Ranges can be specified in the following alternative ways:
 ```julia
-plot(g)            # 100 samples, from -10 to 9.99
-plot((a, b), g)    # 100 samples, from a to b
+plot(g)            # 101 samples, from -10 to 10
+plot((a, b), g)    # 101 samples, from a to b
 plot((a, b, c), g) # c samples, from a to b
 plot(x, g)         # g.(x)
 ```
+
+#### A note on side effects
+
+Plot commands return a value of type `Gaston.Figure`. When values of this type
+are displayed, Julia's display system calls gnuplot behind the scenes to
+generate the actual plot. Plots are never generated as side effects the way they
+are, for example, in Matlab.
+
+This means that, for example, the following code does not display any figures:
+
+```{.julia}
+i = 1
+while (i < 10)
+    plot(x, i.*y)
+    i += 1
+end
+```
+
+nor will this code:
+
+```{.julia}
+function f(x, y)
+    plot(x, y)
+    println("Done.")
+end
+```
+
+The easiest way to "force" a piece of code to generate a plot is to call `display` explicitly:
+
+```{.julia}
+i = 1
+while (i < 10)
+    plot(x, i.*y) |> display
+    i += 1
+end
+```
+
+Of course, values of type `Figure` can also be stored in variables and manipulated as any other
+Julia value:
+
+```{.julia}
+function f(x, y)
+    f = plot(x, y)
+    println("Done.")
+    return f
+end
+```
+
+Internally, Gaston keeps references to all `Figure` values it has produced. If there are one
+or more, one of them is _active_ in the sense that all subsequent `plot` and `plot!` commands
+will target that figure. The active figure can be obtained with:
+
+```{.julia}
+figure()
+```
+
+and the figure `f` can be made active with:
+
+```{.julia}
+figure(f)
+```
+
+A new figure can be instantiated with the `Figure` constructor, as in `f =
+Figure()`. The new figure is automatically made the active figure.
 
 #### Multiplots
 
@@ -107,8 +177,9 @@ It is possible to have empty "slots":
 ```{julia}
 plot(f[4], x, sinc.(20x), "w lp pn 12")  # the third axis is empty
 ```
-Gaston tries to keep a square figure aspect ratio as more and more axes are included. 
-Add another plot to an axis using indexing:
+Note that Gaston tries to keep a square figure aspect ratio as more and more axes are included.
+
+Add another curve to an axis using indexing:
 ```{julia}
 plot!(f[2], x, 0.3randn(length(x)))
 ```
@@ -130,34 +201,145 @@ y = randn(100)
                 x,
                 {lc = Q"dark-green"}, nbins = 10)
 ```
-Note that margins can be specified as a tuple. The macro `@gpkw` allows us to use keyword
-settings in the `histogram` plot command (as described below).
+Note that margins can be specified as a tuple.
 
 Let us close all figures created so far with
 ```{julia}
 closeall()
 ```
-This command closes all gnuplot processes started by Gaston and closes all figures. To close
-a specific figure, run either:
-```julia
-close(f)  # close Figure f
-close(h)  # close figure with handle h
+This command closes all gnuplot processes started by Gaston and closes all figures. Close
+figure `f` with
+
+```{.julia}
+close(f)
 ```
 
 ## 3-D Plots
 Plotting in 3-D is similar to 2-D, except that `splot` (and `@splot`, `splot!`, `@splot!`) are used
 instead of `plot`. This example shows how to plot the surface defined by function `s`:
+
 ```{julia}
 x = y = -15:0.2:15
 s = (x,y) -> @. sin(sqrt(x*x+y*y))/sqrt(x*x+y*y)
 @splot "set title 'Sombrero'" "set hidden3d" {palette = :cool} x y s "w pm3d"
 ```
-The palette `cool` is defined in [ColorSchemes](https://github.com/JuliaGraphics/ColorSchemes.jl).
+
+The palette `cool` is defined in
+[ColorSchemes](https://github.com/JuliaGraphics/ColorSchemes.jl). Any
+colorscheme from that package can be used simply by prepending its name with
+`:`.
+
+## Plotting in text terminals
+
+It is often convenient to generate plots directly in the terminal. Gnuplot supports a few
+different ways to do this:
+
+* `sixelgd` uses [sixels](https://en.wikipedia.org/wiki/Sixel)) to generate plots almost
+  identical to those produced by regular GUI terms:
+  ![sixel](assets/sixelgd.png)
+* `block` uses Unicode characters to draw a plot on the terminal:
+  ![block](assets/block.png)
+
+Note that, in all cases, Gaston must be configured for terminal output with
+
+```{.julia}
+Gaston.config.output = :echo
+```
+
+There are other text terms, such as `dumb`, but in general those produce output
+of worse quality than `sixelgd` and `block`.
+
+## Plotting with strings and dates
+
+Besides numerical arrays and ranges, Gaston can also plot arrays of strings, as
+shown in the following example:
+
+```{julia}
+x = 10*rand(10)
+y = 10*rand(10)
+w = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
+plot(x, y, w, "w labels")
+```
+
+Julia's `Date` type can be plotted by converting it to strings, and using gnuplot's date support:
+
+```{julia}
+using Dates
+
+dates = Date(2018, 1, 1):Day(1):Date(2019, 12, 31)
+ta = rand(length(dates))
+timefmt = "%Y-%m-%d" ## hour:minute:seconds are also available
+pfmt = "%Y-%m-%d"
+rot_xtics = -35
+vals = 0.5*ta
+tempo = string.(dates) # convert dates to strings
+xmin1 = "2018-02-01"
+xmax1 = "2019-04-01"
+
+@gpkw settings = {xdata = "time",
+                  timefmt = "'$(timefmt)'",
+                  grid,
+                  format = "x '$(pfmt)'",
+                  xtics = "rotate by $(rot_xtics)",
+                  tmargin = "at screen 0.96",
+                  bmargin = "at screen 0.15",
+                  lmargin = "at screen 0.1",
+                  rmargin = "at screen 0.96",
+                  xrange = "['$(xmin1)':'$(xmax1)']",
+                  yrange = (-0.25, 0.75)}
+plot(settings, tempo, vals, "u 1:2 w l t 'series'")
+```
+
+## Plotting using Latex
+
+```{.julia}
+s = @gpkw({ title = Q"Polynomial approximation of sin(x)",
+            style = "fill transparent solid 0.6 noborder",
+            xtics = (positions = [-pi, -pi/2, 0, pi/2, pi],
+                     labels = [raw"$-\pi$", raw"$-\pi/2$", "0", raw"$\pi/2$", raw"$\pi$"]),
+            xrange = (-3.8, 3.8),
+            yrange = (-1.5, 1.5),
+            key = "box opaque left horiz",
+            linetype = :YlOrBr_7,
+            grid = "front",
+            label = "at graph 0.62,0.2 front center '$latex'" })
+x = range(-2pi, 2pi, 1000)
+y = sin.(x)
+@plot s x y x "w filledcurve t 'n=0' lt 1"
+@plot! x y x .- x.^3/6 "w filledcurve t 'n=1' lt 2"
+@plot! x y x .- x.^3/6 .+ x.^5/120 "w filledcurve t 'n=2' lt 3"
+@plot! x y x .- x.^3/6 .+ x.^5/120 .- x.^7/5040 "w filledcurve t 'n=3' lt 4"
+@plot! x y "w l t 'sin(x)' lw 2 lc rgb 'black'"
+save(term="cairolatex pdf input color dashed size 5in,3.3in", filename = "test.tex")
+```
+
+This code creates two files, `test.tex` and `test.pdf`, which can be used to
+generate a final pdf plot by compiling the following script with `pdflatex`:
+
+```{.latex}
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{color}
+
+\begin{document}
+\begin{figure}
+\input{test.tex}
+\end{figure}
+\end{document}
+```
+
+The finished plot looks like this:
+
+![cairolatex](assets/cairolatex.png)
+
+A similar workflow can be used with other gnuplot terminals, such as `tikz`, `epslatex`, etc.
 
 ## Animations
 
-Animations require use of the `gif` or `webp` terminals (make sure your
-notebook supports the `image/webp` MIME type before using it).
+Animations require using a terminal that support them; the `gif` or `webp`
+terminals are the most popular ones (make sure your notebook supports the
+`image/webp` MIME type before using it).
 
 Creating an animation is similar to multiplotting: multiple axes are drawn on
 the same figure. When using the `animate` option of the `gif` or `webp`
@@ -477,421 +659,4 @@ plot("""unset key
 plot!(contours, "w l lw 1.5 lc 'slategray'")
 ```
 
-## Other examples
 
-### [3-D Euler spiral (Clothoid)](https://en.wikipedia.org/wiki/Euler_spiral)
-
-```{julia}
-using QuadGK
-z = range(-5, 5, 200)
-fx(z) = sin(z^2)
-fy(z) = cos(z^2)
-x = [quadgk(fx, 0, t)[1] for t in z]
-y = [quadgk(fy, 0, t)[1] for t in z]
-splot("""unset zeroaxis
-         set tics border
-         set xyplane at -5 
-         set view 65,35
-         set border 4095
-         set xtics offset 0, -0.5""",
-         x, y, z, "w l lc 'black' lw 1.5")
-```
-
-### Waterfall
-
-Inspired by this [Julia Discourse discussion](https://discourse.julialang.org/t/how-to-produce-a-waterfall-plot-in-julia/93441).
-```{julia}
-x = -15:0.1:15
-y = 0:30
-u1data = [exp(-(x-0.5*(y-15))^2) for x in x, y in y]
-Zf = fill(0.0, length(x))
-f = Figure()
-Gaston.set!(f(1), """set zrange [0:1.5]
-               set tics out
-               set ytics border
-               set xyplane at 0
-               set view 45,17
-               set xlabel 'ξ'
-               set ylabel 't' offset -2.5
-               set zlabel '|u|' offset -0.85
-               set border 21
-               set size 1, 1.3""")
-for i in reverse(eachindex(y))
-    Y = fill(y[i], length(x))
-    Z = u1data[:,i]
-    splot!(x, Y, Z, Zf, Z, "w zerrorfill lc 'black' fillstyle solid 1.0 fc 'white'")
-end
-f
-```
-
-### Line color from palette
-
-```{julia}
-x = -2π:0.05:2π
-@plot {palette = :ice} x sin.(3x) x "w l notitle lw 3 lc palette"
-```
-
-### Variable marker size and color
-
-```{julia}
-x = 0:0.1:6π
-splot("unset colorbox",
-      x, cos.(x), sin.(x), x./10,
-      "w p", "ps variable", "pt 7", "lc palette")
-```
-
-### Filled curve in 3D
-
-```{julia}
-x = 0.:0.05:3;
-y = 0.:0.05:3;
-z = @. sin(x) * exp(-(x+y))
-@gpkw splot(:labels, {style = "fill transparent solid 0.3", xyplane = "at 0", grid, lt = :Set1_5},
-            x, y, z, z.*0, z,
-            "w zerror t 'Data'")
-splot!(x.*0, y, z, "w l lw 3")
-splot!(x, y.*0, z, "w l lw 3")
-```
-
-Here, `Set1_5` is a color scheme from [ColorSchemes.jl](https://github.com/JuliaGraphics/ColorSchemes.jl).
-
-### Spheres
-
-#### Wireframe
-
-```{julia}
-Θ = range(0, 2π, length = 100)
-Φ = range(0, π, length = 20)
-r = 0.8
-x = [r*cos(θ)*sin(ϕ) for θ in Θ, ϕ in Φ]
-y = [r*sin(θ)*sin(ϕ) for θ in Θ, ϕ in Φ]
-z = [r*cos(ϕ)        for θ in Θ, ϕ in Φ]
-@gpkw splot({view = "equal xyz", pm3d = "depthorder", hidden3d},
-            x, y, z,
-            {w = "l", lc = Q"turquoise"})
-```
-
-#### Surface
-
-```{julia}
-Θ = range(0, 2π, length = 100)
-Φ = range(0, π, length = 100)
-r = 0.8
-x = [r*cos(θ)*sin(ϕ) for θ in Θ, ϕ in Φ]
-y = [r*sin(θ)*sin(ϕ) for θ in Θ, ϕ in Φ]
-z = [r*cos(ϕ)        for θ in Θ, ϕ in Φ]
-@splot({style = "fill transparent solid 1",
-        palette = :summer,
-        view = "equal xyz",
-        pm3d = "depthorder"},
-       x, y, z,
-       "w pm3d")
-```
-
-### Torus
-
-```{julia}
-U = range(-π, π, length = 50)
-V = range(-π, π, length = 100)
-r = 0.5
-x = [1+cos(u)+r*cos(u)*cos(v) for u in U, v in V]
-y = [r*sin(v)                 for u in U, v in V]
-z = [sin(u)+r*sin(u)*cos(v)   for u in U, v in V]
-settings = """set object rectangle from screen 0,0 to screen 1,1 behind fillcolor 'black' fillstyle solid noborder
-              set pm3d depthorder
-              set style fill transparent solid 0.5
-              set pm3d lighting primary 0.05 specular 0.2
-              set view 108,2
-              unset border
-              set xyplane 0
-              unset tics
-              unset colorbox"""
-@splot(settings, {palette = :cool}, x, y, z, "w pm3d")
-```
-
-#### Interlocking torii
-
-```{julia}
-U = LinRange(-π, pi, 100)
-V = LinRange(-π, pi, 20)
-x = [cos(u) + .5 * cos(u) * cos(v) for u in U, v in V]
-y = [sin(u) + .5 * sin(u) * cos(v) for u in U, v in V]
-z = [.5 * sin(v)                   for u in U, v in V]
-@gpkw surf({palette = :dense,
-        pm3d = "depthorder",
-        colorbox = false,
-        key = :false,
-        tics = :false,
-        border = 0,
-        view = "60, 30, 1.5, 0.9",
-        style = "fill transparent solid 0.7"},
-       x', y', z')
-x = [1 + cos(u) + .5 * cos(u) * cos(v) for u in U, v in V]
-y = [.5 * sin(v)                       for u in U, v in V]
-z = [sin(u) + .5 * sin(u) * cos(v)     for u in U, v in V]
-surf!(x', y', z')
-```
-
-See more torus examples in the included Pluto notebook.
-
-### Contours
-
-#### Surface with contours
-
-```{julia}
-x = y = -10:0.5:10
-f1(x, y) = cos.(x./2).*sin.(y./2)
-surf("""set hidden3d
-        set contour base
-        set cntrparam levels 10
-        unset key""",
-     x, y, f1,
-     "lc 'turquoise'")
-```
-
-#### Egg-shaped contours
-
-```{julia}
-x = -1:0.05:1
-y = -1.5:0.05:2
-egg(x,y) = x^2 + y^2/(1.4 + y/5)^2
-segg = [egg(x,y) for x in x, y in y]
-@gpkw contour({palette = :cool,
-               cntrparam = "levels incremental 0,0.01,1",
-               auto = "fix",
-               xrange = (-1.2, 1.2),
-               yrange = (-1.5, 2),
-               cbrange = (0, 1),
-               xlabel = "'x'",
-               ylabel = "'y'",
-               size = "ratio -1"},
-              x, y, segg',
-              "w l lc palette",
-              labels = false)
-```
-
-### 3D Tubes
-
-#### Wireframe
-
-```{julia}
-U = range(0, 10π, length = 80)
-V = range(0, 2π, length = 10)
-x = [(1-0.1*cos(v))*cos(u)     for u in U, v in V]
-y = [(1-0.1*cos(v))*sin(u)     for u in U, v in V]
-z = [0.2*(sin(v) + u/1.7 - 10) for u in U, v in V]
-settings = @gpkw {pm3d = "depthorder",
-                  style = "fill transparent solid 1",
-                  view = "equal xyz",
-                  xyplane = -0.05,
-                  palette = :ice,
-                  xrange = (-1.2, 1.2),
-                  yrange = (-1.2, 1.2),
-                  colorbox = false,
-                  hidden3d,
-                  view = (70, 79)}
-@splot(settings, x, y, z, "w l lc 'turquoise'")
-```
-
-#### Surface
-
-```{julia}
-@splot(settings, x, y, z, "w pm3d")
-```
-
-### Dates
-
-
-[Source](https://lazarusa.github.io/gnuplot-examples/examples/2d/lines/dates) for this example.
-
-### Strings
-
-```{julia}
-x = 10*rand(10)
-y = 10*rand(10)
-w = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
-plot(x, y, w, "w labels")
-```
-
-### Animations
-
-#### 3-D spiral
-
-```{julia}
-z = 0:0.1:10pi
-step = 5
-cc = "lc 'turquoise' lw 3 notitle"
-ac = @gpkw {zrange = (0,30), xrange = (-1.2, 1.2), yrange = (-1.2, 1.2)}
-F = scatter3(ac, :notics, :labels, cos.(z[1:step]), sin.(z[1:step]), z[1:step], cc)
-frame = Figure()
-for i = 2:60
-    frame = scatter3(ac, :notics, :labels, cos.(z[1:i*step]), sin.(z[1:i*step]), z[1:i*step], cc)
-    push!(F, frame)
-end
-for i = 60:-1:1
-    frame = scatter3(ac, :notics, :labels, cos.(z[1:i*step]), sin.(z[1:i*step]), z[1:i*step], cc)
-    push!(F, frame)
-end
-save(F, filename = "3dspiral.webp", term = "webp animate loop 0 size 640,480")
-```
-![](3dspiral.webp)
-
-#### Splash
-
-```{julia}
-x = y = -15:0.4:15
-ac = @gpkw {title = Q"Splash",
-            palette  = :cool,
-            cbrange  = (-0.2, 1),
-            zrange   = (-0.3, 1),
-            hidden3d = true}
-F = splot(ac, x, y, (x, y) -> sin(sqrt(x*x+y*y))/sqrt(x*x+y*y), "w pm3d")
-frame = Figure()
-for i = 1:-0.1:-1
-    frame = splot(ac, x, y, (x,y) -> i*sin(sqrt(x*x+y*y))/sqrt(x*x+y*y), "w pm3d");
-    push!(F, frame)
-end
-for i = -0.9:0.1:1
-    frame = splot(ac, x, y, (x,y) -> i*sin(sqrt(x*x+y*y))/sqrt(x*x+y*y), "w pm3d");
-    push!(F, frame)
-end
-save(F, filename = "3dsplash.webp", term = "webp animate loop 0 size 640,480")
-```
-![](3dsplash.webp)
-
-## Defining new plot types and recipes
-
-The following examples illustrate how to extend Gaston to create new types of plots and
-to seamlessly plot arbitrary data types.
-
-### Functions that return a `Gaston.Figure`
-
-This example shows how to create a new type of plot: plotting complex data as
-two subplots, with the magnitude and phase of the data. The example also
-defines new themes.
-
-```{julia}
-# define new type
-struct ComplexData{T <: Complex}
-    samples :: Vector{T}
-end
-
-# define new themes
-Gaston.sthemes[:myplot1] = @gpkw {grid, ylabel = Q"Magnitude"}
-Gaston.sthemes[:myplot2] = @gpkw {grid, ylabel = Q"Angle"}
-Gaston.pthemes[:myplot1] = @gpkw {w = "lp"}
-Gaston.pthemes[:myplot2] = @gpkw {w = "p", lc = "'black'"}
-
-# define new function
-function myplot(data::ComplexData; kwargs...)::Figure
-                # convert data to a format gnuplot understands
-                x = 1:length(data.samples)
-                y1 = abs2.(data.samples)
-                y2 = angle.(data.samples)
-                # create a new figure with fixed layout (two rows, one col)
-                f = Figure(multiplot = "layout 2,1", autolayout = false)
-                # add two plots to f
-                plot(f[1], x, y1, stheme = :myplot1, ptheme = :myplot1)
-                plot(f[2], x, y2, stheme = :myplot2, ptheme = :myplot2)
-                return f
-end
-
-# plot example: complex damped sinusoid
-t = range(0, 1, 20)
-y = ComplexData(exp.(-t) .* cis.(2*pi*7.3*t))
-myplot(y)  # plot
-```
-
-The use of themes allows the user to modify the default properties of
-the plot, by modifying the themes (such as `Gaston.sthemes[:myplot1]`) instead
-of having to re-define `myplot`. Of course, similar functionality can be
-achieved with the use of keyword arguments.
-
-### Recipes: Adding new methods to `Gaston.convert_args`
-
-The following example shows how to extend `Gaston.convert_args` to plot a
-custom type `Data1`. This simple example returns a `Gaston.Plot` object
-(essentially a curve), which contains data and a plotline.
-
-
-```{julia}
-using Gaston: Plot
-import Gaston: convert_args
-
-# define custom type
-struct Data1
-    samples
-end
-
-# add method to convert_args
-function convert_args(d::Data1, args... ; pl = "", kwargs...)
-    x = 1:length(data.samples)
-    y = data.samples
-    Plot(x, y, pl)
-end
-
-# create some data
-data = Data1(rand(20))
-
-# plot
-plot("set title 'Simple data conversion recipe'", data, "w lp pt 7 lc 'olive'")
-```
-
-Note that this kind of recipe will also seamlessly work with `plot!`, which
-adds the curve to the current axis.
-
-A recipe may also return an entire `Axis` object, with its own settings and
-curves. The following example returns an axis with two curves.
-
-```{julia}
-using Gaston: Plot, Axis
-
-struct Data2 end
-
-function convert_args(x::Data2, args... ; kwargs...)
-    x = range(0, 1, 100)
-    p1 = Plot(x, cos.(4x), "dt '-' lc 'red' t 'cosine'")
-    p2 = Plot(x, sin.(5x), "dt '.' lc 'blue' t 'sine'")
-    Axis("set grid\nset title 'Full axis recipe'", [p1, p2])
-end
-
-plot(Data2())
-```
-
-Note that the axis returned by a recipe can be inserted directly into a multiplot:
-
-```{julia}
-f = Figure(multiplot = "title 'Recipe example'")
-plot(f[1], randn(100), "w p")
-plot(f[2], Data2())
-```
-
-Finally, a recipe can also generate a full multiplot, with multiple axes, as
-illustrated in the example below:
-
-```{.julia}
-using Gaston
-import Gaston: convert_args, Plot, Axis, Axis3
-closeall() #| hide_line
-
-struct MyType end
-
-function convert_args(x::MyType)
-    t1 = range(0, 1, 40)
-    t2 = range(-5, 5, 50)
-    z = Gaston.meshgrid(t2, t2, (x,y) -> cos(x)*cos(y))
-    @gpkw a1 = Axis({title = Q"First Axis"}, [Plot(1:10, rand(10))])
-    @gpkw a2 = Axis({title = Q"Trig"}, [Plot(t1, sin.(5t1), {lc = Q"black"}),
-                                        Plot(t1, cos.(5t1), {w = "p", pt = 16})])
-    @gpkw a3 = Axis3({title = Q"Surface", tics = false, palette = (:matter, :reverse)},
-                     [Plot(t2, t2, z, {w = "pm3d"})])
-    @gpkw a4 = Axis({tics, title = false, title = Q"Last Axis"},
-                    [Plot(1:10, 1:10, rand(10,10), "w image")])
-    # return named tuple with four axes
-    (axes = [a1, a2, a3, a4],
-     multiplot = "title 'A Four-Axes Recipe' layout 2,2",
-     autolayout = false)
-end
-
-plot(MyType())
-```

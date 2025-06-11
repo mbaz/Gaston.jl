@@ -53,7 +53,7 @@ end
 
 # functions
 function convert_args(f::F, args... ; pl = "", kwargs...) where {F <: Function}
-    r = range(-10, 10-1/100, length=100)
+    r = range(-10, stop = 10, length = 101)
     Plot(r, f.(r), args..., pl)
 end
 
@@ -63,7 +63,7 @@ function convert_args(x::R1, y::R2, args... ; pl = "", kwargs...) where {R1 <: R
 end
 
 function convert_args(x::Tuple, f::F, args... ; pl = "", kwargs...) where {F<:Function}
-    samples = length(x) == 3 ? x[3] : 100
+    samples = length(x) == 3 ? x[3] : 101
     r = range(x[1], x[2], length=samples)
     Plot(r, f.(r), args..., pl)
 end

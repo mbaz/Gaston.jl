@@ -7,8 +7,12 @@ website:
     left:
       - href: index.qmd
         text: Introduction
+      - href: tutorial.qmd
+        text: Tutorial
       - href: examples.qmd
         text: Examples
+      - href: recipes.qmd
+        text: Recipes
       - href: manual.qmd
         text: Manual
       - href: reference.qmd
@@ -16,6 +20,10 @@ website:
     tools:
       - icon: github
         href: https://github.com/mbaz/Gaston.jl
+    search: true
+    pinned: true
+    reader-mode: true
+    back-to-top-navigation: true
 
 format:
   html:

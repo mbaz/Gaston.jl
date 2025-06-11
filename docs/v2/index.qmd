@@ -2,7 +2,10 @@
 title: "Introduction"
 ---
 
-TODO: explain about pluto notebooks, add ack to other packages
+**TODO**
+
+* explain about pluto notebooks, add ack to other packages
+* say this manual covers 2.x, pointer to 1.x
 
 [Gnuplot](http://www.gnuplot.info/) is a venerable (but actively
 developed), very powerful and fast program for plotting.
@@ -147,9 +150,11 @@ The configuration file is `~/.gnuplot` on Unix-like systems, and
 
 ## Next steps
 
-* See many plot examples in the [Examples](examples.qmd) section.
+* Read the [Tutorial](tutorial.qmd).
+* See plot examples in the [Examples](examples.qmd) section.
+* Learn how to extend Gaston to plot arbitrary Julia types in the [Recipes](recipes.qmd) section.
 * Learn all the details about how to plot with Gaston in the [Manual](manual.qmd).
-* See the full [API Reference](reference.qmd).
+* Consult the full [API Reference](reference.qmd).
 * Run the [interactive Pluto notebooks](https://github.com/mbaz/Gaston.jl/tree/master/notebooks),
   with examples and tutorials.
-
+```
