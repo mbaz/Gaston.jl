@@ -2,8 +2,6 @@
 title: "Examples"
 ---
 
-TODO: glowing curves
-
 ```{julia}
 #| echo: false
 #| output: false
@@ -271,9 +269,91 @@ plot(x, y, w, "w labels")
 
 ### Animations
 
+#### Lorenz attractor
+
+This example is adapted from [https://docs.makie.org/stable/#example](Makie's documentation).
+A few notes on the adaptation to Gaston:
+
+* The camera animation is achieved by changing the `view` setting every frame.
+* Each frame, `Npoints` coordinates are added to the plot. The animation consists of `Nframes`
+  frames.
+* The coloring of the attractor is different than in most 3-D plots. Normally, the color of
+  a point depends on its `z` coordinate. In this case, the `z` coordinate is not an amplitude,
+  since the curve lives in a state space. Therefore, the color palette will be applied along
+  the length of the curve, with points nearer the start given colors at the start of the palette.
+  To achieve this, we use `ColorSchemes.resample` to create a new palette with the same number
+  of colors as there are points in the curve. Then, `Gaston.hex` is used to convert these
+  colors to decimal numbers. Finally, the colors are used as a fourth column of data and the
+  line color is set to `lc rgb variable`.
+
+```{.julia}
+using ColorSchemes
+
+Base.@kwdef mutable struct Lorenz
+    dt::Float64 = 0.01
+    σ::Float64 = 10
+    ρ::Float64 = 28
+    β::Float64 = 8/3
+    x::Float64 = 1
+    y::Float64 = 1
+    z::Float64 = 1
+end
+
+function step!(l::Lorenz)
+    dx = l.σ * (l.y - l.x)
+    dy = l.x * (l.ρ - l.z) - l.y
+    dz = l.x * l.y - l.β * l.z
+    l.x += l.dt * dx
+    l.y += l.dt * dy
+    l.z += l.dt * dz
+    return (l.x, l.y, l.z)
+end
+
+Nframes = 120
+Npoints = 50
+attractor = Lorenz()
+x = Float64[];
+y = Float64[];
+z = Float64[];
+
+s = @gpkw {xrange = (-30, 30),
+           yrange = (-30, 30),
+           zrange = (0, 60),
+           xtics = "offset -1.2,0",
+           xtics = "add ('' -30, '' 30)",
+           ytics = "offset 1.2,0",
+           ytics = "add ('' -30, '' 30)",
+           origin = "-0.1, -0.1",
+           size = "1.2, 1.2",
+           object = "rectangle from screen 0,0 to screen 1,1 fillcolor 'black' behind",
+           border = "back lc rgb '#eeeeee' lt 1 lw 1.5",
+           view = "equal xyz",
+           xyplane = "at 0"}
+
+f = splot(s, 1, 1, 1)
+
+for i = 1:Nframes
+    for j = 1:Npoints
+        step!(attractor)
+        push!(x, attractor.x);
+        push!(y, attractor.y);
+        push!(z, attractor.z)
+    end
+    cs = resample(ColorSchemes.inferno, length(x))
+    splot(f[i],
+          s, "set view 70, $(45 + 17 * sin(2pi * i / Nframes))",
+          x, y, z, Gaston.hex(cs),
+          "w l notitle lc rgb variable")
+end
+save(f, filename = "lorenz.webp", term = "webp animate loop 0 size 640,480")
+```
+
+![](assets/lorenz.webp)
+
+
 #### 3-D spiral
 
-```{julia}
+```{.julia}
 z = 0:0.1:10pi
 step = 5
 cc = "lc 'turquoise' lw 3 notitle"
@@ -290,11 +370,11 @@ for i = 60:-1:1
 end
 save(F, filename = "3dspiral.webp", term = "webp animate loop 0 size 640,480")
 ```
-![](3dspiral.webp)
+![](assets/3dspiral.webp)
 
 #### Splash
 
-```{julia}
+```{.julia}
 x = y = -15:0.4:15
 ac = @gpkw {title = Q"Splash",
             palette  = :cool,
@@ -313,5 +393,5 @@ for i = -0.9:0.1:1
 end
 save(F, filename = "3dsplash.webp", term = "webp animate loop 0 size 640,480")
 ```
-![](3dsplash.webp)
+![](assets/3dsplash.webp)
 

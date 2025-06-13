@@ -43,7 +43,7 @@ using StatsBase: fit, Histogram, normalize
 
 using DelimitedFiles: writedlm
 
-using ColorSchemes: colorschemes, get, ColorScheme, resample
+using ColorSchemes: colorschemes, get, resample, ColorScheme, RGB, RGBA
 
 using PrecompileTools
 

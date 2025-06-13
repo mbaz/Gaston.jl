@@ -289,3 +289,8 @@ quartodoc("Gaston.Plot", @doc Gaston.Plot)
 quartodoc("Gaston.Axis", @doc Gaston.Axis)
 ```
 
+```{julia}
+#| echo: false
+quartodoc("Gaston.hex", @doc Gaston.hex)
+```
+

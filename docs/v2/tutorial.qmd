@@ -504,7 +504,7 @@ were recorded; this message is purely informative and not actually an error.
 The following examples illustrate how to create and display animations, in this case with a
 background image:
 
-```{julia}
+```{.julia}
 frames = 75 # number of animation frames
 # new, empty figure
 f = Figure()
@@ -526,7 +526,7 @@ for i in frames:-1:1  # in reverse
 end
 save(f, filename = "2DAnim.webp", term = "webp animate loop 0 size 640,480")
 ```
-![](2DAnim.webp)
+![](assets/2DAnim.webp)
 
 First,  an empty figure `f` is created with `Figure()`. Then,
 [`Gaston.Plot`](reference.qmd) is used to create an object, `bckgnd`, which

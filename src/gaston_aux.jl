@@ -578,6 +578,37 @@ function parse_plotline(pl::Vector{<:Pair})::String
     return join(plotline, " ")
 end
 
+"""
+    cs2dec(cs::ColorScheme)
+
+Convert a colorsheme to a vector of integers, where each number corresponds to
+each color in `cs`, expressed in base 10. Meant to be used with `lc rgb variable`.
+
+This function accepts color schemes made up of `RGB` or `RGBA` values.
+"""
+function cs2dec(cs::ColorScheme)
+    colors = cs.colors
+    s = Int[]
+    str(c) = string(c, base = 16, pad = 2)
+    if colors[1] isa RGB
+        # no alpha
+        for c in colors
+            push!(s, parse(Int, string(str(round(Int, 255*c.r)) *
+                                       str(round(Int, 255*c.g)) *
+                                       str(round(Int, 255*c.b))), base = 16))
+        end
+    else
+        # alpha
+        for c in colors
+            push!(s, parse(Int, string(str(round(Int, 255*c.alpha)) *
+                                       str(round(Int, 255*c.r)) *
+                                       str(round(Int, 255*c.g)) *
+                                       str(round(Int, 255*c.b))), base = 16))
+        end
+    end
+    s
+end
+
 # Define pointtype synonyms
 pointtypes = (dot      = 0,
               ⋅        = 0,
