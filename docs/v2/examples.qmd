@@ -253,20 +253,6 @@ settings = @gpkw {pm3d = "depthorder",
 @splot(settings, x, y, z, "w pm3d")
 ```
 
-### Dates
-
-
-[Source](https://lazarusa.github.io/gnuplot-examples/examples/2d/lines/dates) for this example.
-
-### Strings
-
-```{julia}
-x = 10*rand(10)
-y = 10*rand(10)
-w = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
-plot(x, y, w, "w labels")
-```
-
 ### Animations
 
 #### Lorenz attractor
