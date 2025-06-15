@@ -57,7 +57,7 @@ function Plot!(P::Plot, args...)
         plotline = parse_plotline(args[end])
         args = args[1:end-1]
     else
-        plotline = ""
+        plotline = P.plotline
     end
     datafile = P.datafile
     writedata(datafile, args...)

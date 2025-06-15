@@ -151,6 +151,11 @@ end
     @test p.plotline == ""
     p = @gpkw Plot(1:10, {with="lines"})
     @test p.plotline == "with lines"
+    #test Plot!
+    pp = Gaston.Plot!(p)
+    @test p.plotline == "with lines"
+    pp = Gaston.Plot!(1:10, 1:10, "w p")
+    @test p.plotline == "w p"
     # test that an existing f.multiplot is not overwritten
     f1 = Figure(multiplot = "title '1'")
     plot(1:10)
