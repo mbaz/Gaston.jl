@@ -787,9 +787,11 @@ Solid surfaces are plotted with `surf`:
 th = @gpkw {title = Q"Sombrero Surface", palette = :matter}
 surf(th, (-15, 15, 200), f1)
 ```
-When plotting a function and a single range (such as `(-15, 15, 200)` above) is given, it is used for
-both `x` and `y` coordinates. Two ranges may be given as well to control the `x` and `y` ranges
-separately:
+
+When plotting a function and a single range (such as `(-15, 15, 200)` above) is
+given, it is used for both `x` and `y` coordinates. Two ranges may be given as
+well to control the `x` and `y` ranges separately:
+
 ```{julia}
 surf(th, (-15, 15, 200), (-25, 5, 200), f1)
 ```

@@ -38,6 +38,34 @@ mutable struct Plot
 end
 
 """
+    Gaston.Plot!(P, args...)::Nothing
+
+Update existing plot `P` with provided `args`.
+
+The existing data file is overwritten; no new data file is created. A quick
+benchmark shows that this has no advantage over creating new Plots; however,
+in some cases avoiding the creation of lots of small files might be desired.
+"""
+function Plot!(P::Plot, args...)
+    if isempty(args)
+        return P
+    end
+    if args[end] isa String
+        plotline = args[end]
+        args = args[1:end-1]
+    elseif args[end] isa Vector{<:Pair}
+        plotline = parse_plotline(args[end])
+        args = args[1:end-1]
+    else
+        plotline = ""
+    end
+    datafile = P.datafile
+    writedata(datafile, args...)
+    P.plotline = plotline
+    return nothing
+end
+
+"""
     Axis(settings::String           = "",
          plots::Vector{Gaston.Plot} = Gaston.Plot[],
          is3d::Bool                 = false)

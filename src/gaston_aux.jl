@@ -147,7 +147,10 @@ end
 Return a list of available gnuplot terminals"""
 terminals() = print(gp_exec("set term"))
 
-"Enable or disable debug mode."
+"""
+    Gaston.debug(d::Bool)
+
+Enable or disable debug mode."""
 function debug(flag)
     if flag
         ENV["JULIA_DEBUG"] = Gaston
