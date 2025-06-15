@@ -134,6 +134,20 @@ function Figure(handle = nothing ; autolayout = true, multiplot = "")
 end
 
 """
+    Gaston.FigureAxis
+
+When indexing a figure, a FigureAxis is returned. It contains the figure
+itself along with the index.
+
+This is required because `plot(figure[index])` modifies the axis at
+`figure.axis[index]`, but it must return `figure`.
+"""
+struct FigureAxis
+    f   :: Figure
+    idx :: Int
+end
+
+"""
     (f::Figure)(index)::Gaston.Axis
 
 Return the axis stored at the specified index. If the axis does not exist, an
@@ -154,26 +168,41 @@ end
 
 # functions to push stuff into figures/axis/plots
 
+"""
+    push!(a::Axis, p::Plot)
+
+Push plot (curve) `p` into axis `a`.
+"""
 function push!(a::Axis, p::Plot)
     push!(a.plots, p)
     return a
 end
 
+"""
+    push!(f::Figure, a::Axis)
+
+Push axis `a` into figure `f`.
+"""
 function push!(f::Figure, a::Axis)
     push!(f.axes, a)
     return f
 end
 
-function push!(f::Figure, p::Plot, index = 1)
-    a = f(index).a
+"""
+    push!(f::FigureAxis, p::Plot)
+
+Push plot (curve) `p` into the indexed axis of figure `f`.
+"""
+function push!(fa::FigureAxis, p::Plot)
+    a = fa.f.axes[fa.idx]
     push!(a, p)
-    return f
+    return fa.f
 end
 
 """
-    push!(f1::Figure, f2::Figure; index = 1)::Figure
+    push!(f1::Figure, f2::Figure)::Figure
 
-Inserts the Axis of figure f2 at the given index into Figure f1.
+Insert the first axis of f2 into f1.
 
 # Example
 ```julia
@@ -183,19 +212,54 @@ histogram(randn(100), bins = 10)  # plots on f2
 push!(f1, f2)  # insert the histogram as second axis of f1
 ```
 """
-function push!(f1::Figure, f2::Figure; index = 1)::Figure
-    push!(f1.axes, f2(index))
+function push!(f1::Figure, f2::Figure)::Figure
+    push!(f1, f2(1))
+end
+
+"""
+    push!(f1::Figure, an::FigureAxis)::Figure
+
+Insert the axis in `an` into `f`.
+
+# Example
+
+``` julia
+f1 = plot(sin)
+f2 = Figure()
+plot(f2, cos)
+plot(f2[2], tan)
+push!(f1, f2[2]) # insert the plot of tan into f1
+"""
+function push!(f1::Figure, f2::FigureAxis)::Figure
+    push!(f1.axes, f2.f.axes[f2.idx])
     return f1
 end
 
-function set!(a::Axis, s::String)
+"""
+    set!(a::Gaston.Axis, s)
+    set!(f::Gaston.FigureAxis, s)
+
+Set the settings of the axis or indexed figure. `s` can be a string or a
+vector of pairs.
+"""
+function set!(a::Axis, s::S)::Axis where {S <: AbstractString}
     a.settings = s
     return a
 end
 
-function set!(a::Axis, s::Vector{<:Pair})
+function set!(fa::FigureAxis, s::S)::Figure where {S <: AbstractString}
+    set!(fa.f.axes[fa.idx], s)
+    return fa.f
+end
+
+function set!(a::Axis, s::Vector{<:Pair})::Axis
     a.settings = parse_settings(s)
     return a
+end
+
+function set!(fa::FigureAxis, s::Vector{<:Pair})::Figure
+    set!(fa.f.axes[fa.idx], s)
+    return fa.f
 end
 
 ## Indexing into figures/axes
@@ -207,20 +271,6 @@ end
 # `f[i,j] = p`  # Replace `f.axes[i].plots[j]` with `p`. `f.axes[i]` will be created if necessary.
 # `f[i] = p`    # Replace `f.axes[1].plots[i]` with `p`.
 # `f[] = p`     # Replace `f.axes[1].plots[1]` with `p`.
-
-"""
-    Gaston.FigureAxis
-
-When indexing a figure, a FigureAxis is returned. It contains the figure
-itself along with the index.
-
-This is required because `plot(figure[index])` modifies the axis at
-`figure.axis[index]`, but it must return `figure`.
-"""
-struct FigureAxis
-    f   :: Figure
-    idx :: Int
-end
 
 """
     getindex(f::Figure, index)::Gaston.FigureAxis

@@ -264,7 +264,8 @@ function showable(::MIME{mime}, f::Figure) where {mime}
 end
 
 function show(io::IO, figax::FigureAxis)
-    show(io, figax.f)
+    println(io, "Gaston.Axis with $(length(figax.f.axes)) ax(es),")
+    println(io, "    stored in figure with handle ", figax.f.handle)
 end
 
 function show(io::IO, a::Axis)

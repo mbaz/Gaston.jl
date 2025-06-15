@@ -518,11 +518,11 @@ for i in 1:frames
     # first plot the function...
     plot(f[i], x[i], sin(2π*2*x[i]), "w p lc 'orange' pt 7 ps 7")
     # ... then add the background
-    push!(f(i), bckgnd)
+    push!(f[i], bckgnd)
 end
 for i in frames:-1:1  # in reverse
     plot(f[2frames-i+1], x[i], sin(2π*2*x[i]), "w p lc 'orange' pt 7 ps 7")
-    push!(f(2frames-i+1), bckgnd)
+    push!(f[2frames-i+1], bckgnd)
 end
 save(f, filename = "2DAnim.webp", term = "webp animate loop 0 size 640,480")
 ```
@@ -533,7 +533,7 @@ First,  an empty figure `f` is created with `Figure()`. Then,
 contains a curve (a black sine wave) and which can be inserted into an axis.
 Every loop iteration, a new axis is inserted into `f` with `plot(f[i], ...)`
 with a curve consisting of an orange circle somewhere along the sine wave.
-Then, the background curve is inserted into the same axis with `push!(f(i),
+Then, the background curve is inserted into the same axis with `push!(f[i],
 bckgnd)`. Finally, the plot is saved in a format that supports animation
 (`webp` in this case).
 

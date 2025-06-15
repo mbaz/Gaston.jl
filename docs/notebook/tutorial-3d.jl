@@ -1,17 +1,19 @@
 ### A Pluto.jl notebook ###
-# v0.19.26
+# v0.20.10
 
 using Markdown
 using InteractiveUtils
 
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
-    quote
+    #! format: off
+    return quote
         local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
     end
+    #! format: on
 end
 
 # ╔═╡ 93b3b71e-0a4e-4165-9f92-b770c06a5964
@@ -83,7 +85,7 @@ md"##### x and y vectors or ranges; z a function"
 # ╔═╡ e7697a24-f587-4215-9cfa-5416e0b2627f
 let
 	x = y = -15:0.4:15
-	f1 = (x,y) -> @. sin(sqrt(x*x+y*y))/sqrt(x*x+y*y)
+	f1(x,y) = @. sin(sqrt(x*x+y*y))/sqrt(x*x+y*y)
 	splot("set title 'Sombrero'
 		   set hidden3d",
 		  x, y, f1,
@@ -126,10 +128,10 @@ md"##### Surface plots"
 # ╔═╡ ebe88c25-eded-4643-aac5-175013a8bd3d
 let
 	f1(x,y) = sin(sqrt(x*x+y*y))/sqrt(x*x+y*y)
-	@options surf({title = "'Sombrero Surface'",
-	               hidden3d,
-	               palette = :matter},
-		          (-15, 15, 200), f1)
+	@gpkw surf({title = "'Sombrero Surface'",
+	            hidden3d,
+	            palette = :matter},
+		        (-15, 15, 200), f1)
 end
 
 # ╔═╡ 24893b90-a180-4df2-a5cb-c252920f74d6
@@ -153,7 +155,7 @@ end
 
 # ╔═╡ 57e27251-9723-429c-976e-61208dcd61f0
 let
-	f1 = (x,y) -> @. sin(sqrt(x*x+y*y))/sqrt(x*x+y*y)
+	f1(x,y) = @. sin(sqrt(x*x+y*y))/sqrt(x*x+y*y)
 	surfcontour("set title 'Sombrero Wireframe and Contours'",
 		        (-15, 15, 40), f1, "lc 'orange'")
 end
@@ -189,7 +191,7 @@ md"Wireframe plots use the `lines` plotstyle, which is `gnuplot`'s default and i
 # ╔═╡ c76118f4-9e8f-4c8c-8cce-df23126551c9
 let
 	f1(x, y) = cos(x/2) * sin(y/2)
-	theme = @options {palette = :matter, title = qs"Wiresurf plot"}
+	theme = @gpkw {palette = :matter, title = Q"Wiresurf plot"}
 	wiresurf(theme, :notics, :labels, (-10, 10, 30), f1)
 end
 
@@ -199,7 +201,7 @@ md"##### Heatmap plots"
 # ╔═╡ 729f87a6-e861-425a-a405-cad1ec4fb320
 let
 	f1(x, y) = cos(x/2) * sin(y/2)
-	theme = @options {palette = :matter, title = qs"Heatmap"}
+	theme = @gpkw {palette = :matter, title = Q"Heatmap"}
 	heatmap(theme, :notics, :labels, (-10, 10, 70), f1)
 end
 
@@ -221,9 +223,9 @@ md"""Palette: $(@bind p Select([:viridis => "viridis", :matter => "matter", :ice
 # ╔═╡ 5a5a8dae-526d-4122-856a-f712cfaaf858
 let al = al, az = az
 	f1(x, y) = cos(x/2) * sin(y/2)
-	theme = @options {view = (al, az),
-	                  palette = p,
-					  title = qs"Wiresurf plot"}
+	theme = @gpkw {view = (al, az),
+	               palette = p,
+				   title = Q"Wiresurf plot"}
 	wiresurf(theme, :notics, :labels, (-8, 8, 30), f1)
 end
 
@@ -243,10 +245,10 @@ let
 		i*sin(2d) / d
 	end
 	x = y = range(-10, 10, 35)
-	theme = @options {zrange = (-1.5, 1.5),
-	                  cbrange = (-0.5, 1),
-					  colorbox = false,
-	                  palette = :matter}
+	theme = @gpkw {zrange = (-1.5, 1.5),
+	               cbrange = (-0.5, 1),
+				   colorbox = false,
+	               palette = :matter}
 	frames = 20
 	for (idx, i) in enumerate(range(-1, 1, frames))
 		wiresurf(f[idx], theme, :notics, x, y, (x, y) -> z(x, y, i))

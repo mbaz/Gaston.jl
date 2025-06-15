@@ -136,8 +136,6 @@ function __init__()
    return nothing
 end
 
-#=
-
 @compile_workload begin
     state.enabled = true
     config.output = :null
@@ -149,12 +147,10 @@ end
     @plot({grid}, y, {w = "l", lc = Q"red"})
     f1 = (x,y) -> sin(sqrt(x*x+y*y))/sqrt(x*x+y*y)
     splot(f, (-5,5), f1)
-    save(f, output = "test.png")
+    save(f, term = "png", filename = "test.png")
     rm("test.png")
     closeall()
     gp_quit(f)
 end
-
-=#
 
 end

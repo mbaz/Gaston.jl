@@ -1,17 +1,19 @@
 ### A Pluto.jl notebook ###
-# v0.19.36
+# v0.20.10
 
 using Markdown
 using InteractiveUtils
 
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
-    quote
+    #! format: off
+    return quote
         local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
     end
+    #! format: on
 end
 
 # ╔═╡ ccdce6f8-f1d8-11ed-19e9-fddf2407113b
@@ -165,7 +167,7 @@ md"### Plotting multiple curves
 
 To plot multiple curves on the same axis, use `plot!`.
 
-(Note that `plot!` only accetps curve settings; axis settings, must be specified with `plot`)."
+(Note that `plot!` ignores any provided axis settings, which must be specified with `plot`)."
 
 # ╔═╡ 57f66b17-8c2d-4737-84e1-c456a7dacc89
 begin
@@ -280,7 +282,7 @@ end
 md"##### Images"
 
 # ╔═╡ 8ab2a66a-df03-4aeb-a736-1336b75dadaa
-md"Arrays may be plotted as images using `imagesc`. Note that, in contrast to other plotting packages, the array columns are plotted vertically."
+md"Arrays may be plotted as images using `imagesc`. Note that, in contrast to other plotting packages, the array columns are plotted with the first row at the top."
 
 # ╔═╡ ca7554bc-6f9c-4574-bf78-20afd42dc647
 let
@@ -316,17 +318,17 @@ plot("set title 'A nice sinusoid'
 md"Options may also be given using the following syntax:"
 
 # ╔═╡ dc989e43-20ad-4f03-86a3-655c00c02a4e
-@plot({title = "'A nice sinusoid'",
-       key = "box left",
-       grid = false,
-       xlabel = "'time'",
-       ylabel = "'voltage'"
-	  },
-      sin,
-      {w = "points",
-       lc = "'orange'",
-       title = "'sin'"
-      })
+@plot({title = "'Another sinusoid'",
+        key = "box left",
+        grid = false,
+        xlabel = "'time'",
+        ylabel = "'voltage'"
+	   },
+       sin,
+       {w = "points",
+        lc = "'orange'",
+        title = "'sin'"
+       })
 
 # ╔═╡ 564caa1c-222f-4655-9505-162f5e23b234
 md"""##### Axis-wide options
@@ -345,6 +347,7 @@ This syntax offers some convenience features:
     * `{tics = (labels = ("one", "two"), positions = (0, 5))}` to `set tics ('one' 0, 'two' 5, )`
 * Specify a color palette from [Colorschemes.jl](https://juliapackages.com/p/colorschemes). For example, `{palette = :viridis}` is converted to a `set palette` command with the appropriate colors. The palette name must be given as a symbol.
     * To reverse the palette order, specify it as `{palette = (:viridis, :reverse)}`.
+* You may also use any custom palette (for example, one created with `ColorSchemes.resample)`
 * A line type may be specified similary: `{lt = :viridis}`.
 * In 3D plots, specify the view as a tuple: `{view = (50, 60)}` is converted to `set view 50, 60`.
 * Specify margins, useful for multiplot with arbitrary layouts: `{margins = (0.33, 0.66, 0.2, 0.8)}` is converted to `set lmargin at screen 0.33...`. The margins are specified in the order left, right, bottom, top.
@@ -354,7 +357,7 @@ An option may be specified more than one time: `{tics, tics = 1:2}` is converted
     set tics
     set tics 1,1,2
 
-Any number of option arguments may be given before and after the data to plot, and they will be combined:
+Any number of option arguments may be given before the data to plot, and they will be combined.
 """
 
 # ╔═╡ 52a654cf-9aac-47ba-82d4-6d7b4320d79e
@@ -369,18 +372,18 @@ md"Options can also be given as `gnuplot` commands in strings:"
 # ╔═╡ 5809cde8-fa4d-49a5-bc4f-4baa0133b21f
 md"""##### Quoted strings
 
-String arguments given to gnuplot must be quoted. To simplify this, the `qs` string macro might come in handy. The string `qs"a title"` is converted to `"'a title'"`."""
+String arguments given to gnuplot must be quoted. To simplify this, the `@Q_str` string macro might come in handy. The string `Q"a title"` is converted to `"'a title'"`."""
 
 # ╔═╡ 1b7dfb67-6047-40fa-9b91-c48aa8e8aa9c
-@plot({title = qs"A nice sinusoid"}, "set key box left", {grid = false},
-       {xlabel = qs"time", ylabel = qs"voltage"},
+@plot({title = Q"A nice sinusoid"}, "set key box left", {grid = false},
+       {xlabel = Q"time", ylabel = Q"voltage"},
 	   sin,
 	   {w = "points"}, "lc 'orange' title 'sin'")
 
 # ╔═╡ beb2b6cd-ee6b-4bd8-bf8e-5d071adbd857
 md"""##### Curve-specific options
 
-These options affect the way a curve is plotted (line style, color, etcetera), and may be specified as a string (which is passed directly to `gnuplot`) or as a set of options inside `{}` brackets. These options are passed to `gnuplot` as part of the `plot` command. For example, `@plot sin {with = "points", lc = qs"red"}` is converted to a `gnuplot` command `plot <datafile> with points lc 'red'`.
+These options affect the way a curve is plotted (line style, color, etcetera), and may be specified as a string (which is passed directly to `gnuplot`) and/or as a set of options inside `{}` brackets. These options are passed to `gnuplot` as part of the `plot` command. For example, `@plot sin {with = "points", lc = Q"red"}` is converted to a `gnuplot` command `plot <datafile> with points lc 'red'`.
 
 When using the bracketed options format, the following convenient syntax is available:
 * `marker` is available as synonym of `pointtype`
@@ -411,13 +414,13 @@ Here a prefix "e" stands for "empty", "f" for "full"; "up" and "dn" stand for "p
 """
 
 # ╔═╡ ea4e84ab-4820-4f91-8782-3bfc3ef4ba6a
-md"##### Themes
+md"""##### Themes
 
-It is possible to create themes with the `@options` macro:"
+It is possible to create themes with the `@gpkw` macro (stands for "gnuplot keywords"):"""
 
 # ╔═╡ 1c0d72b4-992a-4a0e-b9bc-24a62a26da02
 let
-	theme = @options {grid, xlabel = "'x'", ylabel = qs"voltage"}
+	theme = @gpkw {grid, xlabel = "'x'", ylabel = Q"voltage"}
 	@plot(theme, sin)
 end
 
@@ -428,13 +431,11 @@ md"""A couple of lightweight themes are included:
 |-----------:|:------------|
 | :notics | Removes all tics |
 | :labels | Generic axis labels |
+| :nocb | Removes the colorbox |
 | :unitranges | Set all ranges to `[-1:1]` |
 
 Note that `plot` accepts any number of option arguments. Arguments before data are assumed to correspond to `gnuplot` `set` commands; arguments after the data affect the curve attributes.
 """
-
-# ╔═╡ 2c89c62f-e0ca-45fc-8c23-459f40dfc02c
-md"To pass a string to gnuplot, it must be be both double-quoted and single-quoted (for example `{title = \"'A plot'\"}`. The `@qs_str` macro helps avoid a bit of typing:"
 
 # ╔═╡ 83d697a8-3a33-4d37-a173-c31309c112e3
 md"## Interactivity"
@@ -482,29 +483,29 @@ md"Full control over gnuplot multiplot options can be obtained using margins, as
 
 # ╔═╡ 6ae49346-1bc5-46dc-9fb1-7530f6606474
 let
-	f = Figure(multiplot = "title 'Arbitrary multiplot layout demo'")
+	f = Figure(multiplot = "title 'Arbitrary layout demo'", autolayout = false)
 	x = randn(100)
 	y = randn(100)
 	@plot({margins = (0.1, 0.65, 0.1, 0.65)},
 	      x, y,
 	      "w p pt '+' lc 'dark-green'")
-	@options histogram(f[2],
-	                   {margins = (0.7, 0.9, 0.1, 0.65), tics = false},
-	                   y,
-	                   {lc = qs"dark-green"},
-	                   nbins = 10, horizontal = true)
-	@options histogram(f[3],
-	                   {margins = (0.1, 0.65, 0.7, 0.9),
-	                    boxwidth = "1 relative"},
-	                   x,
-	                   {lc = "'dark-green'"},
-					   nbins = 10)
+	@gpkw histogram(f[2],
+	                {margins = (0.7, 0.9, 0.1, 0.65), tics = false},
+	                y,
+	                {lc = Q"dark-green"},
+	                nbins = 10, horizontal = true)
+	@gpkw histogram(f[3],
+	                {margins = (0.1, 0.65, 0.7, 0.9),
+	                boxwidth = "1 relative"},
+	                x,
+	                {lc = "'dark-green'"},
+					nbins = 10)
 end
 
 # ╔═╡ c860dea5-1a8a-4516-98d6-97122962345d
 md"## Animations
 
-Animations require use of the `gif` or `webp` terminals (make sure your notebook supports the `image/webp` before using it).
+Animations require use of a terminal that supports it (such as `gif` or `webp`). Make sure your notebook supports the `webp` file format before using it. Gif is supported almost everywhere.
 
 Creating an animation is similar to multiplotting: multiple axes are drawn on the same figure. When using the `animate` option of the `gif` or `webp` terminals, however, the plot is rendered as an animation.
 
@@ -536,7 +537,7 @@ let
 	f = Figure()
 	frames = 75
 	x_bckgnd = range(-1, 1, 200)
-	bckgnd = Plot(x_bckgnd, sin.(2π*2*x_bckgnd), "lc 'black'")
+	bckgnd = Gaston.Plot(x_bckgnd, sin.(2π*2*x_bckgnd), "lc 'black'")
 	x = range(-1, 1, frames)
 	for i in 1:frames
 		plot(f[i], x[i], sin(2π*2*x[i]), "w p lc 'orange' pt 7 ps 7")
@@ -561,7 +562,7 @@ end
 # ╠═dab403c8-f4ae-4029-a8c8-ef5ae161142c
 # ╠═a66e7e1d-b3a4-4504-be15-2324808607be
 # ╟─1a521882-7ee0-413d-9738-3a025499883e
-# ╠═8f50fd19-5ce4-447e-a7f9-7b16d59af6c0
+# ╟─8f50fd19-5ce4-447e-a7f9-7b16d59af6c0
 # ╟─ab0aba7c-d841-44bb-8e6a-2e5515ef9aa5
 # ╠═0e8236b4-6d1f-46ae-9c0e-ee1d4f605c0d
 # ╟─fc31bafd-eb7b-4204-b781-6e06cf95fd25
@@ -582,28 +583,28 @@ end
 # ╟─a0762a24-26be-40a6-a333-92bd8999a5a3
 # ╟─d66d3ef3-130f-45a7-81d6-0cac24e9b1d2
 # ╠═4f145f29-f99d-4f36-9ebf-5cc632f956c1
-# ╠═970fd5da-91e2-44bb-a427-6823b03c79e9
+# ╟─970fd5da-91e2-44bb-a427-6823b03c79e9
 # ╠═881e794d-bc5e-49d0-b240-2cb58abe82ce
-# ╠═996ef179-f5fd-4345-a6af-a74709bd2a6b
+# ╟─996ef179-f5fd-4345-a6af-a74709bd2a6b
 # ╠═f395e87b-39f6-4f79-83b1-1b44bcb37feb
-# ╠═9db5812e-47a3-4b17-b3f0-9e74a38e3f54
+# ╟─9db5812e-47a3-4b17-b3f0-9e74a38e3f54
 # ╠═061a881c-220c-4183-8f5b-12fd91a8f358
 # ╠═8c14838e-fcb6-4b49-83cd-a3ef5f267b24
-# ╠═be09ba73-cabb-40ce-aa06-6bfe0705f6e2
+# ╟─be09ba73-cabb-40ce-aa06-6bfe0705f6e2
 # ╠═33731005-bb8c-48a9-863a-93e25d579930
-# ╠═906770c9-07bd-4447-af21-de487c7a1e02
+# ╟─906770c9-07bd-4447-af21-de487c7a1e02
 # ╠═38a71681-dc2d-4af5-be14-1682924abf51
 # ╠═5c25b0e3-9a45-4ad5-92ae-314cfce5c117
 # ╠═4f4fb009-cf62-4e64-a519-77f340f83f69
-# ╠═84ccf2ff-472b-4b34-9472-2006f70684e6
+# ╟─84ccf2ff-472b-4b34-9472-2006f70684e6
 # ╠═b42213a1-f27a-4c96-a6a7-b5a8a200ef19
-# ╠═e1e93d06-4565-4625-8fcf-fe8dbc9fe55e
-# ╠═8ab2a66a-df03-4aeb-a736-1336b75dadaa
+# ╟─e1e93d06-4565-4625-8fcf-fe8dbc9fe55e
+# ╟─8ab2a66a-df03-4aeb-a736-1336b75dadaa
 # ╠═ca7554bc-6f9c-4574-bf78-20afd42dc647
-# ╠═5acd956b-e22d-4638-be19-1ad090cac7d2
+# ╟─5acd956b-e22d-4638-be19-1ad090cac7d2
 # ╠═20a9dc74-0324-4d76-88fa-1c55ac281e5e
-# ╠═a0720ae4-8da5-4ed6-acd9-0471b840fa1d
-# ╠═dc989e43-20ad-4f03-86a3-655c00c02a4e
+# ╟─a0720ae4-8da5-4ed6-acd9-0471b840fa1d
+# ╟─dc989e43-20ad-4f03-86a3-655c00c02a4e
 # ╟─564caa1c-222f-4655-9505-162f5e23b234
 # ╟─52a654cf-9aac-47ba-82d4-6d7b4320d79e
 # ╠═44930880-7dd2-4120-b097-6c19f8e7022a
@@ -611,12 +612,11 @@ end
 # ╠═1b7dfb67-6047-40fa-9b91-c48aa8e8aa9c
 # ╟─beb2b6cd-ee6b-4bd8-bf8e-5d071adbd857
 # ╟─ea4e84ab-4820-4f91-8782-3bfc3ef4ba6a
-# ╠═1c0d72b4-992a-4a0e-b9bc-24a62a26da02
+# ╟─1c0d72b4-992a-4a0e-b9bc-24a62a26da02
 # ╟─59fd1827-6592-473a-9baf-e17c4c93adb4
-# ╟─2c89c62f-e0ca-45fc-8c23-459f40dfc02c
 # ╟─83d697a8-3a33-4d37-a173-c31309c112e3
 # ╟─afc4dfba-eb72-42de-aec0-d68cf20514be
-# ╠═8c124c3d-d444-41d6-8187-6058f4b5808f
+# ╟─8c124c3d-d444-41d6-8187-6058f4b5808f
 # ╟─c2bc72a9-e96d-4216-92dd-71a0e51a647d
 # ╠═d253f4ea-b633-4255-8308-e1182c680df2
 # ╟─6245bfd6-a945-4e84-825d-57fbaa63ffd1

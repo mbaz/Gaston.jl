@@ -210,6 +210,29 @@ end
     @test a.is3d == true
 end
 
+@testset "push! and set! with FigureAxis" begin
+    closeall()
+    f1 = plot(sin)
+    f2 = Figure()
+    histogram(randn(100), bins = 10)  # plots on f2
+    push!(f1, f2)
+    @test f1 isa Figure
+    plot(f2[2], cos)
+    push!(f1, f2[2])
+    @test f1 isa Figure
+    push!(f1, f2)
+    @test f1 isa Figure
+    push!(f1, f2[2])
+    @test f1 isa Figure
+    Gaston.set!(f2[2], "testing")
+    @test f2(2).settings == "testing"
+    Gaston.set!(f2[2], ["grid" => true])
+    @test f2(2).settings == "set grid"
+    p = Plot(1:10, 1:10)
+    push!(f2[2], p)
+    @test length(f2(2)) == 2
+end
+
 @testset "Figure and figure" begin
     closeall()
     reset()

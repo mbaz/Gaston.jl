@@ -4,8 +4,7 @@ title: "Introduction"
 
 **TODO**
 
-* explain about pluto notebooks, add ack to other packages
-* say this manual covers 2.x, pointer to 1.x
+* explain about pluto notebooks
 
 [Gnuplot](http://www.gnuplot.info/) is a venerable (but actively
 developed), very powerful and fast program for plotting.
@@ -51,6 +50,13 @@ Other features are:
 * Saving plots to multiple formats, including pdf, png and svg.
 * Integrated color palettes from
   [ColorSchemes.jl](https://github.com/JuliaGraphics/ColorSchemes.jl).
+
+::: {.callout-note}
+
+This manual is for Gaston version 2. The manual for Gaston v1 (no longer
+maintained) is [here](https://mbaz.github.io/Gaston.jl/v1/index.html).
+
+:::
 
 ## Learning gnuplot
 
@@ -155,6 +161,14 @@ The configuration file is `~/.gnuplot` on Unix-like systems, and
 * Learn how to extend Gaston to plot arbitrary Julia types in the [Recipes](recipes.qmd) section.
 * Learn all the details about how to plot with Gaston in the [Manual](manual.qmd).
 * Consult the full [API Reference](reference.qmd).
-* Run the [interactive Pluto notebooks](https://github.com/mbaz/Gaston.jl/tree/master/notebooks),
-  with examples and tutorials.
-```
+
+Gaston's documentation also includes several [Pluto](https://plutojl.org/)
+notebooks, with examples and tutorials. These are found
+[here](https://github.com/mbaz/Gaston.jl/tree/master/notebooks).
+
+## Acknowledgments
+
+When developing Gaston, I've been inspired by the excellent features and ideas
+behind other Julia plotting packages (including (Plots.jl)[], (Gnuplot.jl)[]
+and (Makie.jl)[]). Many thanks to their multiple authors for freely sharing
+their code and their APIs!

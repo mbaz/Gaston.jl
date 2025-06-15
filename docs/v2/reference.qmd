@@ -41,11 +41,6 @@ quartodoc("plot", @doc plot)
 
 ```{julia}
 #| echo: false
-quartodoc("push!", @doc push!(::Figure, ::Figure))
-```
-
-```{julia}
-#| echo: false
 quartodoc("plot!", @doc plot!)
 ```
 
@@ -218,7 +213,7 @@ quartodoc("closefigure", @doc closefigure)
 quartodoc("closeall", @doc closeall)
 ```
 
-## Utility macros
+## Utility functions and macros
 
 ```{julia}
 #| echo: false
@@ -228,6 +223,15 @@ quartodoc("@Q_str", @doc @Q_str)
 ```{julia}
 #| echo: false
 quartodoc("@gpkw", @doc @gpkw)
+```
+
+```{julia}
+#| echo: false
+quartodoc("push!", @doc push!(::Figure, ::Figure))
+quartodoc("push!", @doc push!(::Gaston.Axis, ::Gaston.Plot))
+quartodoc("push!", @doc push!(::Figure, ::Gaston.Axis))
+quartodoc("push!", @doc push!(::Gaston.FigureAxis, ::Gaston.Plot))
+quartodoc("push!", @doc push!(::Figure, ::Gaston.FigureAxis))
 ```
 
 ## Saving plots
@@ -291,6 +295,11 @@ quartodoc("Gaston.Axis", @doc Gaston.Axis)
 
 ```{julia}
 #| echo: false
-quartodoc("Gaston.hex", @doc Gaston.hex)
+quartodoc("Gaston.cs2dec", @doc Gaston.cs2dec)
+```
+
+```{julia}
+#| echo: false
+quartodoc("Gaston.set!", @doc Gaston.set!)
 ```
 
