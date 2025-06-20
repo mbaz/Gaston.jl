@@ -2,11 +2,9 @@
 title: "Manual"
 ---
 
-TODO: keyword arguments, Datatable, list of included convenience themes
-
 This manual covers all aspects of using Gaston.
 
-## Gaston Settings
+## Configuration
 
 ### The terminal
 
@@ -32,9 +30,14 @@ Gaston.terminals()
     * `:null`: execute all plot commands but do not actually produce a plot.
 
     If Gaston detects it is running in a notebook environment, it automatically sets the terminal
-    to `pngcairo` and `config.output` to `:echo`. When the automatic detection does not work, these
-    setting will have to be set manually.
-* `Gaston.config.embedhtml`: `Bool`, defaults to `false`. Enables embedding plots in HTML; useful to enable interactivity in Pluto and Jupyter notebooks. See examples in the provided Pluto notebooks.
+    to `pngcairo` and `config.output` to `:echo`. When the automatic detection does
+    not work, these setting have to be set manually.
+* `Gaston.config.embedhtml`: `Bool`, defaults to `false`. Enables embedding plots in HTML; useful to enable interactivity in Pluto and Jupyter notebooks.
+
+### Location of gnuplot executable
+
+If gnuplot is not in the system's path, its location can be set using the environmental
+variable `JULIA_GNUPLOT_EXE`. This variable must be set before Gaston is loaded.
 
 ## Plotting
 
@@ -43,22 +46,25 @@ curve to the same plot. 3-D plots are created with `splot` and `splot!`. `plot`
 returns a value of type `Figure`, which contains a vector of `Axis` (each
 containing one or more `Plot`s, or curves.
 
-A `plot` command takes three different kinds of arguments: settings, data, and
-plotline, in that order.
+A `plot` command takes four different kinds of arguments: a figure (possibly
+indexed), settings, data, and plotline, in that order.
 
 ```julia
-plot([settings...], data..., [plotline...])
+plot([figure,] [settings...,] data..., [plotline...])
 ```
 
 Further curves may be added using `plot!`. (For 3-D plots, use `splot` and `splot!` instead.)
 
 More specifically, a `plot` command takes:
 
+* Optionally, a figure where the plot is to be produced.
+  * If the figure is indexed, then the plot will be produced in the specified axis (if it
+    doesn't exist, it will be created).
 * Zero or more **settings** arguments, which get converted to gnuplot `set` commands.
 * One or more **data** arguments, which are written to a file in the format gnuplot expects.
 * Zero or more **plotline** arguments, which are appended to gnuplot's `plot` or `splot` commands.
 
-Gaston provides several alternative ways to specify these.
+Gaston provides several alternative ways to specify settings and plotlines.
 
 ### Settings and Plotlines
 
@@ -86,6 +92,14 @@ plot("set grid", "unset key \n set title 'A Sinusoid'",
 
 ```julia
 @plot({grid = true, key = false, title = "'A Sinusoid'"},
+      x, y,
+      {with = "linespoints", lc = "'green'"})
+```
+
+* Keywords with `@gpkw`:
+
+```julia
+@gpkw plot({grid = true, key = false, title = "'A Sinusoid'"},
       x, y,
       {with = "linespoints", lc = "'green'"})
 ```
@@ -182,6 +196,8 @@ format compatible with gnuplot. Three cases are supported:
   of size `n x m`; further arguments are optional.
 * All provided arguments are matrices of size `n x m`.
 
+#### Recipes
+
 [Recipes](manual.qmd#defining-new-plot-types-and-recipes) can be provided to
 convert arbitrary types to data that gnuplot understands.
 
@@ -202,11 +218,15 @@ plot(x, g)         # plots g.(x)
 
 In some cases, it is useful to have gnuplot produce plot data in a "table"
 format, which can then be plotted. See an example in [contour lines on
-heatmap](examples.qmd#contour-lines-on-heatmap). The (non-exported) function
+heatmap](tutorial.qmd#gnuplot-datasets-and-tables). The (non-exported) function
 `Gaston.plotwithtable` returns a `Gaston.DataTable` storing the table. All plot
 commands accept this type.
 
-(add constructors here)
+The following `DataTable` constructors are provided:
+
+* `DataTable(vs::Vector{<:AbstractString}...)`
+* `DataTable(ts::T) where T <: Tuple`; the tuple is assumed to contain strings.
+* `DataTable(args::Matrix...)`; each matrix is a datablock.
 
 ### Simple themes
 
@@ -253,7 +273,7 @@ Themes are also used to provide common plot types (illustrated in
 [Themes](examples.qmd#themes)). The following are the provided specialized plot
 commands and the themes they use:
 
-| Commands | Settings theme | Plotline theme |
+| Command | Settings theme | Plotline theme |
 |----------|----------------|----------------|
 | `scatter`, `scatter!` | `:scatter`, `:scatter3` | `:scatter` |
 | `stem`, `stem!` | None | `:stem`, `:impulses` (optional) |
@@ -272,9 +292,10 @@ commands and the themes they use:
 
 # Plotline themes
 
-    Plotline themes must be handled with care: gnuplot requires plotline options
-    to be specified in a certain order, may not be repeated, and some combinations are invalid.
-    It is very easy to create erroneous plotlines.
+    Plotline themes must be handled with care: gnuplot requires plotline
+    options to be specified in a certain order, which may not be repeated, and
+    some combinations are invalid.  It is very easy to create erroneous
+    plotlines.
 
 :::
 
@@ -319,10 +340,10 @@ into a figure to obtain a specific axis:
 
 ```julia
 f1 = plot(sin)
-plot(f1[2], cos)  # f1 contains two axes
+plot(f1[2], cos)  # f1 now contains two axes
 f2 = Figure()
 plot(tan)         # plot goes into f2 since it is the active figure
-push!(f2, f1(2))  # the axis with a plot of cos is inserted into f2
+push!(f2, f1[2])  # the axis with a plot of cos is inserted into f2
 ```
 
 The third and final method is to plot multiple figures together:
@@ -331,7 +352,8 @@ The third and final method is to plot multiple figures together:
 plot(f1, f2, multiplot = "...", autolayout = ...)
 ```
 
-This will return a new figure with all axes from `f1` and `f2`.
+This will return a new figure with all axes from `f1` and `f2`. Any number of figures
+may be provided as arguments.
 
 The `Figure` constructor takes a couple of options to control how multiplot behaves:
 
@@ -353,13 +375,8 @@ Figure()
 ```
 
 Creates a new, empty figure. All figures are of type `Gaston.Figure`. Gaston keeps internal
-references to all figures, to prevent them from being garbage collected.
-
-When creating a figure intended for multiplot, a `multiplot` argument can be provided:
-
-```julia
-Figure(multiplot = "title 'A Multiplot'")
-```
+references to all figures, to prevent them from being garbage collected. As described
+above, `Figure` takes two optional arguments, `multiplot` and `autolayout`.
 
 When a figure is created, it becomes the active figure, meaning that subsequent
 plot commands will go to this figure by default. It is possible to keep figures
@@ -374,7 +391,7 @@ and then redirect plot commands to the desired figure:
 
 ```julia
 plot(fig1, ...)  # plot goes to fig1
-plot!(fig2, ...) # new plot added to fig2
+plot!(fig2, ...) # new curve added to fig2
 ```
 
 By default, `plot` resets the contents of a figure.
@@ -433,13 +450,13 @@ To close all figures, use `closeall()`.
 A plot can be saved to a file in any format supported by gnuplot, with the function
 
 ```julia
-save(f ; output, term)
+save([f] ; filename, term)
 ```
 
 where the arguments are:
 
 * `f`, which can be either a `Figure`, or an arbitrary value that is taken to be the handle of the figure to save. Defaults to the active figure.
-* `output`, a string that specifies the filename. If empty, it defaults to `figure-` followed by the figure's handle; the filename extension is set to the first three characters of the gnuplot terminal (see next argument).
+* `filename`, a string that specifies the filename. If empty, it defaults to `figure-` followed by the figure's handle; the filename extension is set to the first three characters of the gnuplot terminal (see next argument).
 * `term`, specifies the gnuplot terminal used to save the plot; defaults to `"pngcairo font ',7'"`.
 
 ## Defining new plot types and recipes
@@ -452,7 +469,10 @@ ways.
 ### Functions that return a `Gaston.Figure`
 
 The first way to extend Gaston to handle arbitrary types is to define a new
-function (and optionally new themes) that returns a `Gaston.Figure`.
+function (and optionally new themes) that returns a `Gaston.Figure`. See an
+example [here](recipes.qmd#functions-that-return-a-gaston.figure).  For 3-D
+plot commands such as `splot`, the function `convert_args3` should be used
+instead.
 
 The recommended way to proceed is to:
 
@@ -465,94 +485,58 @@ The recommended way to proceed is to:
 
 ### Adding new methods to `Gaston.convert_args`
 
-The function `Gaston.convert_args` is used to convert arbitrary types to something that
-gnuplot understands: basically, iterables of numbers, strings or dates. This function
-is called with all data and all keyword arguments given to the `plot` command.
+When the data provided to `plot` is not of a type that gnuplot directly understands,
+Gaston calls the function `convert_args`, defined in the package `GastonRecipes`.
+This function returns a value of one of three different types:
 
-For 3-D plot commands such as `splot`, the function `convert_args3` should be used instead.
-Note that these functions are not exported.
+* `GastonRecipes.PlotRecipe`, used to define a single curve (coordinates and a plotline). See
+  and example [here](recipes.qmd#plotrecipe).
+* `GastonRecipes.AxisRecipe`, used to define an axis (settings, a vector of `PlotRecipe`s,
+  and a boolean to define if the axis is three dimensional). See an example
+  [here](recipes.qmd#axisrecipe).
+* `GastonRecipes.FigureRecipe`, used to define a full figure (a vector of `AxisRecipes`,
+  plus multiplot and autolayout settings). See an example [here](recipes.qmd#figurerecipe).
 
-Both `plot` and `plot!`call `convert_args` behind
-the scenes, while both `splot` and `splot!` call `convert_args3`.
+The function `convert_args` is called with all data and all keyword arguments
+given to the `plot` command. Keyword arguments can be used to control the recipe's
+behavior.
 
-There are three kinds of recipes:
+Note that these functions and types are not exported by Gaston.
 
-* Recipes that return a single curve (`x`, `y`, and a plotline).
-* Recipes that return a whole axis (settings and curve(s)).
-* Recipes that generate a multiplot (mulitplot settings and an array of axes).
+## Internals
 
-#### Recipes that return a single curve
+In Gaston, the basic building block is the `Plot` type. This type has two fields: the
+plotline, a string; and the name of a file where the coordinates are stored. When a `Plot`
+is constructed, the data provided is immediately written to a file; a `Plot` does not
+store any coordinates.
 
-This kind of recipe returns a `Plot` object, which includes data along with a
-plotline specification. The following example illustrates the process:
+On top of `Plot` we have the `Axis` type, which contains a vector of `Plot`s, a string
+with the axis settings, and a boolean that indicates whether the axis should be
+rendered with `plot` (2-D) or `splot` (3-D).
 
-```julia
-import Gaston: convert_args, Plot
+Finally, on top of `Axis` we have the `Figure` type, which contains a vector of `Axis`
+plus multiplot configuration. Besides, a `Figure` contains a figure handle, and
+most importantly, a gnuplot process with which it communicates. Each figure is
+associated with a different gnuplot process.
 
-# add method to convert_args
-function convert_args(d::Data1, args... ; pl = "", kwargs...)
-    x = 1:length(data.samples)
-    y = data.samples
-    Plot(x, y, pl)  # return a Plot
-end
+When a `Figure` is displayed by Julia, the `show` function builds a set of commands
+that are sent to gnuplot. Gnuplot is instructed to send a sentinel string back to
+the figure, which indicates that gnuplot is done displaying the figure (and also
+prevents race conditions).
 
-plot(data)   # plot
-plot!(data)  # also works
-```
+Each `Figure` is associated with a finalizer that makes sure its associated gnuplot
+process exits gracefully.
 
-#### Recipes that return a new axis
+Gaston uses the following functions to set up and communicate with gnuplot:
 
-A recipe may also return an entire `Axis` object, with its own settings and
-curves. The following example illustrates returning an axis with two curves.
+* `gp_start` initializes a new gnuplot process and connects to its stdin, stdout and
+  stderr streams.
+* `gp_quit` terminates a gnuplot process.
+* `gp_send` sends a string of commands to an existing gnuplot process.
+* `gp_exec` starts a new gnuplot process, sends it commands, and quits the process.
 
-```julia
-import Gaston: convert_args, Plot, Axis
+Gaston also keeps some internal state:
 
-struct Data2 end
-
-function convert_args(x::Data2, args... ; kwargs...)
-    x = range(0, 1, 100)
-    p1 = Plot(x, cos.(4x), "dt '-' lc 'red' t 'cosine'")
-    p2 = Plot(x, sin.(5x), "dt '.' lc 'blue' t 'sine'")
-    Axis("set grid\nset title 'Full axis recipe'", [p1, p2])  ## return an Axis
-end
-
-plot(Data2())
-```
-
-#### Recipes to generate multiplots
-
-Finally, a recipe can also generate a full multiplot, with multiple axes. In this case, the
-recipe must return a `NamedTuple` with the following fields:
-* `axes`, a vector of `Axis`.
-* `mp_settings`, a string with gnuplot's multiplot settings.
-* `is_mp`, a boolean, `true` if the length of `axes` is larger than 1.
-* `mp_auto`, a boolean to turn on automatic layout.
-
-Here's an example, creating a figure with four axes and automatic layout.
-
-```julia
-import Gaston: Plot, Axis, Axis3, convert_args
-
-struct MyType end
-
-function convert_args(x::MyType)
-    t1 = range(0, 1, 40)
-    t2 = range(-5, 5, 50)
-    z = Gaston.meshgrid(t2, t2, (x,y) -> cos(x)*cos(y))
-    @gpkw a1 = Axis({title = Q"First Axis"}, [Plot(1:10, rand(10))])
-    @gpkw a2 = Axis({title = Q"Trig"}, [Plot(t1, sin.(5t1), {lc = Q"black"}),
-                                        Plot(t1, cos.(5t1), {w = "p", pt = 16})])
-    @gpkw a3 = Axis3({title = Q"Surface", tics = false, palette = (:matter, :reverse)},
-                     [Plot(t2, t2, z, {w = "pm3d"})])
-    @gpkw a4 = Axis({tics, title = false, title = Q"Last Axis"},
-                    [Plot(1:10, 1:10, rand(10,10), "w image")])
-    # return named tuple with four axes
-    (axes = [a1, a2, a3, a4],
-     mp_settings = "title 'A Four-Axes Recipe' layout 2,2",
-     is_mp = true,
-     mp_auto = false)
-end
-
-plot(MyType())
-```
+* `Gaston.state.figures` stores pointers to all existing figures.
+* `Gaston.state.enabled` is `true` if gnuplot is runnable.
+* `Gaston.state.activefig` stores the handle of the currently active figure.

@@ -54,11 +54,33 @@ function plot(args... ;
     @debug args
 
     ### 2. settings -- loop over all strings, symbols or Vector{Pairs} and join them
-    (settings, args) = whichsettings(stheme, args...)
+    settings = Union{Vector{<:Pair},AbstractString}[sthemes[stheme]]
+    while true
+        if args[1] isa AbstractString || args[1] isa Vector{<:Pair}
+            push!(settings, args[1])
+            args = Base.tail(args)
+        elseif args[1] isa Symbol
+            push!(settings, sthemes[args[1]])
+            args = Base.tail(args)
+        else
+            break
+        end
+    end
     @debug args
 
-    ### 3. plotline -- look for the last arguments
-    (plotline, args) = whichplotline(ptheme, args...)
+    ### 3. plotline -- check arguments from last to first
+    plotline = Union{Vector{<:Pair}, AbstractString}[pthemes[ptheme]]
+    while true
+        if args[end] isa AbstractString || args[end] isa Vector{<:Pair}
+            insert!(plotline, 2, args[end])
+            args = Base.front(args)
+        elseif args[end] isa Symbol
+            insert!(plotline, 2, pthemes[args[end]])
+            args = Base.front(args)
+        else
+            break
+        end
+    end
     @debug args
 
     ### 4. Apply recipe to arguments, if one exists
@@ -71,10 +93,10 @@ function plot(args... ;
             # if there is no conversion function, try to parse data directly
             po = Plot(args...)
         catch
-            err = """Gaston does not know how to plot this. The data provided has the following type(s):
-                  """
+            err = "Gaston does not know how to plot this.\n" *
+                  "The data provided has the following type(s):\n"
             for i in eachindex(args)
-                err *= "           argument $i of type $(typeof(args[i]))\n"
+                err *= "    argument $i of type $(typeof(args[i]))\n"
             end
             error(err)
         end
@@ -83,61 +105,59 @@ function plot(args... ;
     ### 5. Build axis and place it in figure
     if po isa Plot
         ensure(f.axes, idx)
-        if isempty(po.plotline)
-            po.plotline = plotline
-        elseif !isempty(plotline)
-            po.plotline = join( (plotline, po.plotline, " ") )
-        end
-        if splot
-            f.axes[idx] = Axis3(settings, po)
-        else
-            f.axes[idx] = Axis(settings, po)
-        end
+        push!(plotline, po.plotline)
+        po.plotline = merge_plotline(plotline)
+        setts = merge_settings(settings)
+        f.axes[idx] = Axis(setts, [po], splot)
     elseif po isa PlotRecipe
         ensure(f.axes, idx)
-        if splot
-            f.axes[idx] = Axis3(settings, Plot(po.data..., join((plotline, po.plotline), " ")))
-        else
-            f.axes[idx] = Axis(settings, Plot(po.data..., join((plotline, po.plotline), " ")))
-        end
-    elseif po isa Axis
-        po.settings = po.settings * "\n" * settings
-        if isempty(f)
-            push!(f, po)
-        else
-            f.axes[idx] = po
-        end
+        push!(plotline, po.plotline)
+        pl = merge_plotline(plotline)
+        setts = merge_settings(settings)
+        f.axes[idx] = Axis(setts, [Plot(po.data..., pl)], splot)
     elseif po isa AxisRecipe
-        ps = Plot[]
+        push!(settings, po.settings)
+        setts = merge_settings(settings)
+        P = Plot[]
         for p in po.plots
-            #push!(ps, Plot(p.data..., p.plotline))
-            push!(ps, Plot(p.data..., join((plotline, p.plotline), " ")))
+            push!(P, Plot(p.data..., parse_plotline(p.plotline)))
         end
-        if splot
-            a = Axis3(po.settings*"\n"*settings, ps)
-        else
-            a = Axis(po.settings*"\n"*settings, ps)
-        end
+        a = Axis(setts, P, po.is3d)
         if isempty(f)
             push!(f, a)
         else
             f.axes[idx] = a
         end
     elseif po isa FigureRecipe
-        f.axes = po.axes
+        A = Axis[]
+        for a in po.axes
+            P = Plot[]
+            for p in a.plots
+                push!(P, Plot(p.data..., parse_plotline(p.plotline)))
+            end
+            push!(A, Axis(parse_settings(a.settings), P, a.is3d))
+        end
+        f.axes = A
         f.multiplot = po.multiplot
         f.autolayout = po.autolayout
     end
-
     return f
 end
 
 """
-    plot(f1::Figure, f2::Figure, ... ; kwargs...)::Figure
+    plot(f1::Figure, f2::Figure,... ; multiplot = "", autolayout = false, kwargs...)::Figure
 
 Return a new figure whose axes come from the figures provided in the arguments.
 """
-plot #TODO
+function plot(fs::Figure...; multiplot = "", autolayout = true, kwargs...)
+    f = Figure(;multiplot, autolayout)
+    for fig in fs
+        for ax in fig.axes
+            push!(f, ax)
+        end
+    end
+    f
+end
 
 """
     plot!(...)::Figure
@@ -163,11 +183,28 @@ function plot!(args... ; splot = false, handle = state.activefig, ptheme = :none
         idx = 1
     end
 
-    # parse plotline
-    while args[1] isa String || args[1] isa Vector{Pair} || args[1] isa Symbol
-        args = args[2:end]
+    # remove stray settings
+    while true
+        if args[1] isa AbstractString || args[1] isa Vector{<:Pair} || args[1] isa Symbol
+            args = Base.tail(args)
+        else
+            break
+        end
     end
-    (plotline, args) = whichplotline(ptheme, args...)
+
+    # parse plotline
+    plotline = Union{Vector{<:Pair}, AbstractString}[pthemes[ptheme]]
+    while true
+        if args[end] isa AbstractString || args[end] isa Vector{<:Pair}
+            insert!(plotline, 2, args[end])
+            args = Base.front(args)
+        elseif args[end] isa Symbol
+            insert!(plotline, 2, pthemes[args[end]])
+            args = Base.front(args)
+        else
+            break
+        end
+    end
 
     # apply recipe if one exists
     if splot && applicable(convert_args3, args...)
@@ -179,10 +216,10 @@ function plot!(args... ; splot = false, handle = state.activefig, ptheme = :none
             # if there is no conversion function, try to parse data directly
             po = Plot(args...)
         catch
-            err = """Gaston does not know how to plot this. The data provided has the following type(s):
-                  """
+            err = "Gaston does not know how to plot this.\n" *
+                  "The data provided has the following type(s):\n"
             for i in eachindex(args)
-                err *= "           argument $i of type $(typeof(args[i]))\n"
+                err *= "    argument $i of type $(typeof(args[i]))\n"
             end
             error(err)
         end
@@ -195,12 +232,15 @@ function plot!(args... ; splot = false, handle = state.activefig, ptheme = :none
         if splot
             f.axes[idx].is3d = true
         end
-        if isempty(po.plotline)
-            po.plotline = plotline
-        elseif !isempty(plotline)
-            po.plotline = join( (plotline, po.plotline, " ") )
-        end
+        push!(plotline, po.plotline)
+        po.plotline = merge_plotline(plotline)
         push!(f.axes[idx], po)
+    elseif po isa PlotRecipe
+        ensure(f.axes, idx)
+        splot && (f.axes[idx].is3d = true)
+        push!(plotline, po.plotline)
+        pl = merge_plotline(plotline)
+        push!(f.axes[idx], Plot(po.data..., pl))
     else
         error("Argument to plot! must be a single curve.")
     end
@@ -276,13 +316,15 @@ end
 
 Create and generate a table. 3D is assumed, so `splot` defaults to `true`.
 """
-function plotwithtable(settings::String, args... ; splot = true)
+function plotwithtable(settings::AbstractString, args... ; splot = true)
     if applicable(convert_args3, args...)
         po = convert_args3(args...)
-        tmpf = po.datafile
+        tmpf = tempname()
+        writedata(tmpf, po.data...)
     elseif applicable(convert_args, args...)
         po = convert_args(args...)
-        tmpf = po.datafile
+        tmpf = tempname()
+        writedata(tmpf, po.data...)
     else
         tmpf = tempname()
         writedata(tmpf, args...)
@@ -302,10 +344,12 @@ end
 
 Return a figure and an index into its axes.
 
-Provided arguments may be:
+Provided arguments and return values may be:
 * f::Figure. Returns (f, missing, remaining args)
-* f::FigureAxis. Returns (f, index, true, remaining args)
-* Else, returns (f, missing, remaining args)
+* f::FigureAxis. Returns (f, index, remaining args)
+* else, returns:
+  * (f(handle), missing, remaining args) if f(handle) exists
+  * (Figure(handle), missing, remaining args) if it does not
 """
 function whichfigaxis(handle, args...)
     index_provided = false
@@ -330,47 +374,36 @@ function whichfigaxis(handle, args...)
     (f, idx, args)
 end
 
-"""
-    whichsettings(stheme, args...)
-
-Return a settings string.
-"""
-function whichsettings(stheme, args...)
-    _settings = String[]
-    stheme != :none && push!(_settings, parse_settings(sthemes[stheme]))  # insert theme given as argument
-    while true
-        if args[1] isa String || args[1] isa Vector{Pair}
-            push!(_settings, parse_settings(args[1]))
-            args = Base.tail(args)
-        elseif args[1] isa Symbol
-            push!(_settings, parse_settings(sthemes[args[1]]))
-            args = Base.tail(args)
-        else
-            break
+function merge_settings(s)
+    ans = ""
+    for a in s
+        if !isempty(a)
+            if a isa AbstractString
+                !isempty(ans) && (ans *= '\n')
+                ans *= a
+            else
+                !isempty(ans) && (ans *= '\n')
+                ans *= parse_settings(a)
+            end
         end
     end
-    (join(_settings, "\n"), args)
+    return ans
 end
 
-"""
-    whichplotline(stheme, args...)
-
-Return a plotline string.
-"""
-function whichplotline(ptheme, args...)
-    _plotline = String[]
-    while true
-        if args[end] isa String || args[end] isa Vector{Pair}
-            pushfirst!(_plotline, parse_plotline(args[end]))
-        elseif args[end] isa Symbol
-            pushfirst!(_plotline, parse_plotline(pthemes[args[end]]))
-        else
-            break
+function merge_plotline(p)
+    ans = ""
+    for a in p
+        if !isempty(a)
+            if a isa AbstractString
+                !isempty(ans) && (ans *= ' ')
+                ans *= a
+            else
+                !isempty(ans) && (ans *= ' ')
+                ans *= parse_plotline(a)
+            end
         end
-        args = Base.front(args)
     end
-    ptheme != :none && pushfirst!(_plotline, parse_plotline(pthemes[ptheme]))  # insert theme given as argument
-    (join(_plotline, " "), args)
+    return ans
 end
 
 """

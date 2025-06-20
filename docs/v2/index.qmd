@@ -2,10 +2,6 @@
 title: "Introduction"
 ---
 
-**TODO**
-
-* explain about pluto notebooks
-
 [Gnuplot](http://www.gnuplot.info/) is a venerable (but actively
 developed), very powerful and fast program for plotting.
 [Julia](https://julialang.org) is a very powerful language for numerical
@@ -15,7 +11,7 @@ plotting Julia data and functions using gnuplot.
 The following diagram illustrates how Gaston works. On the left there is a
 gnuplot script; the equivalent Gaston function call is on the right.
 
-![comparison](assets/comparison.png)
+![](assets/comparison.png)
 
 The data to plot is in green color. In gnuplot, the data can be provided
 inline as a _data block_ (as in this example), or it can be provided in a
@@ -89,8 +85,12 @@ Julia 1.6 and above), and has been tested with gnuplot versions 5 and 6.
 You should manually install gnuplot on your system prior to using Gaston.
 On Linux, it is highly recommended that you select a version with Qt
 support: on Debian and Ubuntu, you will need `gnuplot-qt`. On Arch and its
-derivatives, a simple `pacman -S gnuplot` suffices.  Gnuplot also supports
-Windows and Mac.
+derivatives, a simple `pacman -S gnuplot` suffices.
+
+Gnuplot also supports Windows and Mac. This author does not use these systems
+much, but it is said that gnuplot Windows executables are available at
+[Sourceforge's gnuplot repository](https://sourceforge.net/projects/gnuplot/files/gnuplot/).
+On Mac, gnuplot is supposed to be available using Homebrew.
 
 To install Gaston from the Julia REPL, run
 ```julia
@@ -137,14 +137,14 @@ Since an un-configured gnuplot produces plots that are less than attractive,
 the following minimum configuration is suggested (and was used to generate the
 plots in this document):
 
-    set linetype 1 lc rgb "blue" pt 3
-    set linetype 2 lc rgb "red" pt 4
-    set linetype 3 lc rgb "green" pt 6
-    set linetype 4 lc rgb "black" pt 12
-    set linetype 5 lc rgb "blue" pt 5
-    set linetype 6 lc rgb "red" pt 1
-    set linetype 7 lc rgb "green" pt 2
-    set linetype 8 lc rgb "black" pt 7
+    set linetype 1 lc rgb "blue" pt 3 ps 1.2
+    set linetype 2 lc rgb "red" pt 4 ps 1.2
+    set linetype 3 lc rgb "dark-green" pt 6 ps 1.2
+    set linetype 4 lc rgb "orange-red" pt 12 ps 1.2
+    set linetype 5 lc rgb "gold" pt 5 ps 1.2
+    set linetype 6 lc rgb "dark-violet" pt 1 ps 1.2
+    set linetype 7 lc rgb "gray50" pt 2 ps 1.2
+    set linetype 8 lc rgb "black" pt 7 ps 1.2
     set linetype cycle 8
     set style data lines
     set key noautotitle
@@ -162,13 +162,19 @@ The configuration file is `~/.gnuplot` on Unix-like systems, and
 * Learn all the details about how to plot with Gaston in the [Manual](manual.qmd).
 * Consult the full [API Reference](reference.qmd).
 
-Gaston's documentation also includes several [Pluto](https://plutojl.org/)
-notebooks, with examples and tutorials. These are found
-[here](https://github.com/mbaz/Gaston.jl/tree/master/notebooks).
+Gaston's documentation includes three [Pluto](https://plutojl.org/)
+notebooks:
+
+* An overview of the [essential plotting concepts](https://github.com/mbaz/Gaston.jl/tree/master/docs/v2/tutorial-essentials.jl).
+* An overview of [3-D plotting](https://github.com/mbaz/Gaston.jl/tree/master/docs/v2/tutorial-3d.jl).
+* A tutorial on how to [plot a torus](https://github.com/mbaz/Gaston.jl/tree/master/docs/how-to-plot-a-torus.jl) (which aims to showcase Gaston in interactive notebooks).
 
 ## Acknowledgments
 
 When developing Gaston, I've been inspired by the excellent features and ideas
-behind other Julia plotting packages (including (Plots.jl)[], (Gnuplot.jl)[]
-and (Makie.jl)[]). Many thanks to their multiple authors for freely sharing
-their code and their APIs!
+behind other Julia plotting packages, including
+[Plots.jl](https://github.com/JuliaPlots/Plots.jl),
+[Gnuplot.jl](https://github.com/gcalderone/Gnuplot.jl),
+[PGFPlotsX.jl](https://github.com/KristofferC/PGFPlotsX.jl),
+and [Makie.jl](https://github.com/MakieOrg/Makie.jl).
+Many thanks to their multiple authors for freely sharing their code and their APIs!

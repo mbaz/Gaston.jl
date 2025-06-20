@@ -2,9 +2,6 @@
 title: "Tutorial"
 ---
 
-TODO: add axes to a plot without indexing (push!)
-      plot(f1, f2) (still not implemented)
-
 If you have not installed Gaston yet, then run the following commands in the Julia REPL:
 
 ```{.julia}
@@ -215,6 +212,27 @@ Add another curve to an axis using indexing:
 plot!(f[2], x, 0.3randn(length(x)))  # add noise curve to second axis
 ```
 
+A different way to generate a multiplot is to call `plot` on two or more figures, creating
+a new figure that contains the axes of all arguments, as in this example:
+
+```{julia}
+f1 = Figure()
+f2 = Figure()
+plot(f1, "set title 'sin'", sin)
+plot(f2, "set title 'cos'", cos)
+plot(f1, f2)
+```
+
+A trick that may be useful in some cases is pushing an axis from one figure to a different
+figure:
+
+```{julia}
+plot(f1, "set title 'sin'", sin)
+plot(f2, "set title 'cos'", cos)
+plot(f2[2], "set title 'tan'", tan)
+push!(f1, f2[2]) # inserts plot of tan into f1
+```
+
 To get full control of the layout, pass the argument `autolayout = false` to `Figure`:
 ```{julia}
 f = Figure("title 'Arbitrary multiplot layout demo'", autolayout = false)
@@ -305,8 +323,8 @@ plot(x, y, w, "w labels")
 ```
 
 Julia's `Date` type can be plotted by converting it to strings, and using
-gnuplot's date support.  The following example is inspired in
-(this)[https://lazarusa.github.io/gnuplot-examples/examples/2d/lines/dates].
+gnuplot's date support.  The following code is inspired in
+[this example](https://lazarusa.github.io/gnuplot-examples/examples/2d/lines/dates).
 
 ```{julia}
 using Dates
@@ -588,32 +606,8 @@ a specific type of plot.
 
 Note that, in gnuplot, plotlines (as in `with lines linecolor 'green'`) are
 especially difficult to theme, because repeated options (and options given in
-the wrong order) are errors. As an example of this difficulty, consider using
-`scatter` to plot some points; we want to use `pointtype` number 4:
-
-```julia
-scatter(rand(10), rand(10), "pointtype = 4")
-```
-
-This command causes an error because the plotline theme `:scatter` already
-specifies the point type! To plot a scatter plot using the desired point type,
-use plain `plot` with the appropriate settings, create your own theme, or
-modify the built-in theme. Here is an example where the theme is modified.
-First find out how the theme is set up:
-
-```{julia}
-Gaston.pthemes[:scatter]
-```
-
-Then, modify the entry for the pointtype:
-
-```{julia}
-Gaston.pthemes[:scatter][2] = "pointtype" => 4
-scatter("set title 'Scatter plot with modified theme", rand(10), rand(10), "lc 'dark-green'")
-```
-
-Note how the line color was specified without causing an error, since it is not
-included in the theme.
+the wrong order) are errors. It is recommended to keep plotline themes very
+simple, and specify the plotline manually as part of the plot command.
 
 The following subsections cover all included plot styles, along with the list
 of built-in themes they rely on, as well as some examples.
@@ -778,14 +772,14 @@ A surface can be plotted as a "wireframe" (or a "mesh") with the `wireframe`
 command. By default, `hidden3d` is active, so that elements behind the surface
 are not plotted.
 ```{julia}
-f1(x,y) = sin(sqrt(x*x+y*y))/sqrt(x*x+y*y)
+g(x,y) = sin(sqrt(x*x+y*y))/sqrt(x*x+y*y)
 th = @gpkw {title = Q"Sombrero Wireframe", palette = :matter}
-wireframe(th, (-15, 15, 30), f1)
+wireframe(th, (-15, 15, 30), g)
 ```
 Solid surfaces are plotted with `surf`:
 ```{julia}
 th = @gpkw {title = Q"Sombrero Surface", palette = :matter}
-surf(th, (-15, 15, 200), f1)
+surf(th, (-15, 15, 200), g)
 ```
 
 When plotting a function and a single range (such as `(-15, 15, 200)` above) is
@@ -793,7 +787,7 @@ given, it is used for both `x` and `y` coordinates. Two ranges may be given as
 well to control the `x` and `y` ranges separately:
 
 ```{julia}
-surf(th, (-15, 15, 200), (-25, 5, 200), f1)
+surf(th, (-15, 15, 200), (-25, 5, 200), g)
 ```
 
 ### Contour plots
@@ -805,22 +799,22 @@ surf(th, (-15, 15, 200), (-25, 5, 200), f1)
 
 By default, contour plots include numerical labels:
 ```{julia}
-f2(x,y) = cos(x/2)*sin(y/2)
-contour("set title 'Contour Plot'", (-10, 10, 50), f2)
+h(x,y) = cos(x/2)*sin(y/2)
+contour("set title 'Contour Plot'", (-10, 10, 50), h)
 ```
 To plot contours without labels, use the keyword argument `labels = false`:
 ```{julia}
-contour("set title 'Contour Plot Without Labels'", (-10, 10, 50), f2, labels = false)
+contour("set title 'Contour Plot Without Labels'", (-10, 10, 50), h, labels = false)
 ```
 It's possible to plot a wireframe surface and a contour projected on the base of the plot
 using `surfcountour`:
 ```{julia}
-surfcontour("set title 'Surface With Projected Contours'", (-5, 5, 40), f2, "lc 'orange'")
+surfcontour("set title 'Surface With Projected Contours'", (-5, 5, 40), h, "lc 'orange'")
 ```
 The same plot without contour labels:
 ```{julia}
 surfcontour("set title 'Surface With Contours, No Labels'",
-            (-5, 5, 40), f2, "lc 'orange'", labels = false)
+            (-5, 5, 40), h, "lc 'orange'", labels = false)
 ```
 
 ### Heatmap plots
@@ -831,5 +825,5 @@ surfcontour("set title 'Surface With Contours, No Labels'",
 
 ```{julia}
 theme = @gpkw {palette = :matter, title = Q"Heatmap"}
-heatmap(theme, :notics, :nocb, :labels, (-10, 10, 70), f2)
+heatmap(theme, :notics, :nocb, :labels, (-10, 10, 70), h)
 ```

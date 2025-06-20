@@ -303,3 +303,8 @@ quartodoc("Gaston.cs2dec", @doc Gaston.cs2dec)
 quartodoc("Gaston.set!", @doc Gaston.set!)
 ```
 
+```{julia}
+#| echo: false
+quartodoc("Gaston.meshgrid", @doc Gaston.meshgrid)
+```
+

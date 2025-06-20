@@ -10,9 +10,7 @@ Gaston.config.term = "pngcairo font ',10' size 640,480"
 Gaston.config.output = :echo
 ```
 
-## Examples
-
-### [3-D Euler spiral (Clothoid)](https://en.wikipedia.org/wiki/Euler_spiral)
+### 3-D Euler spiral [(Clothoid)](https://en.wikipedia.org/wiki/Euler_spiral)
 
 ```{julia}
 using QuadGK
@@ -55,6 +53,61 @@ for i in reverse(eachindex(y))
     splot!(x, Y, Z, Zf, Z, "w zerrorfill lc 'black' fillstyle solid 1.0 fc 'white'")
 end
 f
+```
+
+### Vector field
+
+Inspired by this [post in gnuplotting.org](https://gnuplotting.org/vector-field-from-function/index.html).
+
+```{julia}
+xr = 15  # samples in x direction
+yr = 15  # samples in y direction
+
+# parameters
+x01 = 1
+y01 = 0
+q1  = 1
+x02 = -1
+y02 = 0
+q2  = -1
+scaling = 0.22
+
+# equations
+r(x,y)     = sqrt(x*x+y*y)
+v1(x,y)    = q1/(r(x-x01,y-y01))
+v2(x,y)    = q2/(r(x-x02,y-y02))
+v(x,y)     = v1(x,y)+v2(x,y)
+e1x(x,y)   = q1*x/r(x,y)^3
+e1y(x,y)   = q1*y/r(x,y)^3
+e2x(x,y)   = q2*x/r(x,y)^3
+e2y(x,y)   = q2*y/r(x,y)^3
+ex(x,y)    = e1x(x-x01,y-y01)+e2x(x-x02,y-y02)
+ey(x,y)    = e1y(x-x01,y-y01)+e2y(x-x02,y-y02)
+enorm(x,y) = sqrt(ex(x,y)^2 + ey(x,y)^2)
+dx(x,y)    = scaling*ex(x,y)/enorm(x,y)
+dy(x,y)    = scaling*ey(x,y)/enorm(x,y)
+
+# initialize data vectors
+d1 = zeros(xr*yr)
+d2 = zeros(xr*yr)
+d3 = zeros(xr*yr)
+d4 = zeros(xr*yr)
+d5 = zeros(xr*yr)
+
+# calculations
+for X in range(-2, 2, length=xr)
+    for Y in range(-1.8, 1.8, length=yr)
+         push!(d1, X-dx(X,Y)/2)
+         push!(d2, Y-dy(X,Y)/2)
+         push!(d3, dx(X,Y))
+         push!(d4, dy(X,Y))
+         push!(d5, v(X,Y))
+    end
+end
+
+@plot({palette = :linear_kry_5_95_c72_n256}, :nocb,
+      d1, d2, d3, d4, d5,
+      "with vectors head size 0.08,20,60 filled lc palette")
 ```
 
 ### Line color from palette
@@ -116,10 +169,10 @@ Here, `Set1_5` is a color scheme from [ColorSchemes.jl](https://github.com/Julia
 ```{julia}
 Θ = range(0, 2π, length = 100)
 Φ = range(0, π, length = 20)
-r = 0.8
-x = [r*cos(θ)*sin(ϕ) for θ in Θ, ϕ in Φ]
-y = [r*sin(θ)*sin(ϕ) for θ in Θ, ϕ in Φ]
-z = [r*cos(ϕ)        for θ in Θ, ϕ in Φ]
+rd = 0.8
+x = [rd*cos(θ)*sin(ϕ) for θ in Θ, ϕ in Φ]
+y = [rd*sin(θ)*sin(ϕ) for θ in Θ, ϕ in Φ]
+z = [rd*cos(ϕ)        for θ in Θ, ϕ in Φ]
 @gpkw splot({view = "equal xyz", pm3d = "depthorder", hidden3d},
             x, y, z,
             {w = "l", lc = Q"turquoise"})
@@ -130,10 +183,10 @@ z = [r*cos(ϕ)        for θ in Θ, ϕ in Φ]
 ```{julia}
 Θ = range(0, 2π, length = 100)
 Φ = range(0, π, length = 100)
-r = 0.8
-x = [r*cos(θ)*sin(ϕ) for θ in Θ, ϕ in Φ]
-y = [r*sin(θ)*sin(ϕ) for θ in Θ, ϕ in Φ]
-z = [r*cos(ϕ)        for θ in Θ, ϕ in Φ]
+rd = 0.8
+x = [rd*cos(θ)*sin(ϕ) for θ in Θ, ϕ in Φ]
+y = [rd*sin(θ)*sin(ϕ) for θ in Θ, ϕ in Φ]
+z = [rd*cos(ϕ)        for θ in Θ, ϕ in Φ]
 @splot({style = "fill transparent solid 1",
         palette = :summer,
         view = "equal xyz",
@@ -147,10 +200,10 @@ z = [r*cos(ϕ)        for θ in Θ, ϕ in Φ]
 ```{julia}
 U = range(-π, π, length = 50)
 V = range(-π, π, length = 100)
-r = 0.5
-x = [1+cos(u)+r*cos(u)*cos(v) for u in U, v in V]
-y = [r*sin(v)                 for u in U, v in V]
-z = [sin(u)+r*sin(u)*cos(v)   for u in U, v in V]
+rd = 0.5
+x = [1+cos(u)+rd*cos(u)*cos(v) for u in U, v in V]
+y = [rd*sin(v)                 for u in U, v in V]
+z = [sin(u)+rd*sin(u)*cos(v)   for u in U, v in V]
 settings = """set object rectangle from screen 0,0 to screen 1,1 behind fillcolor 'black' fillstyle solid noborder
               set pm3d depthorder
               set style fill transparent solid 0.5

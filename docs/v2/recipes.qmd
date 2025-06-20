@@ -2,56 +2,87 @@
 title: "Recipes"
 ---
 
-Load Gaston with:
 ```{julia}
+#| echo: false
+#| output: false
 using Gaston
-```
-The plots below have been rendered in a `png` terminal with the following configuration:
-```{julia}
-Gaston.config.term = "pngcairo font ',10' size 640,480";
-```
-We need to specify that the plot examples below will be rendered to a document and not
-a GUI window:
-```{julia}
-Gaston.config.output = :echo;
+Gaston.config.term = "pngcairo font ',10' size 640,480"
+Gaston.config.output = :echo
 ```
 
-## Defining new plot types and recipes
+There are several ways to extend Gaston to plot data of arbitrary types.
 
-The following examples illustrate how to extend Gaston to create new types of plots and
-to seamlessly plot arbitrary data types.
+## Functions that return a `Gaston.Figure`
 
-### Functions that return a `Gaston.Figure`
+A straightforward way to extend (or customize) Gaston's functionality is by defining
+functions that return a value of type `Figure`.
 
-This example shows how to create a new type of plot: plotting complex data as
-two subplots, with the magnitude and phase of the data. The example also
-defines new themes.
+The example below shows how to plot complex vectors as two subplots, one of the
+magnitude and the other of phase of the data. This example defines new themes.
 
 ```{julia}
+# define new themes
+Gaston.sthemes[:myplot_mag] = @gpkw {grid, ylabel = Q"Magnitude"}
+Gaston.sthemes[:myplot_ph] = @gpkw {grid, ylabel = Q"Angle"}
+Gaston.pthemes[:myplot_mag] = @gpkw {w = "lp", marker = :ecircle}
+Gaston.pthemes[:myplot_ph] = @gpkw {w = "l", lc = "'black'"}
+
+# define new function
+function myplot(f::Figure, data::AbstractVector{<:Complex}; kwargs...)::Figure
+     # convert data to a format gnuplot understands
+     x = 1:length(data)
+     magnitude = abs.(data)
+     phase = angle.(data)
+
+     # make sure figure f is empty
+     Gaston.reset!(f)
+
+     # fixed layout (two rows, one col)
+     f.multiplot = "layout 2,1"
+     f.autolayout = false
+
+     # add two plots to f, using the themes defined above
+     plot(f[1], x, magnitude, stheme = :myplot_mag, ptheme = :myplot_mag)
+     plot(f[2], x, phase, stheme = :myplot_ph, ptheme = :myplot_ph)
+
+     return f
+end
+
+# create new Figure if not provided
+myplot(data::AbstractVector{<:Complex}; kwargs...) = myplot(Figure(), data; kwargs...)
+
+# plot example: complex damped sinusoid
+t = range(0, 1, 20)
+y = exp.(-t) .* cis.(2*pi*7.3*t)
+myplot(y)  # plot
+```
+
+Note that the function `myplot` has two methods:
+
+* The main method takes an existing figure as first argument, and then the data.
+* A second method handles the case where only data is provided by instantiating
+  a new figure and then forwarding execution to the main method.
+
+Here, `myplot` takes a base Julia type. A simple modification handles the case where
+the data is of a user-defined type:
+
+```{.julia}
 #define new type
 struct ComplexData{T <: Complex}
     samples :: Vector{T}
 end
 
-# define new themes
-Gaston.sthemes[:myplot1] = @gpkw {grid, ylabel = Q"Magnitude"}
-Gaston.sthemes[:myplot2] = @gpkw {grid, ylabel = Q"Angle"}
-Gaston.pthemes[:myplot1] = @gpkw {w = "lp"}
-Gaston.pthemes[:myplot2] = @gpkw {w = "p", lc = "'black'"}
-
 # define new function
 function myplot(data::ComplexData; kwargs...)::Figure
                 # convert data to a format gnuplot understands
                 x = 1:length(data.samples)
-                y1 = abs2.(data.samples)
-                y2 = angle.(data.samples)
-                # create a new figure with fixed layout (two rows, one col)
-                f = Figure(multiplot = "layout 2,1", autolayout = false)
-                # add two plots to f
-                plot(f[1], x, y1, stheme = :myplot1, ptheme = :myplot1)
-                plot(f[2], x, y2, stheme = :myplot2, ptheme = :myplot2)
-                return f
+                magnitude = abs.(data.samples)
+                phase = angle.(data.samples)
+                [...]
 end
+
+# create new Figure if not provided
+myplot(data::ComplexData; kwargs...) = myplot(Figure(), data; kwargs...)
 
 # plot example: complex damped sinusoid
 t = range(0, 1, 20)
@@ -60,95 +91,165 @@ myplot(y)  # plot
 ```
 
 The use of themes allows the user to modify the default properties of
-the plot, by modifying the themes (such as `Gaston.sthemes[:myplot1]`) instead
+the plot, by modifying the themes (such as `Gaston.sthemes[:myplot_mag]`) instead
 of having to re-define `myplot`. Of course, similar functionality can be
 achieved with the use of keyword arguments.
 
-### Recipes: Adding new methods to `Gaston.convert_args`
+The main drawback of this method of extending Gaston is that it requires an
+environement where Gaston has been installed This may be undesirable when
+sharing code with others, which may prefer to use a different plotting package,
+or when developing a package, which would burden all users with a relatively
+large, unneeded dependency. The solution to this problem is to use "recipes".
+
+## Adding new methods to `Gaston.convert_args`
+
+The package `GastonRecipes` is a tiny package that allows extending Gaston to
+plot arbitrary types. It provides three types of recipes:
+
+* `PlotRecipe`, which return a single curve that can inserted into an axis.
+* `AxisRecipe`, which return a single axis that can be inserted into a figure.
+* `FigureRecipe`, which consists of one or more axes, mostly useful for multiplots or
+  for animations.
+
+Recipes work as follows: Gaston's `plot` function calls function `Gaston.convert_args`
+(or `convert_args3` for 3-D plots), if an appropriate method exists. This function
+takes the data provided to `plot` and returns an appropriate object
+(of type `PlotRecipe`, `AxisRecipe` or `FigureRecipe`) containing data of a type
+and format that gnuplot understands. The idea then is to add methods to
+`convert_args` to handle any arbitrary type we wish to plot.
+
+### `PlotRecipe`
 
 The following example shows how to extend `Gaston.convert_args` to plot a
-custom type `Data1`. This simple example returns a `Gaston.Plot` object
+custom type `Data1`. This simple example returns a `PlotRecipe` object
 (essentially a curve), which contains data and a plotline.
 
-
-```julia
-using Gaston: Plot
-import Gaston: convert_args
+```{julia}
+using GastonRecipes: PlotRecipe
+import GastonRecipes: convert_args
 
 # define custom type
-struct Data1
+struct Type1
     samples
 end
 
 # add method to convert_args
-function convert_args(d::Data1, args... ; pl = "", kwargs...)
-    x = 1:length(data.samples)
-    y = data.samples
-    Plot(x, y, pl)
+function convert_args(d::Type1)
+    x = 1:length(d.samples)
+    y = d.samples
+    PlotRecipe((x, y), "") # all coordinates are in a Tuple
 end
 
 # create some data
-data = Data1(rand(20))
+data = Type1(rand(20))
 
 # plot
-plot("set title 'Simple data conversion recipe'", data, "w lp pt 7 lc 'olive'")
+plot("set title 'Simple data conversion recipe'", "set grid", data, "w lp pt 7 lc 'olive'")
 ```
 
 Note that this kind of recipe will also seamlessly work with `plot!`, which
 adds the curve to the current axis.
 
-A recipe may also return an entire `Axis` object, with its own settings and
-curves. The following example returns an axis with two curves.
+```{julia}
+data2 = Type1(rand(20))
+plot!(data2, "lc 'red'")
+```
 
-```julia
-using Gaston: Plot, Axis
+Finally, note that `Gaston` calls `convert_args` with all data and keyword
+arguments given to `plot`. This may be used to control the recipe's behavior,
+as illustrated in the next example.
 
-struct Data2 end
+### `AxisRecipe`
 
-function convert_args(x::Data2, args... ; kwargs...)
+A recipe may also return an entire `AxisRecipe` object, with its own settings and
+curves. The following example returns an axis with two curves. Keyword arguments are
+used to control the linecolor of each curve.
+
+```{julia}
+using GastonRecipes: AxisRecipe
+
+struct Type2 end
+
+function convert_args(::Type2, args... ; lc_first = "'blue'", lc_second = "'red'", kwargs...)
     x = range(0, 1, 100)
-    p1 = Plot(x, cos.(4x), "dt '-' lc 'red' t 'cosine'")
-    p2 = Plot(x, sin.(5x), "dt '.' lc 'blue' t 'sine'")
-    Axis("set grid\nset title 'Full axis recipe'", [p1, p2])
+
+    # build first curve
+    p1 = @gpkw PlotRecipe((x, cos.(4x)), {dt = "'-'", lc = lc_first, t =  "'cosine'"})
+
+    # build second curve
+    p2 = PlotRecipe((x, sin.(5x)), "dt '.' lc $(lc_second) t 'sine'")
+
+    # build AxisRecipe, using a vector of PlotRecipes
+    AxisRecipe("set grid\nset title 'Full axis recipe'", [p1, p2])
 end
 
-plot(Data2())
+plot(Type2())
 ```
+
+By default, the line colors will be blue and red for the first and second curve,
+respectively, but these can be specified by the user with the keyword arguments
+`lc_first` and `lc_second`.
 
 Note that the axis returned by a recipe can be inserted directly into a multiplot:
 
-```julia
+```{julia}
 f = Figure(multiplot = "title 'Recipe example'")
 plot(f[1], randn(100), "w p")
-plot(f[2], Data2())
+plot(f[2], Type2())
 ```
+
+Finally, the following example shows how to create a recipe for `splot`, using
+`convert_args3`. Note that now `AxisRecipe` takes a third argument, which
+indicates a 3-D plot when set to `true` (it is `false` by default).
+
+```{julia}
+import Gaston: convert_args3
+
+function convert_args3(::Type2)
+    p1 = PlotRecipe((1:20, 1:20, randn(20,20)), "w pm3d")
+    @gpkw s = {palette = :matter, title = Q"A Surface"}
+    AxisRecipe(s, [p1], true)
+end
+
+splot(Type2())
+```
+
+### `FigureRecipe`
 
 Finally, a recipe can also generate a full multiplot, with multiple axes, as
 illustrated in the example below:
 
-```julia
-using Gaston
-import Gaston: convert_args, Plot, Axis, Axis3
-closeall() #| hide_line
+```{julia}
+using GastonRecipes: FigureRecipe
 
-struct MyType end
+struct Type3 end
 
-function convert_args(x::MyType)
+function convert_args(::Type3)
+    # first axis
+    p1 = PlotRecipe((1:10, rand(10)), "")
+    @gpkw a1 = AxisRecipe({title = Q"First Axis"}, [p1])
+
+    # axis #2
     t1 = range(0, 1, 40)
+    p2 = @gpkw PlotRecipe((t1, sin.(5t1)), {lc = Q"black"})
+    p3 = @gpkw PlotRecipe((t1, cos.(5t1)), {w = "p", pt = 16})
+    a2 = @gpkw AxisRecipe({title = Q"Trig"}, [p2, p3])
+
+    # axis #3
     t2 = range(-5, 5, 50)
     z = Gaston.meshgrid(t2, t2, (x,y) -> cos(x)*cos(y))
-    @gpkw a1 = Axis({title = Q"First Axis"}, [Plot(1:10, rand(10))])
-    @gpkw a2 = Axis({title = Q"Trig"}, [Plot(t1, sin.(5t1), {lc = Q"black"}),
-                                        Plot(t1, cos.(5t1), {w = "p", pt = 16})])
-    @gpkw a3 = Axis3({title = Q"Surface", tics = false, palette = (:matter, :reverse)},
-                     [Plot(t2, t2, z, {w = "pm3d"})])
-    @gpkw a4 = Axis({tics, title = false, title = Q"Last Axis"},
-                    [Plot(1:10, 1:10, rand(10,10), "w image")])
+    p4 = @gpkw PlotRecipe((t2, t2, z), {w = "pm3d"})
+    @gpkw a3 = AxisRecipe({title = Q"Surface", tics = false, palette = (:matter, :reverse)},
+                          [p4], true)
+
+    # axis the fourth
+    @gpkw a4 = AxisRecipe({tics, title = false, title = Q"Last Axis"},
+                          [PlotRecipe((1:10, 1:10, rand(10,10)), "w image")])
+
     # return named tuple with four axes
-    (axes = [a1, a2, a3, a4],
-     multiplot = "title 'A Four-Axes Recipe' layout 2,2",
-     autolayout = false)
+    FigureRecipe([a1, a2, a3, a4],
+                 "title 'A Four-Axes Recipe' layout 2,2", false)
 end
 
-plot(MyType())
+plot(Type3())
 ```

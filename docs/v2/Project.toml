@@ -1,6 +1,7 @@
 [deps]
 ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
 Gaston = "4b11ee91-296f-5714-9832-002c20994614"
+GastonRecipes = "39356fd2-1f9e-4efe-8abf-5745c7d9f608"
 Images = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
 QuadGK = "1fd47b50-473d-5c70-9696-f719f8f3bcdc"
 QuartoNotebookRunner = "4c0109c6-14e9-4c88-93f0-2b974d3468f4"

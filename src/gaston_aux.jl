@@ -169,9 +169,11 @@ function reset()
     config.exec = `gnuplot`
 end
 
-""" meshgrid(x, y, z)
-    Return a z-coordinate matrix from `x`, `y` coordinates and a function `f`,
-    such that `z[row,col] = f(x[row], y[col])`
+"""
+    meshgrid(x, y, z)
+
+Return a z-coordinate matrix from `x`, `y` coordinates and a function `f`,
+such that `z[row,col] = f(x[row], y[col])`
 """
 meshgrid(x, y, f::F) where {F<:Function} = [f(xx,yy) for yy in y, xx in x]
 

@@ -12,12 +12,10 @@ Convert values of specific types to data that gnuplot can plot.
 Users should add methods to this function for their own types. The returned value
 must be one of the following types:
 
-* A `Gaston.Plot`, which describes a curve (i.e. it contains coordinates and a plotline).
-* A `Gaston.Axis`, which may contain multiple `Plot`s and axis settings.
-* A tuple with the following fields:
-  * `axes`: a vector of `Gaston.Axis`
-  * `multiplot`, a string to be passed to `set multiplot`
-  * `autolayout::Bool`, set to `true` if Gaston should control the axes layout.
+* A `Gaston.PlotRecipe`, which describes a curve (i.e. it contains
+  coordinates and a plotline).
+* A `Gaston.AxisRecipe`, which contains multiple `PlotRecipe`s and axis settings.
+* A `Gaston.FigureRecipe`, which contains multiple `AxisRecipe`s and multiplot settings.
 
 See the Gaston documentation for full details and examples.
 
@@ -38,101 +36,114 @@ convert_args3
 
 ### 1-argument
 # one number
-function convert_args(r::R, args... ; pl = "", kwargs...) where R <: Real
-    Plot([1], [r], args..., pl)
+function convert_args(r::R, args... ;
+                      pl = "", kwargs...)::PlotRecipe where R <: Real
+    PlotRecipe(([1], [r], args...), pl)
 end
 
-function convert_args(c::C, args... ; pl = "", kwargs...) where C <: Complex
-    Plot([real(c)], [imag(c)], args..., pl)
+function convert_args(c::C, args... ;
+                      pl = "", kwargs...)::PlotRecipe where C <: Complex
+    PlotRecipe(([real(c)], [imag(c)], args...), pl)
 end
 
 # complex vector
-function convert_args(c::AbstractVector{<:Complex}, args... ; pl = "", kwargs...) :: Plot
-    Plot(collect(real(c)), collect(imag(c)), args..., pl)
+function convert_args(c::AbstractVector{<:Complex}, args... ;
+                      pl = "", kwargs...)::PlotRecipe
+    PlotRecipe((collect(real(c)), collect(imag(c)), args...), pl)
 end
 
 # functions
-function convert_args(f::F, args... ; pl = "", kwargs...) where {F <: Function}
+function convert_args(f::F, args... ;
+                      pl = "", kwargs...)::PlotRecipe where {F <: Function}
     r = range(-10, stop = 10, length = 101)
-    Plot(r, f.(r), args..., pl)
+    PlotRecipe((r, f.(r), args...), pl)
 end
 
 ### 2-argument
-function convert_args(x::R1, y::R2, args... ; pl = "", kwargs...) where {R1 <: Real, R2 <: Real}
-    Plot([x], [y], args..., pl)
+function convert_args(x::R1, y::R2, args... ;
+                      pl = "", kwargs...)::PlotRecipe where {R1 <: Real, R2 <: Real}
+    PlotRecipe(([x], [y], args...), pl)
 end
 
-function convert_args(x::Tuple, f::F, args... ; pl = "", kwargs...) where {F<:Function}
+function convert_args(x::Tuple, f::F, args... ;
+                      pl = "", kwargs...)::PlotRecipe where {F<:Function}
     samples = length(x) == 3 ? x[3] : 101
     r = range(x[1], x[2], length=samples)
-    Plot(r, f.(r), args..., pl)
+    PlotRecipe((r, f.(r), args...), pl)
 end
 
-function convert_args(r::AbstractVector, f::F, args... ; pl = "", kwargs...) where {F<:Function}
-    Plot(r, f.(r), args..., pl)
+function convert_args(r::AbstractVector, f::F, args... ;
+                      pl = "", kwargs...)::PlotRecipe where {F<:Function}
+    PlotRecipe((r, f.(r), args...), pl)
 end
 
 # for use with "w image"
-function convert_args(a::Matrix{<:Real}, args... ; pl = "", kwargs...)
+function convert_args(a::Matrix{<:Real}, args... ; pl = "", kwargs...)::PlotRecipe
     x = collect(axes(a,2))
     y = collect(axes(a,1))
-    Plot(x, y, a, args..., pl)
+    PlotRecipe((x, y, a, args...), pl)
 end
 
-function convert_args(a::Array{<:Real, 3}, args... ; pl = "", kwargs...)
+function convert_args(a::Array{<:Real, 3}, args... ; pl = "", kwargs...)::PlotRecipe
     x = collect(axes(a, 3))
     y = collect(axes(a, 2))
-    Plot(x, y, a[1,:,:], a[2,:,:], a[3,:,:], args..., pl)
+    PlotRecipe((x, y, a[1,:,:], a[2,:,:], a[3,:,:], args...), pl)
 end
 
 # histogram
-function convert_args(h::Histogram, args... ; pl = "", kwargs...)
+function convert_args(h::Histogram, args... ; pl = "", kwargs...)::PlotRecipe
     # convert from StatsBase histogram to gnuplot x, y values
     if h.weights isa Vector
         xx = collect(h.edges[1])
         x = (xx[1:end-1]+xx[2:end])./2
         y = h.weights
-        return Plot(x, y, args..., pl)
+        return PlotRecipe((x, y, args...), pl)
     else
         xx = collect(h.edges[1])
         x = (xx[1:end-1]+xx[2:end])./2
         yy = collect(h.edges[2])
         y = (yy[1:end-1]+yy[2:end])./2
         z = permutedims(h.weights)
-        return Plot(x, y, z, args..., pl)
+        return PlotRecipe((x, y, z, args...), pl)
     end
 end
 
 ### 3-D conversions
 
-function convert_args3(x::R1, y::R2, z::R3, args... ; pl = "", kwargs...) where {R1 <: Real, R2 <: Real, R3 <: Real}
-    Plot([x], [y], [z], args..., pl)
+function convert_args3(x::R1, y::R2, z::R3, args... ;
+                       pl = "", kwargs...)::PlotRecipe where {R1 <: Real, R2 <: Real, R3 <: Real}
+    PlotRecipe(([x], [y], [z], args...), pl)
 end
 
-function convert_args3(a::Matrix{<:Real} ; pl = "", kwargs...)
+function convert_args3(a::Matrix{<:Real} ; pl = "", kwargs...)::PlotRecipe
     x = axes(a, 2)
     y = axes(a, 1)
-    Plot(x, y, a, pl)
+    PlotRecipe((x, y, a), pl)
 end
 
-function convert_args3(x::AbstractVector{<:Real}, y::AbstractVector{<:Real}, f::F, args... ; pl = "", kwargs...) where {F <: Function}
-    Plot(x, y, meshgrid(x, y, f), args..., pl)
+function convert_args3(x::AbstractVector{<:Real}, y::AbstractVector{<:Real}, f::F, args... ;
+                       pl = "", kwargs...)::PlotRecipe where {F <: Function}
+    PlotRecipe((x, y, meshgrid(x, y, f), args...), pl)
 end
 
-function convert_args3(f::F, args... ; pl = "", kwargs...) where {F <: Function}
+function convert_args3(f::F, args... ; pl = "", kwargs...)::PlotRecipe where {F <: Function}
     x = y = range(-10, 10, length = 100)
-    Plot(x, y, meshgrid(x, y, f), args..., pl)
+    PlotRecipe((x, y, meshgrid(x, y, f), args...), pl)
 end
 
-convert_args3(xy::Tuple, f::F, args... ; pl = "", kwargs...) where {F <: Function} = convert_args3(xy, xy, f, args... ; pl=pl, kwargs...)
+function convert_args3(xy::Tuple, f::F, args... ;
+                       pl = "", kwargs...)::PlotRecipe where {F <: Function}
+    convert_args3(xy, xy, f, args... ; pl, kwargs...)
+end
 
-function convert_args3(xr::Tuple, yr::Tuple, f::F, args... ; pl = "", kwargs...) where {F <: Function}
+function convert_args3(xr::Tuple, yr::Tuple, f::F, args... ;
+                       pl = "", kwargs...)::PlotRecipe where {F <: Function}
     samples_x = samples_y = 100
     length(xr) == 3 && (samples_x = xr[3])
     length(yr) == 3 && (samples_y = yr[3])
     xx = range(xr[1], xr[2], length = samples_x)
     yy = range(yr[1], yr[2], length = samples_y)
-    Plot(xx, yy, meshgrid(xx, yy, f), args..., pl)
+    PlotRecipe((xx, yy, meshgrid(xx, yy, f), args...), pl)
 end
 
 ### Plot recipes

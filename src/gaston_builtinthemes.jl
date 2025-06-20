@@ -37,10 +37,9 @@ sthemes = @gpkw Dict(
 # plotline themes
 pthemes = @gpkw Dict(
     :none =>        Pair[],
-
-    :scatter =>     {with = "points", pointtype = :fcircle, pointsize = 1.5},
+    :scatter =>     {with = "points"},
     :impulses =>    {with = "impulses"},
-    :stem =>        {with = "points", pointtype = :ecircle, pointsize = 2},
+    :stem =>        {with = "points", pointtype = :ecircle},
     :box =>         {with = "boxes"},
     :boxerror =>    {with = "boxerrorbars"},
     :boxxyerror =>  {with = "boxxyerror"},

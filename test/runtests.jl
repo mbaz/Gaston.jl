@@ -4,7 +4,7 @@
 
 using Test, Gaston, Aqua, JET
 using Gaston: Axis, Axis3, Plot
-import GastonRecipes: convert_args, convert_args3
+import Gaston: convert_args, convert_args3, PlotRecipe, AxisRecipe, FigureRecipe
 
 gh = Gaston.gethandles
 reset = Gaston.reset
@@ -154,8 +154,16 @@ end
     #test Plot!
     pp = Gaston.Plot!(p)
     @test p.plotline == "with lines"
-    pp = Gaston.Plot!(1:10, 1:10, "w p")
+    pp = Gaston.Plot!(p, 1:10, 1:10, "w p")
     @test p.plotline == "w p"
+    # test plot(figs...)
+    f1 = Figure()
+    f2 = Figure()
+    plot(f1,sin)
+    plot(f2,cos)
+    f3 = plot(f1,f2)
+    @test f3 isa Figure
+    @test length(f3) == 2
     # test that an existing f.multiplot is not overwritten
     f1 = Figure(multiplot = "title '1'")
     plot(1:10)
@@ -332,18 +340,18 @@ end
     for arg in (1, (1,2), ComplexF64[1,2,3], (1:10, sin), ((1,10), sin), ((1,10,10), sin),
                 [1 2; 3 4], rand(4,3,4))
         p = convert_args(arg...)
-        @test p isa Plot
+        @test p isa PlotRecipe
         @test p.plotline == ""
     end
     for arg in (1, (1,2), ComplexF64[1,2,3], (1:10, sin), ((1,10), sin), ((1,10,10), sin),
                 [1 2; 3 4], rand(4,3,4))
         p = convert_args(arg..., pl = "test")
-        @test p isa Plot
+        @test p isa PlotRecipe
         @test p.plotline == "test"
     end
     for arg in ((1,2,3), rand(2,2), ([1,2], [3,4], (x,y)->y*sin(x)), ((x,y)->y*sin(x),))
         p = convert_args3(arg..., pl = "test")
-        @test p isa Plot
+        @test p isa PlotRecipe
         @test p.plotline == "test"
     end
 
@@ -392,6 +400,15 @@ end
     f = plot(1:10, handle="aa")
     @test f isa Figure
     @test f.handle == "aa"
+    # test plotwithtable
+    x = y = range(-5, 5, 100)
+    f4(x,y) = sin(1.3x) * cos(0.9y) + cos(0.8x) * sin(1.9y) + cos(0.2x*y)
+    settings = "set contour base\nset cntrparam level incremental -3, 0.5, 3\nunset surface"
+    contours = Gaston.plotwithtable(settings, x, y, f4)
+    z = Gaston.meshgrid(x, y, f4)
+    plot("unset key\nunset colorbox\nset palette rgbformulae 33,13,10", x, y, z, "with image")
+    pwt = plot!(contours, "w l lw 1.5 lc 'slategray'")
+    @test pwt isa Figure
 end
 
 @testset "plot with 'themes'" begin
@@ -419,35 +436,35 @@ end
     @gpkw plot!(f, 1:10, {1}, {2}, {w="l"})
     @test f(1,2).plotline == "1 2 w l"
     f = @gpkw plot(1:10, {1}, {2}, :scatter)
-    @test f(1,1).plotline == "1 2 with points pointtype 7 pointsize 1.5"
+    @test f(1,1).plotline == "1 2 with points"
     @gpkw plot!(f, 1:10, {1}, {2}, :scatter)
-    @test f(1,2).plotline == "1 2 with points pointtype 7 pointsize 1.5"
+    @test f(1,2).plotline == "1 2 with points"
     f = @gpkw plot({grid}, :heatmap, 1:10)
     @test f(1).settings == "set grid\nset view map"
 end
 
-@testset "2d plot recipes" begin
+@testset "2d plot plot styles" begin
     closeall()
     reset()
     null()
     f = @gpkw scatter({grid}, rand(2), rand(2), {1}, "2")
     @test f isa Figure
     @test f(1).settings == "set grid"
-    @test f(1,1).plotline == "with points pointtype 7 pointsize 1.5 1 2"
+    @test f(1,1).plotline == "with points 1 2"
     @gpkw scatter!(rand(2), rand(2), {3}, "4")
     @test f isa Figure
     @test f(1).settings == "set grid"
-    @test f(1,2).plotline == "with points pointtype 7 pointsize 1.5 3 4"
+    @test f(1,2).plotline == "with points 3 4"
     f = @gpkw stem({grid}, rand(2), {1}, "2")
     @test f isa Figure
     @test f(1).settings == "set grid"
     @test f(1,1).plotline == "with impulses 1 2 linecolor 'blue'"
-    @test f(1,2).plotline == "with points pointtype 6 pointsize 2 1 2 linecolor 'blue'"
+    @test f(1,2).plotline == "with points pointtype 6 1 2 linecolor 'blue'"
     @gpkw stem!(rand(2), rand(2), {3}, "4")
     @test f isa Figure
     @test f(1).settings == "set grid"
     @test f(1,3).plotline == "with impulses 3 4 linecolor 'blue'"
-    @test f(1,4).plotline == "with points pointtype 6 pointsize 2 3 4 linecolor 'blue'"
+    @test f(1,4).plotline == "with points pointtype 6 3 4 linecolor 'blue'"
     f = bar(1:10, rand(10))
     bar!(1.5:10.5, 0.5*rand(10), "lc 'green'")
     @test f(1).settings == "set boxwidth 0.8 relative\nset style fill solid 0.5"
@@ -507,7 +524,7 @@ end
     @test f(1,1).plotline == "with rgbimage"
 end
 
-@testset "3d plot recipes" begin
+@testset "3d plot plot styles" begin
     closeall()
     reset()
     null()
@@ -608,6 +625,53 @@ end
     save(f2, filename="test.pdf",term="pdf")
     @test isfile("test.pdf")
     rm("test.pdf", force=true)
+end
+
+@testset "Recipes" begin
+    struct Data1
+        samples
+    end
+    x = Data1(rand(10))
+    function Gaston.convert_args(d::Data1, args... ; pl = "", kwargs...)
+        x = 1:length(d.samples)
+        y = d.samples
+        PlotRecipe((x, y), pl)
+    end
+    r1 = plot(x)
+    @test r1 isa Figure
+    struct Data2 end
+    function Gaston.convert_args(::Data2)
+        x = range(0,1,10)
+        p1 = PlotRecipe((x, sin.(x)), "")
+        p2 = PlotRecipe((x, cos.(x)), "")
+        @gpkw s = {"grid"}
+        AxisRecipe(s, [p1, p2], false)
+    end
+    r2 = plot(Data2())
+    @test r2 isa Figure
+    struct Data3 end
+    function Gaston.convert_args(::Data3)
+        t1 = range(0, 1, 40)
+        t2 = range(-5, 5, 50)
+        z = Gaston.meshgrid(t2, t2, (x,y) -> cos(x)*cos(y))
+        @gpkw a1 = AxisRecipe({title = Q"First Axis"}, [PlotRecipe((1:10, rand(10)))])
+        @gpkw a2 = AxisRecipe({title = Q"Trig"}, [PlotRecipe((t1, sin.(5t1)), {lc = Q"black"}),
+                                                  PlotRecipe((t1, cos.(5t1)), {w = "p", pt = 16})])
+        @gpkw a3 = AxisRecipe({title = Q"Surface", tics = false, palette = (:matter, :reverse)},
+                              [PlotRecipe((t2, t2, z), {w = "pm3d"})], true)
+        @gpkw a4 = AxisRecipe({tics, title = false, title = Q"Last Axis"},
+                              [PlotRecipe((1:10, 1:10, rand(10,10)), "w image")])
+        # return named tuple with four axes
+        FigureRecipe([a1, a2, a3, a4],
+                     "title 'A Four-Axes Recipe' layout 2,2",
+                     false)
+    end
+    r3 = plot(Data3())
+    @test r3 isa Figure
+end
+
+@testset "Misc" begin
+    @test Gaston.gp_exec("set grid") == ""
 end
 
 closeall()
