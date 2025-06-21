@@ -3,15 +3,18 @@ Gaston: Julia plotting using gnuplot
 
 Gaston is a [Julia](https://julialang.org) package for plotting. It provides an interface to [gnuplot](http://gnuplot.info), a powerful plotting package available on all major platforms.
 
-Current stable release is v1.1.0, and it has been tested with Julia LTS (1.6) and stable (1.8), on
-Linux. Gaston _should_ work on any platform that runs gnuplot.
+Current stable release is v2.0, and it has been tested with Julia LTS (1.10) and stable (1.11), on
+Linux. Gaston _should_ work on any platform that runs julia and gnuplot.
 
-**CI Status:** [![CI](https://github.com/mbaz/Gaston.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/mbaz/Gaston.jl/actions/workflows/ci.yml)
+Version 1.1.2 runs with Julia 1.6 and later, but it is no longer maintained. All
+users are encouraged to move to version 2.
 
 Documentation
 -------------
 
-`Gaston.jl`'s documentation can be found [here](https://mbaz.github.io/Gaston.jl/stable/).
+`Gaston.jl`'s documentation can be found [here](https://mbaz.github.io/Gaston.jl/v2/).
+
+The documentation for the older v1.x releases is [here](https://mbaz.github.io/Gaston.jl/v1/).
 
 Why use Gaston?
 --------------
@@ -20,31 +23,28 @@ Why use Gaston, when there are powerful alternatives such as Plots.jl and Makie.
 
 * Gaston can plot:
     * Using graphical windows, and keeping multiple plots active at a time, with mouse interaction
+    * Arbitrary Julia types, using recipes.
     * Directly to the REPL, using text (ASCII) or sixels
-    * In Jupyter, Juno and other IDEs
+    * In Jupyter, Pluto and other IDEs
 * Supports popular 2-D plots: regular function plots, stem, step, histograms, images, etc.
 * Supports surface, contour and heatmap 3-D plots.
 * Can save plots to multiple formats, including pdf, png and svg.
 * Provides a simple interface for knowledgeable users to access gnuplot features.
-* Fast: time to load package, plot, and save to pdf is around six seconds.
-
-Knowledge of gnuplot is not required. Users familiar with gnuplot, however, will be able to take advantage of Gaston's facilities to access gnuplot's vast feature set.
+* It is fast.
 
 Installation
 ------------
 
-Gaston requires gnuplot to be installed in your system. It has been tested with versions 5.4 and above, but it should work with any 5.x version. Gaston also requires Julia v1.6.0 or above.
+Gaston requires gnuplot to be installed in your system. It has been tested with versions 5.4 and above, but it should work with any recent version. Gnuplot version
+6 is recommended.
 
 To install Gaston using Julia's packaging system, enter Julia's package manager prompt with `]`, and run
 
-    (v1.4) pkg> add Gaston
+    pkg> add Gaston
 
-Tests
------
+Contributing
+------------
 
-Gaston includes many tests, wich you can run to make sure your installation is
-working properly. To run the tests, enter Julia's package manager with `]` and run
+Contributions are encouraged, in the form of issue reports, pull requests, new
+tests, and new recipes.
 
-    (v1.6) pkg> test Gaston
-
-All tests should pass, although some tests may be labeled as "broken".
