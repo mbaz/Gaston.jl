@@ -11,7 +11,7 @@ PrecompileTools = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
-GastonRecipes = "0"
+GastonRecipes = "1"
 ColorSchemes = "3"
 DelimitedFiles = "1"
 MacroTools = "0.5"
