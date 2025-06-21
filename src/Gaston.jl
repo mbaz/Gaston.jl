@@ -47,7 +47,7 @@ using ColorSchemes: colorschemes, get, resample, ColorScheme, RGB, RGBA
 
 using PrecompileTools
 
-const GASTON_VERSION = v"2.0.0-rc1"
+const GASTON_VERSION = v"2.0.0"
 
 # URL for web-hosted javascript files, for svg and canvas interactivity
 const JSDIR = "'https://cdn.jsdelivr.net/gh/mbaz/gnuplot-js@1.0/'"
