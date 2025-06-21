@@ -15,7 +15,7 @@ jobs:
       - run: sudo apt-get -y install gnuplot
       - uses: julia-actions/setup-julia@latest
         with:
-          version: 1.6
+          version: 1.10
           arch: x64
       - uses: actions/checkout@v3
       - uses: julia-actions/cache@v1
