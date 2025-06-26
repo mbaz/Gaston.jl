@@ -48,7 +48,7 @@ function myplot(f::Figure, data::AbstractVector{<:Complex}; kwargs...)::Figure
      return f
 end
 
-# plot on active figure if none specified
+# plot on active figure if none specified, or new figure if none exist
 myplot(data::AbstractVector{<:Complex}; kwargs...) = myplot(figure(), data; kwargs...)
 
 # plot example: complex damped sinusoid
@@ -60,7 +60,7 @@ myplot(y)  # plot
 Note that the function `myplot` has two methods:
 
 * The main method takes an existing figure as first argument, and then the data.
-* A second method handles the case where only data is provided by instantiating
+* A second method handles the case where only data is provided by selecting
   a new figure and then forwarding execution to the main method.
 
 Here, `myplot` takes a base Julia type. A simple modification handles the case where
@@ -252,4 +252,47 @@ function convert_args(::Type3)
 end
 
 plot(Type3())
+```
+
+## Recipes for types owned by other packages
+
+Let's say we want to create a recipe for `Base.Vector`. We don't own either
+`convert_args` nor `Base.Vector`, so creating a recipe would be [type
+piracy](https://docs.julialang.org/en/v1.11/manual/style-guide/#avoid-type-piracy).
+The solution is to define a new type and dispatch on it. Here's an example: we want
+to plot the elements of a matrix as lines from the coordinates specified in the
+first row to to each of the other row.
+
+```{julia}
+struct StarPlot end
+
+import GastonRecipes: DataBlock
+
+function convert_args(::Type{StarPlot}, x::Matrix)
+    center = x[1,:]
+    points = DataBlock([stack((center, x[n,:]), dims=1) for n in 2:size(x,1)]...)
+    return PlotRecipe((points,), "w l")
+end
+
+x = rand(10, 2)
+plot(StarPlot, x)
+```
+
+(Of course, the same functionality could be achieved by wrapping `x` in `StarPlot`. The
+choice of approach is a matter of taste).
+
+This recipe also illustrates the use of `DataBlock`. In this case, the data that
+is given to gnuplot has the following form:
+
+```
+x[1,:]
+x[2,:]
+
+x[1,:]
+x[3,:]
+
+x[1,:]
+x[4,:]
+
+....
 ```
