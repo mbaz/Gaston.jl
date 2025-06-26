@@ -1,37 +1,37 @@
 name: CI
 
 on:
-  pull_request:
   push:
-    tags:
-      - v*
+    branches:
+      - main
+    tags: ['*']
+  pull_request:
   workflow_dispatch:
 
 jobs:
-  julia-lts:
-    name: Julia LTS
-    runs-on: ubuntu-latest
+  test:
+    name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }}
+    runs-on: ${{ matrix.os }}
+    permissions:
+      actions: write
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        version:
+          - '1'
+          - 'lts'
+        os:
+          - ubuntu-latest
+        arch:
+          - x64
     steps:
       - run: sudo apt-get -y install gnuplot
-      - uses: julia-actions/setup-julia@latest
+      - uses: actions/checkout@v4
+      - uses: julia-actions/setup-julia@v2
         with:
-          version: 1.10
-          arch: x64
-      - uses: actions/checkout@v3
-      - uses: julia-actions/cache@v1
-      - uses: julia-actions/julia-buildpkg@latest
-      - uses: julia-actions/julia-runtest@latest
-
-  julia-stable:
-    name: Julia Stable
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - run: sudo apt-get -y install gnuplot
-      - uses: julia-actions/setup-julia@latest
-        with:
-          version: 1
-          arch: x64
-      - uses: julia-actions/cache@v1
-      - uses: julia-actions/julia-buildpkg@latest
-      - uses: julia-actions/julia-runtest@latest
+          version: ${{ matrix.version }}
+          arch: ${{ matrix.arch }}
+      - uses: julia-actions/cache@v2
+      - uses: julia-actions/julia-buildpkg@v1
+      - uses: julia-actions/julia-runtest@v1

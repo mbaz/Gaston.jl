@@ -377,13 +377,16 @@ end
     figure(handle = <active figure handle> ; index = nothing)::Figure
 
 Return specified figure (by handle or index) and make it the active
-figure.
+figure. If no figures exist, then a new figure is returned.
 
 If no arguments are given, the current active figure is returned.
 """
 function figure(handle = state.activefig ; index = nothing)::Figure
     global state
-    if index === nothing
+    if isnothing(handle) && isnothing(index)
+        return Figure()
+    end
+    if isnothing(index)
         for fig in state.figures.figs
             if fig.handle == handle
                 state.activefig = handle

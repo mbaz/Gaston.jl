@@ -29,7 +29,7 @@ import Base: show, showable, getindex, isempty, push!, setindex!, length
 
 # Methods for recipes
 using GastonRecipes
-import GastonRecipes: PlotRecipe, AxisRecipe, FigureRecipe, AbstractFigure,
+import GastonRecipes: PlotRecipe, AxisRecipe, FigureRecipe, AbstractFigure, DataBlock,
                       convert_args, convert_args3,
                       @gpkw, expand, prockey, procopts
 export @gpkw

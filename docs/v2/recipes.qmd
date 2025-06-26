@@ -48,8 +48,8 @@ function myplot(f::Figure, data::AbstractVector{<:Complex}; kwargs...)::Figure
      return f
 end
 
-# create new Figure if not provided
-myplot(data::AbstractVector{<:Complex}; kwargs...) = myplot(Figure(), data; kwargs...)
+# plot on active figure if none specified
+myplot(data::AbstractVector{<:Complex}; kwargs...) = myplot(figure(), data; kwargs...)
 
 # plot example: complex damped sinusoid
 t = range(0, 1, 20)

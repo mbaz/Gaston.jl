@@ -80,8 +80,8 @@ function writedata(file, args... ; append=false)
     nothing
 end
 
-"DataTable"
-function writedata(file, table::DataTable)
+"Handle data stored in a DataBlock"
+function writedata(file, table::DataBlock)
     seekstart(table.data)
     write(file, table.data)
 end
