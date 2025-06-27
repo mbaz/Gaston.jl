@@ -137,20 +137,21 @@ function __init__()
 end
 
 @compile_workload begin
-    state.enabled = true
-    config.output = :null
-    f = Figure()
-    y = 1.1:0.5:10.6
-    plot(y)
-    plot!(y)
-    plot(f[2], y)
-    @plot({grid}, y, {w = "l", lc = Q"red"})
-    f1 = (x,y) -> sin(sqrt(x*x+y*y))/sqrt(x*x+y*y)
-    splot(f, (-5,5), f1)
-    save(f, term = "png", filename = "test.png")
-    rm("test.png")
-    closeall()
-    gp_quit(f)
+    if state.enabled
+        config.output = :null
+        f = Figure()
+        y = 1.1:0.5:10.6
+        plot(y)
+        plot!(y)
+        plot(f[2], y)
+        @plot({grid}, y, {w = "l", lc = Q"red"})
+        f1 = (x,y) -> sin(sqrt(x*x+y*y))/sqrt(x*x+y*y)
+        splot(f, (-5,5), f1)
+        save(f, term = "png", filename = "test.png")
+        rm("test.png")
+        closeall()
+        gp_quit(f)
+    end
 end
 
 end
