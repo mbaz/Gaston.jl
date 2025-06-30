@@ -160,6 +160,8 @@ The configuration file is `~/.gnuplot` on Unix-like systems, and
 * See plot examples in the [Examples](examples.qmd) section.
 * Learn how to extend Gaston to plot arbitrary Julia types in the [Recipes](recipes.qmd) section.
 * Learn all the details about how to plot with Gaston in the [Manual](manual.qmd).
+* For specific information about migrating from Gaston v1 to v2, see the
+  [Migration Guide](migrate.qmd).
 * Consult the full [API Reference](reference.qmd).
 
 Gaston's documentation includes three [Pluto](https://plutojl.org/)

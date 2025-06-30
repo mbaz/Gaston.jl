@@ -1,0 +1,156 @@
+---
+title: "Migration guide"
+---
+
+```{julia}
+#| echo: false
+#| output: false
+using Gaston
+Gaston.config.term = "pngcairo font ',10' size 640,480"
+Gaston.config.output = :echo
+```
+
+This guide provides hints on how to migrate from Gaston v1 to v2. In
+side-by-side code comparisons, Gaston v1 is always on the left, and v2 on the
+right.
+
+### Axis settings
+
+In v1, axes settings are wrapped in a type called `Axes`, and given as key-value pairs.
+In v2, settings always come before data, and may be given as strings and/or key-value
+pairs enclosed in curly brackets (which require either `@plot` or `@gpkw`).
+
+::: {layout-ncol=2}
+
+```julia
+using SpecialFunctions
+x = y = 0:0.075:10
+surf(x, y, (x,y) -> besselj0(y)*x^2, with = "pm3d",
+     Axes(view = (45, 45),
+          pm3d = "lighting primary 0.5 specular 0.4",
+          key = :off)
+     )
+```
+
+```julia
+using SpecialFunctions
+x = y = 0:0.075:10
+@gpkw surf({view = (45, 45),
+            pm3d = "lighting primary 0.5 specular 0.4",
+            key = :off},
+           x, y, (x,y) -> besselj0(y)*x^2)
+```
+
+:::
+
+Two other differences:
+
+* Using `key = false` instead of `key = :off` is valid syntax to produce `unset key`.
+* In v2, `surf` is a plot style that includes `with pm3d`. The generic 3-D plot
+  command is `splot`, so `splot(..., x, y, z, "with pm3d")` in v2 is equivalent
+  to `surf` in v1.
+
+### Plotline (or curve appearance settings)
+
+In v1, a curve's appearance is configured with key-value arguments that are
+not data and not `Axes`. Values can be symbols or strings, which are interpreted
+differently, and is some cases spaces had to be written as underscores.
+
+In v2, all curve settings (or _plotline_) are given after the data.
+Just like axis settings, they may be strings and/or key-value pairs enclosed in
+curly brackets.
+
+::: {layout-ncol=2}
+
+```julia
+t = 0:0.01:1
+plot(t, sin.(2π*5*t),
+     linecolor  = :coral,
+     plotstyle = "linespoints",
+     pointtype = "ecircle"
+     Axes(title = :First_Plot))
+```
+
+```julia
+t = 0:0.01:1
+plot("title = 'First Plot'",
+     t, sin.(2π*5*t),
+     "w lp lc 'coral' pt 6")
+```
+
+:::
+
+In v2, the following plot commands (and variations thereof) can also be used:
+
+* `plot(..., "w lp", "lc 'coral", "pt 6")`
+* `@plot ... {w = "lp", lc = "'coral'", pt = :ecircle}`
+* `@gpkw plot(..., {w = "lp", lc = "'coral'", pt = :ecircle})`
+* `@plot ... {w = "lp"} "lc 'coral'" {pt = :ecircle}`
+
+Finally, `lc = "'coral'"` may be written as `lc = Q"coral"`. The `Q_str` string
+macro inserts the single quotes.
+
+### Multiplot
+
+Multiplot support was completely overhauled in v2.
+
+::: {layout-ncol=2}
+
+```julia
+t = 0.01:0.01:10pi
+p1 = plot(t, cos, Axes(title = :Plot_1), handle = 1)
+p2 = plot(t, t.^2, Axes(title = :Plot_2), handle = 2)
+p4 = plot(t, exp.(-t), Axes(title = :Plot_4), handle = 4)
+plot([p1 p2 ; nothing p4])
+```
+
+```julia
+t = 0.01:0.01:10pi
+f = plot("set title 'Plot 1'", t, cos)
+plot(f[2], "set title 'Plot 2'", t, t.^2)
+plot(f[4], "set title 'Plot 4'", t, exp.(-t))
+```
+
+:::
+
+In v2, `f` is a value of type `Figure`, and it can be indexed inside a `plot` command
+to create a multiplot. Indices without a plot create an empty "slot".
+
+More details on multiplots and their settings and layout are given in the
+[tutorial](tutorial.qmd).
+
+### Saving plots
+
+The command to save plots has been streamlined.
+
+::: {layout-ncol=2}
+
+```julia
+save(term = "png",
+     output= "myfigure.png",
+     font = "Consolas,10",
+     size = "1280,900",
+     linewidth = 1,
+     background = "blue")
+```
+
+```julia
+save(filename = "myfigure.png",
+     term = "png font 'Consolas,10' size 1280,900 lw 1 background 'blue'")
+```
+
+:::
+
+To save a specific figure `f`, just run `save(f, ...)`.
+
+### Other differences
+
+* The `set` command is no longer available.
+  * To set the terminal, use `Gaston.config.term`, for example `Gaston.config.term = "gif"`.
+  * To enable debug mode, run `Gaston.debug(true)` (use `false` to disable).
+  * To prevent plots from being produced, run `Gaston.config.output = :echo`.
+  * To enable notebook mode (for Jupyter, Pluto, VS Code, etc), use
+    `Gaston.config.output = :echo` (Gaston should detect when running in a notebook,
+    but sometimes this needs to be manually configured, for example when generating
+    Quarto documents).
+* The `axis` key inside `Axes()` is no longer supported.
