@@ -10,9 +10,10 @@ gh = Gaston.gethandles
 reset = Gaston.reset
 null() = Gaston.config.output = :null
 
-@testset "Available terminals" begin
-    Gaston.terminals()
-end
+# TODO: fix https://github.com/mbaz/Gaston.jl/issues/189
+# @testset "Available terminals" begin
+#     Gaston.terminals()
+# end
 
 @testset "AQUA" begin
     #Aqua.test_all(Gaston)
