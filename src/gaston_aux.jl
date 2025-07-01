@@ -79,17 +79,13 @@ function gp_send(process::Base.Process, message::String)
 
             # ask gnuplot to return sigils when it is done
             write(process, """set print '-'
-                  print 'GastonDone'
-                  set print
-                  print 'GastonDone'
+                  print '_Gaston_'
+                  printerr '_Gaston_'
                   """)
             flush(process)
 
-            # print(read(process, String))
-            # print(read(process.err, String))
-
-            gpout = readuntil(process, "GastonDone\n", keep=true)
-            gperr = readuntil(process.err, "GastonDone\n", keep=true)
+            gpout = readuntil(process, "_Gaston_") * '\n'
+            gperr = readuntil(process.err, "_Gaston_") * '\n'
 
             # handle errors
             gpout == "" && @warn "gnuplot crashed."
