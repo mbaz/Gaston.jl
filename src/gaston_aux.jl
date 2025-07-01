@@ -82,11 +82,11 @@ function gp_send(process::Base.Process, message::String)
             write(process, """\
                 set print '-'
                 print '$magic'
-                printerr '$magic'
+                printerr '$magic
                 """
             )
-            gpout = readuntil(process, magic)
-            gperr = readuntil(process.err, magic)
+            gpout = readuntil(process, magic) |> rstrip
+            gperr = readuntil(process.err, magic) |> rstrip
 
             # handle errors
             process_running(process) || @warn "gnuplot crashed."
