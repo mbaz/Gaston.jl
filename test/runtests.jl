@@ -2,6 +2,8 @@
 ##
 ## This file is distributed under the 2-clause BSD License.
 
+get!(ENV, "JULIA_DEBUG", "Gaston")
+
 using Test, Gaston, Aqua, JET
 using Gaston: Axis, Axis3, Plot
 import Gaston: convert_args, convert_args3, PlotRecipe, AxisRecipe, FigureRecipe
