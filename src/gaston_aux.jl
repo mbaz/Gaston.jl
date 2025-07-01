@@ -10,16 +10,18 @@
 # the cache will not invalidate when preferences change
 const gnuplot_binary = Preferences.load_preference(Gaston, "gnuplot_binary", "artifact")
 
-gnuplot_path() =
-    if gnuplot_binary in ("artifact", "jll")
-        Gnuplot_jll.gnuplot()
+const max_lines = string(typemax(Int32) - 1_000)
+
+function gnuplot_path()
+    return if gnuplot_binary in ("artifact", "jll")
+        addenv(Gnuplot_jll.gnuplot(), "LINES" => max_lines)
     elseif Sys.isexecutable(gnuplot_binary)
-        Cmd([gnuplot_binary])
+        addenv(Cmd([gnuplot_binary]), "LINES" => max_lines)
     else
         @debug gnuplot_binary
         nothing
     end
-
+end
 """
     Gaston.gp_start()::Base.Process
 
