@@ -32,7 +32,7 @@ Sys.islinux() && @testset "System gnuplot" begin
         """
         using Gaston, Test
         res = @testset "[subtest] system gnuplot path" begin
-            @test Gaston.config.exec.exec == Cmd(["$sys_gnuplot"])
+            @test Gaston.config.exec.exec == "$sys_gnuplot"
         end
         exit(res.n_passed == 1 ? 0 : 123)
         """
