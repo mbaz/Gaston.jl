@@ -73,26 +73,26 @@ Send string `message` to `process` and handle its response.
 function gp_send(process::Base.Process, message::String)
     if state.enabled
         if process_running(process)
-            message *= "\n"
+            message *= '\n'
             write(process, message) # send user input to gnuplot
 
             @debug "String sent to gnuplot:" message
 
             # ask gnuplot to return sigils when it is done
-            write(process, """set print '-'
-                  print '$magic'
-                  printerr '$magic'
-                  """)
-            # flush(process)
-
-            gpout = rstrip(readuntil(process, magic)) * '\n'
-            gperr = rstrip(readuntil(process.err, magic)) * '\n'
+            write(process, """\
+                set print '-'
+                print '$magic'
+                printerr '$magic'
+                """
+            )
+            gpout = readuntil(process, magic)
+            gperr = readuntil(process.err, magic)
 
             # handle errors
-            isempty(gpout) && @warn "gnuplot crashed."
+            # isempty(gpout) && @warn "gnuplot crashed."
             isempty(gperr) || @info "gnuplot returned a message in STDERR:" gperr
 
-            return gpout, gperr
+            return gpout * '\n', gperr * '\n'
         else
             @warn "Tried to send a message to a process that is not running"
             return nothing
