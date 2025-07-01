@@ -10,6 +10,10 @@ gh = Gaston.gethandles
 reset = Gaston.reset
 null() = Gaston.config.output = :null
 
+@testset "Available terminals" begin
+    Gaston.terminals()
+end
+
 @testset "AQUA" begin
     #Aqua.test_all(Gaston)
     #Aqua.test_ambiguities(Gaston) # disabled -- fails with ambiguities from StatsBase
