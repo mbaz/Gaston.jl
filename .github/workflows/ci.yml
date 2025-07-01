@@ -32,6 +32,7 @@ jobs:
 
     steps:
       - run: sudo apt-get -y install gnuplot
+        if: startsWith(matrix.os, 'ubuntu')
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@latest
         with:
