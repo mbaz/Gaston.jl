@@ -13,7 +13,7 @@ const gnuplot_binary = Preferences.load_preference(Gaston, "gnuplot_binary", "ar
 gnuplot_path() =
     if gnuplot_binary in ("artifact", "jll")
         Gnuplot_jll.gnuplot()
-    elseif isexecutable(gnuplot_binary)
+    elseif Sys.isexecutable(gnuplot_binary)
         Cmd([gnuplot_binary])
     else
         @debug gnuplot_binary
