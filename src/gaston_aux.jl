@@ -11,6 +11,7 @@
 const gnuplot_binary = Preferences.load_preference(Gaston, "gnuplot_binary", "artifact")
 
 const max_lines = string(typemax(Int32) - 1_000)
+const magic = "_Gaston_"
 
 function gnuplot_path()
     return if gnuplot_binary in ("artifact", "jll")
@@ -79,19 +80,17 @@ function gp_send(process::Base.Process, message::String)
 
             # ask gnuplot to return sigils when it is done
             write(process, """set print '-'
-                  print '_Gaston_'
-                  printerr '_Gaston_'
+                  print '$magic'
+                  printerr '$magic'
                   """)
-            flush(process)
+            # flush(process)
 
-            gpout = readuntil(process, "_Gaston_") * '\n'
-            gperr = readuntil(process.err, "_Gaston_") * '\n'
+            gpout = rstrip(readuntil(process, magic)) * '\n'
+            gperr = rstrip(readuntil(process.err, magic)) * '\n'
 
             # handle errors
-            gpout == "" && @warn "gnuplot crashed."
-
-            gperr = gperr[1:end-11]
-            gperr != "" && @info "gnuplot returned a message in STDERR:" gperr
+            isempty(gpout) && @warn "gnuplot crashed."
+            isempty(gperr) || @info "gnuplot returned a message in STDERR:" gperr
 
             return gpout, gperr
         else
