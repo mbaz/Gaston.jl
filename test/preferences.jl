@@ -7,14 +7,14 @@ invalidate_compiled_cache!(pkg::Module) =  # make sure the compiled cache is rem
 
 @testset "Invalid path" begin
     script = tempname()
-    set_preferences!(Gaston, "gnuplot_binary" => "/some_non_existent_invalid_path"; force = true)
+    set_preferences!(Gaston, "gnuplot_binary" => "/_some_non_existent_invalid_path_"; force = true)
     invalidate_compiled_cache!(Gaston)
     write(
         script,
         """
         using Gaston, Test
         res = @testset "[subtest] invalid gnuplot_binary path" begin
-            @test Gaston.gnuplot_cmd ≡ nothing
+            @test Gaston.config.exec ≡ nothing
         end
         exit(res.n_passed == 1 ? 0 : 123)
         """
@@ -32,7 +32,7 @@ end
         """
         using Gaston, Test
         res = @testset "[subtest] system gnuplot path" begin
-            @test Gaston.gnuplot_cmd == Cmd(["$sys_gnuplot"])
+            @test Gaston.config.exec == Cmd(["$sys_gnuplot"])
         end
         exit(res.n_passed == 1 ? 0 : 123)
         """
