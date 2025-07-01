@@ -4,6 +4,21 @@
 
 # Auxiliary, non-exported functions are declared here.
 
+# from github.com/JuliaPackaging/Preferences.jl/blob/master/README.md:
+# "Preferences that are accessed during compilation are automatically marked as compile-time preferences"
+# ==> this must always be done during precompilation, otherwise
+# the cache will not invalidate when preferences change
+const gnuplot_binary = Preferences.load_preference(Gaston, "gnuplot_binary", "artifact")
+
+const gnuplot_cmd = if gnuplot_binary in ("artifact", "jll")
+    Gnuplot_jll.gnuplot()
+elseif isexecutable(gnuplot_binary)
+    Cmd([gnuplot_binary])
+else
+    @debug gnuplot_binary
+    nothing
+end
+
 """
     Gaston.gp_start()::Base.Process
 
@@ -166,7 +181,7 @@ function reset()
     config.embedhtml = false
     config.output = :external
     config.term = ""
-    config.exec = `gnuplot`
+    config.exec = gnuplot_cmd
 end
 
 """

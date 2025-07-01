@@ -47,6 +47,9 @@ using ColorSchemes: colorschemes, get, resample, ColorScheme, RGB, RGBA
 
 using PrecompileTools
 
+import Preferences
+import Gnuplot_jll
+
 const GASTON_VERSION = v"2.0.0"
 
 # URL for web-hosted javascript files, for svg and canvas interactivity
