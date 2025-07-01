@@ -1,11 +1,14 @@
 using Preferences, Gaston
 
-PREVIOUS_DEFAULT_GNUPLOT = load_preference(Gaston, "gnuplot_binary")
+const PREVIOUS_DEFAULT_GNUPLOT = load_preference(Gaston, "gnuplot_binary")
+
+invalidate_compiled_cache!(pkg::Module) =  # make sure the compiled cache is removed
+    rm.(Base.find_all_in_cache_path(Base.PkgId(pkg, string(nameof(pkg)))))
 
 @testset "Invalid path" begin
     script = tempname()
     set_preferences!(Gaston, "gnuplot_binary" => "/some_non_existent_invalid_path"; force = true)
-    rm.(Base.find_all_in_cache_path(Base.PkgId(Gaston, string(nameof(Gaston)))))  # make sure the compiled cache is removed
+    invalidate_compiled_cache!(Gaston)
     write(
         script,
         """
@@ -23,12 +26,12 @@ end
     script = tempname()
     sys_gnuplot = Sys.which("gnuplot")
     set_preferences!(Gaston, "gnuplot_binary" => sys_gnuplot; force = true)
-    rm.(Base.find_all_in_cache_path(Base.PkgId(Gaston, string(nameof(Gaston)))))  # make sure the compiled cache is removed
+    invalidate_compiled_cache!(Gaston)
     write(
         script,
         """
         using Gaston, Test
-        res = @testset "[subtest] system gnuplot" begin
+        res = @testset "[subtest] system gnuplot path" begin
             @test Gaston.gnuplot_cmd == Cmd(["$sys_gnuplot"])
         end
         exit(res.n_passed == 1 ? 0 : 123)
