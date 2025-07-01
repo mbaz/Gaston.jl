@@ -83,6 +83,7 @@ function gp_send(process::Base.Process, message::String)
                   set print
                   print 'GastonDone'
                   """)
+            flush(process)
 
             gpout = readuntil(process, "GastonDone\n", keep=true)
             gperr = readuntil(process.err, "GastonDone\n", keep=true)
