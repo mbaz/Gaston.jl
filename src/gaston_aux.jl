@@ -89,7 +89,7 @@ function gp_send(process::Base.Process, message::String)
             gperr = readuntil(process.err, magic)
 
             # handle errors
-            # isempty(gpout) && @warn "gnuplot crashed."
+            process_running(process) || @warn "gnuplot crashed."
             isempty(gperr) || @info "gnuplot returned a message in STDERR:" gperr
 
             return gpout * '\n', gperr * '\n'
