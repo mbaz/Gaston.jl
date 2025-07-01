@@ -145,7 +145,12 @@ end
     Gaston.terminals()
 
 Return a list of available gnuplot terminals"""
-terminals() = print(gp_exec("set term"))
+function terminals()
+    t = gp_exec("set term")
+    if !(Gaston.config.output == :null)
+        print(t)
+    end
+end
 
 """
     Gaston.debug(d::Bool)
