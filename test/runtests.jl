@@ -139,7 +139,7 @@ end
         @test Gaston.config.term == ""
         @test Gaston.config.embedhtml == false
         @test Gaston.config.output == :external
-        @test run(Gaston.config.exec) |> success
+        @test run(`$(Gaston.config.exec)` --version) |> success
         null()
         @test Gaston.config.output == :null
     end
