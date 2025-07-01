@@ -1,32 +1,48 @@
-name: CI
+name: ci
 
 on:
-  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [master]
+
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
   test:
-    name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }}
+    name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
+    continue-on-error: ${{ matrix.experimental }}
     runs-on: ${{ matrix.os }}
-    permissions:
-      actions: write
-      contents: read
     strategy:
       fail-fast: false
       matrix:
         version:
-          - '1'
           - 'lts'
-        os:
-          - ubuntu-latest
-        arch:
-          - x64
+          - '1'
+        experimental:
+          - false
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        arch: [x64]
+        include:
+          - os: ubuntu-latest
+            experimental: true
+            version: 'pre'
+            arch: x64
+
     steps:
       - run: sudo apt-get -y install gnuplot
       - uses: actions/checkout@v4
-      - uses: julia-actions/setup-julia@v2
+      - uses: julia-actions/setup-julia@latest
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
       - uses: julia-actions/cache@v2
-      - uses: julia-actions/julia-buildpkg@v1
-      - uses: julia-actions/julia-runtest@v1
+      - uses: julia-actions/julia-buildpkg@latest
+      - uses: julia-actions/julia-runtest@latest
+      - uses: julia-actions/julia-processcoverage@latest
+      - uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+          files: lcov.info
