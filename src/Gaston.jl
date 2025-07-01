@@ -99,7 +99,7 @@ Base.@kwdef mutable struct Config
     term      :: String = ""
     altterm   :: String = "gif animate loop 0"
     alttoggle :: Bool   = false
-    exec      :: Cmd    = `gnuplot`
+    exec      :: Union{Nothing,Cmd} = gnuplot_path()
 end
 config = Config()
 
