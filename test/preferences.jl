@@ -16,7 +16,7 @@ PREVIOUS_DEFAULT_GNUPLOT = load_preference(Gaston, "gnuplot_binary")
         exit(res.n_passed == 1 ? 0 : 123)
         """
     )
-    @test run(```$(Base.julia_cmd()) $script```) |> success
+    @test run(`$(Base.julia_cmd()) $script`) |> success
 end
 
 @testset "System gnuplot" begin
@@ -34,7 +34,7 @@ end
         exit(res.n_passed == 1 ? 0 : 123)
         """
     )
-    @test run(```$(Base.julia_cmd()) $script```) |> success
+    @test run(`$(Base.julia_cmd()) $script`) |> success
 end
 
 if PREVIOUS_DEFAULT_GNUPLOT ≡ nothing
