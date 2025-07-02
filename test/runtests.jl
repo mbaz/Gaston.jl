@@ -708,7 +708,6 @@ end
 end
 
 @testset "Misc" begin
-    println(Gaston.config.output)
     if Gaston.state.enabled
         @test Gaston.gp_exec("set grid") == ""
         null()
