@@ -10,6 +10,10 @@ gh = Gaston.gethandles
 reset = Gaston.reset
 null() = Gaston.config.output = :null
 
+@testset "Available terminals" begin
+    @test Gaston.terminals() ≡ nothing
+end
+
 @testset "AQUA" begin
     #Aqua.test_all(Gaston)
     #Aqua.test_ambiguities(Gaston) # disabled -- fails with ambiguities from StatsBase
@@ -139,7 +143,7 @@ end
         @test Gaston.config.term == ""
         @test Gaston.config.embedhtml == false
         @test Gaston.config.output == :external
-        @test Gaston.config.exec == `gnuplot`
+        @test run(`$(Gaston.config.exec) --version`) |> success
         null()
         @test Gaston.config.output == :null
     end
@@ -717,3 +721,5 @@ end
 end
 
 closeall()
+
+include("preferences.jl")

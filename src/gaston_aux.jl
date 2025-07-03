@@ -4,6 +4,25 @@
 
 # Auxiliary, non-exported functions are declared here.
 
+# from github.com/JuliaPackaging/Preferences.jl/blob/master/README.md:
+# "Preferences that are accessed during compilation are automatically marked as compile-time preferences"
+# ==> this must always be done during precompilation, otherwise
+# the cache will not invalidate when preferences change
+const gnuplot_binary = Preferences.load_preference(Gaston, "gnuplot_binary", "artifact")
+
+const max_lines = string(typemax(Int32) - 1_000)
+const magic = "_Gaston_"
+
+function gnuplot_path()
+    return if gnuplot_binary in ("artifact", "jll")
+        addenv(Gnuplot_jll.gnuplot(), "LINES" => max_lines)
+    elseif Sys.isexecutable(gnuplot_binary)
+        addenv(Cmd([gnuplot_binary]), "LINES" => max_lines)
+    else
+        @debug gnuplot_binary
+        nothing
+    end
+end
 """
     Gaston.gp_start()::Base.Process
 
@@ -54,28 +73,26 @@ Send string `message` to `process` and handle its response.
 function gp_send(process::Base.Process, message::String)
     if state.enabled
         if process_running(process)
-            message *= "\n"
+            message *= '\n'
             write(process, message) # send user input to gnuplot
 
             @debug "String sent to gnuplot:" message
 
             # ask gnuplot to return sigils when it is done
-            write(process, """set print '-'
-                  print 'GastonDone'
-                  set print
-                  print 'GastonDone'
-                  """)
-
-            gpout = readuntil(process, "GastonDone\n", keep=true)
-            gperr = readuntil(process.err, "GastonDone\n", keep=true)
+            write(process, """\
+                set print '-'
+                print '$magic'
+                printerr '$magic
+                """
+            )
+            gpout = readuntil(process, magic) |> rstrip
+            gperr = readuntil(process.err, magic) |> rstrip
 
             # handle errors
-            gpout == "" && @warn "gnuplot crashed."
+            process_running(process) || @warn "gnuplot crashed."
+            isempty(gperr) || @info "gnuplot returned a message in STDERR:" gperr
 
-            gperr = gperr[1:end-11]
-            gperr != "" && @info "gnuplot returned a message in STDERR:" gperr
-
-            return gpout, gperr
+            return gpout * '\n', gperr * '\n'
         else
             @warn "Tried to send a message to a process that is not running"
             return nothing
@@ -171,7 +188,7 @@ function reset()
     config.embedhtml = false
     config.output = :external
     config.term = ""
-    config.exec = `gnuplot`
+    config.exec = gnuplot_path()
 end
 
 """

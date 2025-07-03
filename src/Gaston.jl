@@ -47,6 +47,9 @@ using ColorSchemes: colorschemes, get, resample, ColorScheme, RGB, RGBA
 
 using PrecompileTools
 
+import Preferences
+import Gnuplot_jll
+
 const GASTON_VERSION = v"2.0.0"
 
 # URL for web-hosted javascript files, for svg and canvas interactivity
@@ -96,7 +99,7 @@ Base.@kwdef mutable struct Config
     term      :: String = ""
     altterm   :: String = "gif animate loop 0"
     alttoggle :: Bool   = false
-    exec      :: Cmd    = `gnuplot`
+    exec      :: Union{Nothing,Cmd} = gnuplot_path()
 end
 config = Config()
 

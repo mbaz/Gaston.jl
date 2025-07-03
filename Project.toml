@@ -6,26 +6,19 @@ version = "2.0.0"
 ColorSchemes = "35d6a980-a343-548e-a6ea-1d62b119f2f4"
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 GastonRecipes = "39356fd2-1f9e-4efe-8abf-5745c7d9f608"
+Gnuplot_jll = "e5af9688-3aeb-5ed5-8c7e-253e55323d3e"
 MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
 PrecompileTools = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
+Preferences = "21216c6a-2e73-6563-6e65-726566657250"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
 GastonRecipes = "1"
+Gnuplot_jll = "6"
 ColorSchemes = "3"
 DelimitedFiles = "1"
 MacroTools = "0.5"
 PrecompileTools = "1"
+Preferences = "1"
 StatsBase = "0.34"
-Aqua = "0.8"
-JET = "0.9"
-Test = "1"
 julia = "1.10"
-
-[extras]
-Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
-JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-
-[targets]
-test = ["Aqua", "JET", "Test"]
