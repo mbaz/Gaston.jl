@@ -667,6 +667,7 @@ end
 
 @testset "Recipes" begin
     if Gaston.state.enabled
+        null()
         struct Data1
             samples
         end
@@ -713,6 +714,9 @@ end
 @testset "Misc" begin
     if Gaston.state.enabled
         @test Gaston.gp_exec("set grid") == ""
+        null()
+        t = Gaston.terminals();
+        @test isnothing(t)
     end
 end
 

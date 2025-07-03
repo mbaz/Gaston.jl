@@ -2,8 +2,7 @@ name: ci
 
 on:
   pull_request:
-  push:
-    branches: [master]
+  workflow_dispatch:
 
 concurrency: 
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -41,11 +40,3 @@ jobs:
       - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@latest
       - uses: julia-actions/julia-runtest@latest
-        # env:
-        #   JULIA_DEBUG: "Gaston"
-      - uses: julia-actions/julia-processcoverage@latest
-      - uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: false
-          files: lcov.info
