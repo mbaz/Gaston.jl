@@ -15,7 +15,7 @@ const magic = "_Gaston_"
 
 function gnuplot_path()
     return if gnuplot_binary in ("artifact", "jll")
-        addenv(Gnuplot_jll.gnuplot(), "LINES" => max_lines, "GNUPLOT_DRIVER_DIR" => dirname(Gnuplot_jll.gnuplot_qt_path))
+        addenv(Gnuplot_jll.gnuplot(), "LINES" => max_lines, "GNUPLOT_DRIVER_DIR" => dirname(Gnuplot_jll.gnuplot_fake_path))
     elseif Sys.isexecutable(gnuplot_binary)
         addenv(Cmd([gnuplot_binary]), "LINES" => max_lines)
     else
