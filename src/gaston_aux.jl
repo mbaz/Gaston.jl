@@ -82,7 +82,7 @@ function gp_send(process::Base.Process, message::String)
             write(process, """\
                 set print '-'
                 print '$magic'
-                printerr '$magic
+                printerr '$magic'
                 """
             )
             gpout = readuntil(process, magic) |> rstrip
