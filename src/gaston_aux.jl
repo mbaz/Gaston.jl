@@ -10,12 +10,17 @@
 # the cache will not invalidate when preferences change
 const gnuplot_binary = Preferences.load_preference(Gaston, "gnuplot_binary", "artifact")
 
-const max_lines = string(typemax(Int32) - 1_000)
-const magic = "_Gaston_"
+const max_lines = string(typemax(Int32) ÷ 2)
+const magic = "Gaston-4b11ee91-296f-5714-9832-002c20994614"
 
 function gnuplot_path()
     return if gnuplot_binary in ("artifact", "jll")
-        addenv(Gnuplot_jll.gnuplot(), "LINES" => max_lines)
+        addenv(
+            Gnuplot_jll.gnuplot(),
+            "LINES" => max_lines,
+            "PAGER" => nothing,
+            "GNUPLOT_DRIVER_DIR" => dirname(Gnuplot_jll.gnuplot_fake_path)
+        )
     elseif Sys.isexecutable(gnuplot_binary)
         addenv(Cmd([gnuplot_binary]), "LINES" => max_lines)
     else
@@ -90,7 +95,7 @@ function gp_send(process::Base.Process, message::String)
 
             # handle errors
             process_running(process) || @warn "gnuplot crashed."
-            isempty(gperr) || @info "gnuplot returned a message in STDERR:" gperr
+            isempty(gperr) || @info "gnuplot returned a message in STDERR:$gperr"
 
             return gpout * '\n', gperr * '\n'
         else
