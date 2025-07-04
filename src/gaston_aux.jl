@@ -11,7 +11,7 @@
 const gnuplot_binary = Preferences.load_preference(Gaston, "gnuplot_binary", "artifact")
 
 const max_lines = string(typemax(Int32) - 1_000)
-const magic = "_Gaston_"
+const magic = "Gaston-4b11ee91-296f-5714-9832-002c20994614"
 
 function gnuplot_path()
     return if gnuplot_binary in ("artifact", "jll")
