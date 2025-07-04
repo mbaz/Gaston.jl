@@ -95,7 +95,7 @@ function gp_send(process::Base.Process, message::String)
 
             # handle errors
             process_running(process) || @warn "gnuplot crashed."
-            isempty(gperr) || @info "gnuplot returned a message in STDERR:" gperr
+            isempty(gperr) || @info "gnuplot returned a message in STDERR:$gperr"
 
             return gpout * '\n', gperr * '\n'
         else
