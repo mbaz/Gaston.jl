@@ -14,7 +14,7 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
 GastonRecipes = "1"
-Gnuplot_jll = "6"
+Gnuplot_jll = "60"
 ColorSchemes = "3"
 DelimitedFiles = "1"
 MacroTools = "0.5"

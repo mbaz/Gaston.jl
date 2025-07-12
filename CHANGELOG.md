@@ -1,7 +1,8 @@
 New in version 2
 ================
 
-Gaston v2 is a breaking release. A [migration guide](https://mbaz.github.io/Gaston.jl/v2/migrate.html) is available.
+Gaston v2 is a breaking release. A
+[migration guide](https://mbaz.github.io/Gaston.jl/v2/migrate.html) is available.
 
 * A recipe system for plotting arbitrary Julia types.
   * Recipes can be written without depending on Gaston using a new package,
