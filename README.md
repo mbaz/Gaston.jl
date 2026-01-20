@@ -2,7 +2,7 @@
   https://mbaz.github.io/Gaston.jl/v2/
 )
 [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](
-  LICENSE.md
+  LICENSE.txt
 )
 <br>
 [![CI](https://github.com/mbaz/Gaston.jl/actions/workflows/ci.yml/badge.svg)](
