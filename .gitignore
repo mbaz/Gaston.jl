@@ -1,8 +1,9 @@
 docs/build
+
+Manifest-v*.toml
 Manifest.toml
+
 docs/v2/.quarto/
 docs/v2/_site/
 docs/v1/_site/
 docs/v1/assets
-
-

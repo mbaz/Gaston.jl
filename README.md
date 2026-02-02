@@ -1,3 +1,27 @@
+[![Docs stable](https://img.shields.io/badge/docs-stable-blue.svg)](
+  https://mbaz.github.io/Gaston.jl/v2/
+)
+[![License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](
+  LICENSE.txt
+)
+<br>
+[![CI](https://github.com/mbaz/Gaston.jl/actions/workflows/ci.yml/badge.svg)](
+  https://github.com/mbaz/Gaston.jl/actions/workflows/ci.yml
+)
+[![Coverage Status](https://codecov.io/gh/mbaz/Gaston.jl/branch/master/graphs/badge.svg?branch=master)](
+  https://app.codecov.io/gh/mbaz/Gaston.jl
+)
+[![PkgEval](https://juliaci.github.io/NanosoldierReports/pkgeval_badges/G/Gaston.named.svg)](
+  https://juliaci.github.io/NanosoldierReports/pkgeval_badges/G/Gaston.html
+)
+<br>
+[![JuliaHub deps](https://juliahub.com/docs/General/Gaston/stable/deps.svg)](
+  https://juliahub.com/ui/Packages/General/Gaston?t=2
+)
+[![Downloads](https://img.shields.io/badge/dynamic/json?url=http%3A%2F%2Fjuliapkgstats.com%2Fapi%2Fv1%2Fmonthly_downloads%2FGaston&query=total_requests&suffix=%2Fmonth&label=Downloads)](
+  https://juliapkgstats.com/pkg/Gaston
+)
+
 Gaston: Julia plotting using gnuplot
 ==================================== 
 
