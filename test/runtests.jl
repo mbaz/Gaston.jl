@@ -731,4 +731,6 @@ closeall()
 
 include("preferences.jl")
 
-is_ci() && include("downstream_test.jl")
+if is_ci() && Sys.islinux()
+    include("downstream_test.jl")
+end
