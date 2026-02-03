@@ -1,6 +1,6 @@
 using Downloads, JSON, Test
 
-_available_channels() = begin
+function available_channels()
   juliaup = "https://julialang-s3.julialang.org/juliaup"
   for i ∈ 1:6
     buf = PipeBuffer()
@@ -9,8 +9,8 @@ _available_channels() = begin
     dbversion.major == 1 || continue
     buf = PipeBuffer()
     Downloads.download(
-      "$juliaup/versiondb/versiondb-$dbversion-x86_64-unknown-linux-gnu.json",
-      buf,
+        "$juliaup/versiondb/versiondb-$dbversion-x86_64-unknown-linux-gnu.json",
+        buf,
     )
     json = JSON.parse(buf)
     haskey(json, "AvailableChannels") || continue
@@ -21,29 +21,29 @@ _available_channels() = begin
 end
 
 """
-julia> _islatest(:lts)
-julia> _islatest(:release)
+julia> is_latest(:lts)
+julia> is_latest(:release)
 """
-_islatest(variant) = begin
-  channels = _available_channels()
+function is_latest(variant)
+  channels = available_channels()
   ver = let var::String = (
-    release = "release",
-    rel = "release",
-    lts = "lts",
-    release_candidate = "rc",
-    alpha = "alpha",
-    beta = "beta",
-    rc = "rc",
+      release = "release",
+      rel = "release",
+      lts = "lts",
+      release_candidate = "rc",
+      alpha = "alpha",
+      beta = "beta",
+      rc = "rc",
   )[variant]
-    VersionNumber(split(channels[var]["Version"], '+') |> first)
+      VersionNumber(split(channels[var]["Version"], '+') |> first)
   end
   dev = occursin("DEV", string(VERSION))  # or length(VERSION.prerelease) < 2
   return !dev && (
-    VersionNumber(ver.major, ver.minor, 0, ("",)) ≤ VERSION < VersionNumber(ver.major, ver.minor + 1)
+      VersionNumber(ver.major, ver.minor, 0, ("",)) ≤ VERSION < VersionNumber(ver.major, ver.minor + 1)
   )
 end
 
-(is_ci() && Sys.islinux() && _islatest(:release)) && @testset "downstream" begin
+(is_ci() && Sys.islinux() && is_latest(:release)) && @testset "downstream" begin
     tmpd = mktempdir()
     Plots_jl = joinpath(tmpd, "Plots.jl")
     @test Cmd(`$(Base.julia_cmd()) $(joinpath(@__DIR__, "downstream_dev.jl")) $tmpd`) |> run |> success
