@@ -122,7 +122,7 @@ function __init__()
     global config, state
 
     if "JULIA_GNUPLOT_EXE" in keys(ENV)
-        config.exec = ENV["JULIA_GNUPLOT_EXE"]
+        config.exec = Cmd([ENV["JULIA_GNUPLOT_EXE"]])
     end
 
     try
