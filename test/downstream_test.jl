@@ -17,11 +17,11 @@ for i ∈ 1:6
     end
 end
 
-Plots_toml, dev = if (fn = joinpath(path, "PlotsBase", "Project.toml")) |> isfile  # monorepo layout v2
+Plots_toml, dev = if (fn = joinpath(Plots_jl, "PlotsBase", "Project.toml")) |> isfile  # monorepo layout v2
     fn, true
-elseif (fn = joinpath(path, "Plots", "Project.toml")) |> isfile  # monorepo layout v1
+elseif (fn = joinpath(Plots_jl, "Plots", "Project.toml")) |> isfile  # monorepo layout v1
     fn, false
-elseif (fn = joinpath(path, "Project.toml")) |> isfile  # single package toplevel
+elseif (fn = joinpath(Plots_jl, "Project.toml")) |> isfile  # single package toplevel
     fn, false
 end
 
