@@ -17,12 +17,10 @@ for i ∈ 1:6
     end
 end
 
-Plots_toml, dev = if (fn = joinpath(Plots_jl, "PlotsBase", "Project.toml")) |> isfile  # monorepo layout v2
-    fn, true
+Plots_toml = if (fn = joinpath(Plots_jl, "PlotsBase", "Project.toml")) |> isfile  # monorepo layout v2
+    fn
 elseif (fn = joinpath(Plots_jl, "Plots", "Project.toml")) |> isfile  # monorepo layout v1
-    fn, false
-elseif (fn = joinpath(Plots_jl, "Project.toml")) |> isfile  # single package toplevel
-    fn, false
+    fn
 end
 
 if false  # toggle on v2 release !
