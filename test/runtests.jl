@@ -20,8 +20,7 @@ end
 
 @testset "JULIA_GNUPLOT_EXE" begin
     withenv("JULIA_GNUPLOT_EXE" => "gnuplot") do
-        Gaston.__init__()
-        @test Gaston.config.exec == `gnuplot`
+        @test read(`$(Base.julia_cmd()) -e 'using Gaston; print(Gaston.config.exec.exec[1])'`, String) == "gnuplot"
     end
 end
 
