@@ -28,8 +28,8 @@ end
 end
 
 @testset "AQUA" begin
-    #Aqua.test_all(Gaston)
-    #Aqua.test_ambiguities(Gaston) # disabled -- fails with ambiguities from StatsBase
+    # Aqua.test_all(Gaston)
+    # Aqua.test_ambiguities(Gaston) # disabled -- fails with ambiguities from StatsBase
     Aqua.test_unbound_args(Gaston)
     Aqua.test_undefined_exports(Gaston)
     Aqua.test_project_extras(Gaston)
@@ -97,9 +97,9 @@ end
         f4 = Figure()
         @test f4.handle == 1
         closeall()
-        p1 = plot(1:10, handle = :a);
-        p2 = plot(1:10, handle = :b);
-        p3 = plot(1:10, handle = :c);
+        p1 = plot(1:10, handle = :a)
+        p2 = plot(1:10, handle = :b)
+        p3 = plot(1:10, handle = :c)
         @test begin
             closefigure(:b)
             gh()
@@ -728,7 +728,7 @@ end
     if Gaston.state.enabled
         @test Gaston.gp_exec("set grid") == ""
         null()
-        t = Gaston.terminals();
+        t = Gaston.terminals()
         @test isnothing(t)
     end
 end
