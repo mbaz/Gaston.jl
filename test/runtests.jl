@@ -18,6 +18,13 @@ end
     @test Gaston.terminals() ≡ nothing
 end
 
+@testset "JULIA_GNUPLOT_EXE" begin
+    withenv("JULIA_GNUPLOT_EXE" => "gnuplot") do
+        Gaston.__init__()
+        @test Gaston.config.exec == `gnuplot`
+    end
+end
+
 @testset "AQUA" begin
     #Aqua.test_all(Gaston)
     #Aqua.test_ambiguities(Gaston) # disabled -- fails with ambiguities from StatsBase
