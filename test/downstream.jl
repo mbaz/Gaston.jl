@@ -1,4 +1,4 @@
-using Test
+using Downloads, JSON, Test
 
 _available_channels() = begin
   juliaup = "https://julialang-s3.julialang.org/juliaup"
