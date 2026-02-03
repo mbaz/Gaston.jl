@@ -21,6 +21,13 @@ end
     @test Gaston.terminals() ≡ nothing
 end
 
+if is_ci() && Sys.islinux() || true
+    tmpd = mktempdir()
+    # @show Base.julia_cmd()
+    @test run(`$(Base.julia_cmd()) downstream_dev.jl $tmpd`) |> success
+    @test Cmd(`$(Base.julia_cmd()) --project=@. $(joinpath(@__DIR__, "downstream_test.jl"))`; dir = joinpath(tmpd, "Plots.jl")) |> run |> success
+end
+
 @testset "AQUA" begin
     #Aqua.test_all(Gaston)
     #Aqua.test_ambiguities(Gaston) # disabled -- fails with ambiguities from StatsBase
@@ -730,7 +737,3 @@ end
 closeall()
 
 include("preferences.jl")
-
-if is_ci() && Sys.islinux()
-    include("downstream_test.jl")
-end

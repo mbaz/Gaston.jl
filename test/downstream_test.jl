@@ -1,75 +1,22 @@
-using Pkg; Pkg.activate(; temp=true)
+using Pkg
+
+Pkg.activate(joinpath(pwd(), "PlotsBase"))
+Pkg.develop(path=joinpath(@__DIR__, ".."))
 
 using Gaston
-
-LibGit2 = Pkg.GitTools.LibGit2
-TOML = Pkg.TOML
-
-Plots_jl = joinpath(mkpath(tempname()), "Plots.jl")
-
-for i ∈ 1:6
-    try
-        global repo = Pkg.GitTools.ensure_clone(stdout, Plots_jl, "https://github.com/JuliaPlots/Plots.jl")
-        break
-    catch err
-        @warn err
-        sleep(20i)
-    end
-end
-
-Plots_toml = if (fn = joinpath(Plots_jl, "PlotsBase", "Project.toml")) |> isfile  # monorepo layout v2
-    fn
-elseif (fn = joinpath(Plots_jl, "Plots", "Project.toml")) |> isfile  # monorepo layout v1
-    fn
-end
-
-if false  # toggle on v2 release !
-    # clone and checkout the latest stable version of Plots
-    stable = try
-        rg = first(Pkg.Registry.reachable_registries())
-        Plots_UUID = first(Pkg.Registry.uuids_from_name(rg, "Plots"))
-        Plots_PkgEntry = rg.pkgs[Plots_UUID]
-        Plots_version_info = Pkg.Registry.registry_info(Plots_PkgEntry).version_info
-        maximum(keys(Plots_version_info))
-    catch
-        depot = joinpath(first(DEPOT_PATH), "registries", "General", "P", "Plots", "Versions.toml")
-        maximum(VersionNumber.(keys(TOML.parse(read(depot, String)))))
-    end
-
-    @show stable
-
-    obj = LibGit2.GitObject(repo, "v$stable")
-    hash = if isa(obj, LibGit2.GitTag)
-        LibGit2.target(obj)
-    else
-        LibGit2.GitHash(obj)
-    end |> string
-    @show hash
-    LibGit2.checkout!(repo, hash)
-end
-
-@assert isfile(Plots_toml) "checkout repo failed, bailing out"
-
-# fake the supported Gaston version for testing (for `Pkg.develop`)
-toml = TOML.parse(read(Plots_toml, String))
-toml["compat"]["Gaston"] = pkgversion(Gaston) |> string
-open(Plots_toml, "w") do io
-  TOML.print(io, toml)
-end
-Pkg.develop(path=Plots_jl)
-Pkg.status(["Gaston", "Plots"])
+Pkg.status(["Gaston", "PlotsBase"])
 
 # test basic plots creation and bitmap or vector exports
-using Plots, Test
+using PlotsBase, Test
 
 prefix = tempname()
-@time for i ∈ 1:length(Plots._examples)
-  i ∈ Plots._backend_skips[:gaston] && continue  # skip unsupported examples
-  Plots._examples[i].imports ≡ nothing || continue  # skip examples requiring optional test deps
-  pl = Plots.test_examples(:gaston, i; disp = false)
+@time for i ∈ 1:length(PlotsBase._examples)
+  i ∈ PlotsBase._backend_skips[:gaston] && continue  # skip unsupported examples
+  PlotsBase._examples[i].imports ≡ nothing || continue  # skip examples requiring optional test deps
+  pl = PlotsBase.test_examples(:gaston, i; disp = false)
   for ext in (".png", ".pdf")  # TODO: maybe more ?
     fn = string(prefix, i, ext)
-    Plots.savefig(pl, fn)
+    PlotsBase.savefig(pl, fn)
     @test filesize(fn) > 1_000
   end
 end
