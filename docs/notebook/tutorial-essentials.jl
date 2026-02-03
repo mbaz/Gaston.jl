@@ -42,7 +42,7 @@ md"# Gaston demo/tutorial: Essentials
 Let's start by loading Gaston and PlutoUI."
 
 # ╔═╡ ff57c40b-615d-4902-9810-8d874220f626
-Gaston.GASTON_VERSION
+pkgversion(Gaston)
 
 # ╔═╡ a66e7e1d-b3a4-4504-be15-2324808607be
 PlutoUI.TableOfContents(title = "Contents")

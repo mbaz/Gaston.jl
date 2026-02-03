@@ -25,7 +25,7 @@ begin
 	using Revise
 	using Gaston
 	using PlutoUI
-	Gaston.GASTON_VERSION
+	pkgversion(Gaston)
 end
 
 # ╔═╡ a86a096a-f66b-11ed-3c0d-f3dce992f2d7
