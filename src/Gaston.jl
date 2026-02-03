@@ -50,6 +50,8 @@ using PrecompileTools
 import Preferences
 import Gnuplot_jll
 
+const GNUPLOT_VERSION = Ref(v"0.0.0")
+
 # URL for web-hosted javascript files, for svg and canvas interactivity
 const JSDIR = "'https://cdn.jsdelivr.net/gh/mbaz/gnuplot-js@1.0/'"
 
@@ -124,7 +126,8 @@ function __init__()
     end
 
     try
-        success(`$(config.exec) --version`)
+        ver_str = replace(read(`$(config.exec) --version`, String), "gnuplot" => "", "patchlevel" => "", "." => " ") |> strip |> split
+        GNUPLOT_VERSION[] = VersionNumber(parse.(Int, ver_str)...)
         state.enabled = true
     catch
         @warn "Gnuplot is not available on this system. Gaston will be unable to produce any plots."
