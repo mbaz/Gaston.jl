@@ -737,7 +737,50 @@ closeall()
 
 include("preferences.jl")
 
-(is_ci() && Sys.islinux()) && @testset "downstream" begin
+_available_channels() = begin
+  juliaup = "https://julialang-s3.julialang.org/juliaup"
+  for i ∈ 1:6
+    buf = PipeBuffer()
+    Downloads.download("$juliaup/DBVERSION", buf)
+    dbversion = VersionNumber(readline(buf))
+    dbversion.major == 1 || continue
+    buf = PipeBuffer()
+    Downloads.download(
+      "$juliaup/versiondb/versiondb-$dbversion-x86_64-unknown-linux-gnu.json",
+      buf,
+    )
+    json = JSON.parse(buf)
+    haskey(json, "AvailableChannels") || continue
+    return json["AvailableChannels"]
+    sleep(10i)
+  end
+  return
+end
+
+"""
+julia> _islatest(:lts)
+julia> _islatest(:release)
+"""
+_islatest(variant) = begin
+  channels = _available_channels()
+  ver = let var::String = (
+    release = "release",
+    rel = "release",
+    lts = "lts",
+    release_candidate = "rc",
+    alpha = "alpha",
+    beta = "beta",
+    rc = "rc",
+  )[variant]
+    VersionNumber(split(channels[var]["Version"], '+') |> first)
+  end
+  dev = occursin("DEV", string(VERSION))  # or length(VERSION.prerelease) < 2
+  return !dev && (
+    VersionNumber(ver.major, ver.minor, 0, ("",)) ≤ VERSION < VersionNumber(ver.major, ver.minor + 1)
+  )
+end
+
+(is_ci() && Sys.islinux() && _islatest(:release)) && @testset "downstream" begin
     tmpd = mktempdir()
     Plots_jl = joinpath(tmpd, "Plots.jl")
     @test Cmd(`$(Base.julia_cmd()) $(joinpath(@__DIR__, "downstream_dev.jl")) $tmpd`) |> run |> success
