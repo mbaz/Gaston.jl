@@ -6,7 +6,14 @@ LibGit2 = Pkg.GitTools.LibGit2
 TOML = Pkg.TOML
 
 Plots_jl = joinpath(mkpath(tempname()), "Plots.jl")
-Plots_toml = joinpath(Plots_jl, "Project.toml")
+
+Plots_toml, stable = if (fn = joinpath(path, "PlotsBase", "Project.toml")) |> isfile  # monorepo layout v2
+    fn, false
+elseif (fn = joinpath(path, "Plots", "Project.toml")) |> isfile  # monorepo layout v1
+    fn, true
+elseif (fn = joinpath(path, "Project.toml")) |> isfile  # single package toplevel
+    fn, true
+end
 
 # clone and checkout the latest stable version of Plots
 stable = try
@@ -30,14 +37,17 @@ for i ∈ 1:6
         sleep(20i)
     end
 end
-obj = LibGit2.GitObject(repo, "v$stable")
-hash = if isa(obj, LibGit2.GitTag)
-    LibGit2.target(obj)
-else
-    LibGit2.GitHash(obj)
-end |> string
-@show hash
-LibGit2.checkout!(repo, hash)
+
+if stable
+    obj = LibGit2.GitObject(repo, "v$stable")
+    hash = if isa(obj, LibGit2.GitTag)
+        LibGit2.target(obj)
+    else
+        LibGit2.GitHash(obj)
+    end |> string
+    @show hash
+    LibGit2.checkout!(repo, hash)
+end
 @assert isfile(Plots_toml) "checkout repo failed, bailing out"
 
 # fake the supported Gaston version for testing (for `Pkg.develop`)
