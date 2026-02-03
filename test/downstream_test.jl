@@ -7,27 +7,6 @@ TOML = Pkg.TOML
 
 Plots_jl = joinpath(mkpath(tempname()), "Plots.jl")
 
-Plots_toml, stable = if (fn = joinpath(path, "PlotsBase", "Project.toml")) |> isfile  # monorepo layout v2
-    fn, false
-elseif (fn = joinpath(path, "Plots", "Project.toml")) |> isfile  # monorepo layout v1
-    fn, true
-elseif (fn = joinpath(path, "Project.toml")) |> isfile  # single package toplevel
-    fn, true
-end
-
-# clone and checkout the latest stable version of Plots
-stable = try
-    rg = first(Pkg.Registry.reachable_registries())
-    Plots_UUID = first(Pkg.Registry.uuids_from_name(rg, "Plots"))
-    Plots_PkgEntry = rg.pkgs[Plots_UUID]
-    Plots_version_info = Pkg.Registry.registry_info(Plots_PkgEntry).version_info
-    maximum(keys(Plots_version_info))
-catch
-    depot = joinpath(first(DEPOT_PATH), "registries", "General", "P", "Plots", "Versions.toml")
-    maximum(VersionNumber.(keys(TOML.parse(read(depot, String)))))
-end
-
-@show stable
 for i ∈ 1:6
     try
         global repo = Pkg.GitTools.ensure_clone(stdout, Plots_jl, "https://github.com/JuliaPlots/Plots.jl")
@@ -38,7 +17,29 @@ for i ∈ 1:6
     end
 end
 
-if stable
+Plots_toml, dev = if (fn = joinpath(path, "PlotsBase", "Project.toml")) |> isfile  # monorepo layout v2
+    fn, true
+elseif (fn = joinpath(path, "Plots", "Project.toml")) |> isfile  # monorepo layout v1
+    fn, false
+elseif (fn = joinpath(path, "Project.toml")) |> isfile  # single package toplevel
+    fn, false
+end
+
+if false  # toggle on v2 release !
+    # clone and checkout the latest stable version of Plots
+    stable = try
+        rg = first(Pkg.Registry.reachable_registries())
+        Plots_UUID = first(Pkg.Registry.uuids_from_name(rg, "Plots"))
+        Plots_PkgEntry = rg.pkgs[Plots_UUID]
+        Plots_version_info = Pkg.Registry.registry_info(Plots_PkgEntry).version_info
+        maximum(keys(Plots_version_info))
+    catch
+        depot = joinpath(first(DEPOT_PATH), "registries", "General", "P", "Plots", "Versions.toml")
+        maximum(VersionNumber.(keys(TOML.parse(read(depot, String)))))
+    end
+
+    @show stable
+
     obj = LibGit2.GitObject(repo, "v$stable")
     hash = if isa(obj, LibGit2.GitTag)
         LibGit2.target(obj)
@@ -48,6 +49,7 @@ if stable
     @show hash
     LibGit2.checkout!(repo, hash)
 end
+
 @assert isfile(Plots_toml) "checkout repo failed, bailing out"
 
 # fake the supported Gaston version for testing (for `Pkg.develop`)
