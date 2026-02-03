@@ -10,6 +10,9 @@ gh = Gaston.gethandles
 reset = Gaston.reset
 null() = Gaston.config.output = :null
 
+is_pkgeval() = Base.get_bool_env("JULIA_PKGEVAL", false)
+is_ci() = Base.get_bool_env("CI", false)
+
 @testset "Gnuplot version" begin
     @test Gaston.GNUPLOT_VERSION[] ≥ v"6"
 end
@@ -727,3 +730,5 @@ end
 closeall()
 
 include("preferences.jl")
+
+is_ci() && include("downstream_test.jl")
