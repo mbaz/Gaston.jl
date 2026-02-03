@@ -737,10 +737,37 @@ closeall()
 
 include("preferences.jl")
 
-if is_ci() && Sys.islinux() || true
-    @testset "downstream" begin
-        tmpd = mktempdir()
-        @test run(`$(Base.julia_cmd()) downstream_dev.jl $tmpd`) |> success
-        @test Cmd(`$(Base.julia_cmd()) --project=@. $(joinpath(@__DIR__, "downstream_test.jl"))`; dir = joinpath(tmpd, "Plots.jl")) |> run |> success
-    end
+(is_ci() && Sys.islinux()) && @testset "downstream" begin
+    tmpd = mktempdir()
+    Plots_jl = joinpath(tmpd, "Plots.jl")
+    @test Cmd(`$(Base.julia_cmd()) $(joinpath(@__DIR__, "downstream_dev.jl")) $tmpd`) |> run |> success
+    script = tempname()
+    write(
+        script,
+        """
+        using Pkg
+
+        Pkg.activate(joinpath("$Plots_jl", "PlotsBase"))
+        Pkg.develop(path="$(joinpath(@__DIR__, ".."))")
+
+        import Gaston  # trigger `PlotsBase` extension
+        Pkg.status(["Gaston", "PlotsBase"])
+
+        # test basic plots creation and bitmap or vector exports
+        using PlotsBase, Test
+
+        prefix = tempname()
+        @time for i ∈ 1:length(PlotsBase._examples)
+          i ∈ PlotsBase._backend_skips[:gaston] && continue  # skip unsupported examples
+          PlotsBase._examples[i].imports ≡ nothing || continue  # skip examples requiring optional test deps
+          pl = PlotsBase.test_examples(:gaston, i; disp = false)
+          for ext in (".png", ".pdf")  # TODO: maybe more ?
+            fn = string(prefix, i, ext)
+            PlotsBase.savefig(pl, fn)
+            @test filesize(fn) > 1_000
+          end
+        end
+        """
+    )
+    @test Cmd(`$(Base.julia_cmd()) --project=@. $script`; dir = Plots_jl) |> run |> success
 end
