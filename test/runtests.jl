@@ -10,6 +10,10 @@ gh = Gaston.gethandles
 reset = Gaston.reset
 null() = Gaston.config.output = :null
 
+@testset "Gnuplot version" begin
+    @test Gaston.GNUPLOT_VERSION[] ≥ v"6"
+end
+
 @testset "Available terminals" begin
     @test Gaston.terminals() ≡ nothing
 end
