@@ -1,3 +1,4 @@
+using Test
 
 _available_channels() = begin
   juliaup = "https://julialang-s3.julialang.org/juliaup"
