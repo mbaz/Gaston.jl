@@ -21,11 +21,10 @@ end
     @test Gaston.terminals() ≡ nothing
 end
 
-if is_ci() && Sys.islinux() || true
-    tmpd = mktempdir()
-    # @show Base.julia_cmd()
-    @test run(`$(Base.julia_cmd()) downstream_dev.jl $tmpd`) |> success
-    @test Cmd(`$(Base.julia_cmd()) --project=@. $(joinpath(@__DIR__, "downstream_test.jl"))`; dir = joinpath(tmpd, "Plots.jl")) |> run |> success
+@testset "JULIA_GNUPLOT_EXE" begin
+    withenv("JULIA_GNUPLOT_EXE" => "gnuplot") do
+        @test read(`$(Base.julia_cmd()) -e 'using Gaston; print(Gaston.config.exec.exec[1])'`, String) == "gnuplot"
+    end
 end
 
 @testset "AQUA" begin
@@ -737,3 +736,11 @@ end
 closeall()
 
 include("preferences.jl")
+
+if is_ci() && Sys.islinux() || true
+    @testset "downstream" begin
+        tmpd = mktempdir()
+        @test run(`$(Base.julia_cmd()) downstream_dev.jl $tmpd`) |> success
+        @test Cmd(`$(Base.julia_cmd()) --project=@. $(joinpath(@__DIR__, "downstream_test.jl"))`; dir = joinpath(tmpd, "Plots.jl")) |> run |> success
+    end
+end
