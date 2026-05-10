@@ -22,9 +22,10 @@ invalidate_compiled_cache!(m::Module) =  # make sure the compiled cache is remov
     @test run(`$(Base.julia_cmd()) $script`) |> success
 end
 
-Sys.islinux() && @testset "System gnuplot" begin
+const sys_gnuplot = Sys.which("gnuplot")
+
+(Sys.islinux() && sys_gnuplot ≢ nothing) && @testset "System gnuplot" begin
     script = tempname()
-    sys_gnuplot = Sys.which("gnuplot")
     set_preferences!(Gaston, "gnuplot_binary" => sys_gnuplot; force = true)
     invalidate_compiled_cache!(Gaston)
     write(
